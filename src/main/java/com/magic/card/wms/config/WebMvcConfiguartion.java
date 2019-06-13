@@ -65,15 +65,15 @@ public class WebMvcConfiguartion extends WebMvcConfigurationSupport{
 	 */
 	@Override
 	protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources");
-		registry.addResourceHandler("webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars");
+		registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
+		registry.addResourceHandler("webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
 	}
 	
 	/**
 	 * 文件上传配置
 	 * @return
 	 */
-	@Bean
+	@Bean(name="multipartResolver")
 	public MultipartResolver multipartResolver() {
 		CommonsMultipartResolver resolver = new CommonsMultipartResolver();
 		resolver.setResolveLazily(true);

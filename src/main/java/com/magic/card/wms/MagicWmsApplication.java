@@ -3,6 +3,8 @@ package com.magic.card.wms;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /***
@@ -12,7 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @SpringBootApplication
 @EnableTransactionManagement
-@ServletComponentScan
+@ComponentScan(basePackages = {"com.magic.card.wms"})
 public class MagicWmsApplication {
 
 	public static void main(String[] args) {

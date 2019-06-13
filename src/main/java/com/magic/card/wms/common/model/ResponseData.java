@@ -2,6 +2,8 @@ package com.magic.card.wms.common.model;
 
 import org.springframework.util.StringUtils;
 
+import com.magic.card.wms.common.model.enums.ResultEnum;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,10 +18,6 @@ import lombok.Data;
 @Data
 public class ResponseData<T> {
 
-	private static final int SUCCESS = 0;
-	private static final int ERROR = 1;
-	private static final String SUCCESS_MSG = "成功";
-	private static final String ERROR_MSG = "失败";
 	
 	/**
 	 * 返回代码 0-成功
@@ -44,15 +42,15 @@ public class ResponseData<T> {
 	
 	public static ResponseData ok() {
 		ResponseData result = new ResponseData();
-		result.setCode(SUCCESS);
-		result.setMsg(SUCCESS_MSG);
+		result.setCode(ResultEnum.success.getCode());
+		result.setMsg(ResultEnum.success.getMsg());
 		return result;
 	}
 	
 	public static <T> ResponseData ok(T data) {
 		ResponseData result = new ResponseData();
-		result.setCode(SUCCESS);
-		result.setMsg(SUCCESS_MSG);
+		result.setCode(ResultEnum.success.getCode());
+		result.setMsg(ResultEnum.success.getMsg());
 		if(StringUtils.isEmpty(data)) {
 			result.setStatus(0);
 		}else {
@@ -71,15 +69,15 @@ public class ResponseData<T> {
 	}
 	public static ResponseData error(String msg) {
 		ResponseData result = new ResponseData();
-		result.setCode(ERROR);
+		result.setCode(ResultEnum.fail.getCode());
 		result.setMsg(msg);
 		result.setStatus(0);
 		return result;
 	}
 	public static ResponseData error() {
 		ResponseData result = new ResponseData();
-		result.setCode(ERROR);
-		result.setMsg(ERROR_MSG);
+		result.setCode(ResultEnum.fail.getCode());
+		result.setMsg(ResultEnum.fail.getMsg());
 		result.setStatus(0);
 		return result;
 	}

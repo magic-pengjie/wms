@@ -24,20 +24,20 @@ public class CodeGenerator extends MagicWmsApplicationTests{
 	
 	private  void generateByTables(String packageName,  String[] tableNames) {
         GlobalConfig config = new GlobalConfig();
-        String dbUrl = "jdbc:h2:D:/work/soft/h2/wms";
+        String dbUrl = "jdbc:mysql://127.0.0.1:3306/wms?useUnicode=true&characterEncoding=utf8";
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setDbType(DbType.H2)
+        dataSourceConfig.setDbType(DbType.MYSQL)
                 .setUrl(dbUrl)
-                .setUsername("pengjie")
-                .setPassword("123456")
-                .setDriverName("org.h2.Driver");
+                .setUsername("wmsdata")
+                .setPassword("wmsdata")
+                .setDriverName("com.mysql.jdbc.Driver");
         StrategyConfig strategyConfig = new StrategyConfig();
         strategyConfig
                 .setCapitalMode(true)
-                .setEntityLombokModel(false)
+                .setEntityLombokModel(true)
                 .setDbColumnUnderline(true)
                 .setNaming(NamingStrategy.underline_to_camel)
-                //.setTablePrefix()
+                .setTablePrefix("WMS_")
                 .setRestControllerStyle(true)
                 .setInclude(tableNames);//修改替换成你需要的表名，多个表名传数组
         config.setActiveRecord(false)
@@ -45,7 +45,7 @@ public class CodeGenerator extends MagicWmsApplicationTests{
                 .setOutputDir("D:\\work\\projects\\workspace")
                 .setBaseResultMap(true)
                 .setBaseColumnList(true)
-                .setServiceName("%Service")
+                //.setServiceName("%Service")
                 .setFileOverride(true);
         
         new AutoGenerator().setGlobalConfig(config)
@@ -56,7 +56,7 @@ public class CodeGenerator extends MagicWmsApplicationTests{
                                 .setParent(packageName)
                                 .setController("controller")
                                 .setService("service")
-                                .setServiceImpl("serviceImp")
+                                .setServiceImpl("service.impl")
                                 .setEntity("model.po")
                 ).execute();
     }

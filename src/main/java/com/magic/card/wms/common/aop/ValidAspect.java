@@ -2,8 +2,12 @@ package com.magic.card.wms.common.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
+
+import com.magic.card.wms.common.model.ResponseData;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
+@Aspect
 public class ValidAspect {
 	
 	@Around("(execution(public * com.magic.card.wms.*.controller..*.*(..)) && args(..,bindingResult))")
@@ -21,7 +26,7 @@ public class ValidAspect {
 		if(bindingResult.hasErrors()) {
 			String msg = bindingResult.getFieldError().getDefaultMessage();
 			log.error("Method name:{} and error={}",pjp.getSignature().getName(),msg);
-			return msg;
+			return ResponseData.error(ResultEnum.req_params_null.getCode(), msg);
 		}else {
 			return pjp.proceed();
 		}
