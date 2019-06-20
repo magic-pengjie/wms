@@ -15,6 +15,7 @@ import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.UserDTO;
+import com.magic.card.wms.user.model.dto.UserLoginDTO;
 import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.service.IUserService;
 
@@ -43,9 +44,17 @@ public class UserController {
 	 * @param dto
 	 * @return
 	 */
-	public ResponseData userLogin(@RequestBody @Valid UserDTO dto, BindingResult bindingResult) {
-		
-		return null;
+	public ResponseData userLogin(@RequestBody @Valid UserLoginDTO dto, BindingResult bindingResult) {
+		try {
+			userService.login(dto);
+		}catch (BusinessException e) {
+			log.error("===用户登录失败:{}",e);
+			return ResponseData.error(e.getErrCode(),e.getErrMsg());
+		}catch (Exception e) {
+			log.error("===用户登录失败:{}",e);
+			return ResponseData.error(ResultEnum.user_login_failed.getMsg());
+		}
+		return ResponseData.ok();
 	}
 
 	/***
@@ -59,7 +68,7 @@ public class UserController {
 		try {
 			result = userService.getUserList();
 		} catch (Exception e) {
-			log.error("查询用户失败:{}",e);
+			log.error("===查询用户失败:{}",e);
 			return ResponseData.error(ResultEnum.query_user_failed.getMsg());
 		}
 		return ResponseData.ok(result);
@@ -76,10 +85,10 @@ public class UserController {
 		try {
 			userService.addUser(dto);
 		} catch (BusinessException e) {
-			log.error("新增用户失败:{}",e);
+			log.error("===新增用户失败:{}",e);
 			return ResponseData.error(e.getErrCode(),e.getErrMsg());
 		} catch (Exception e) {
-			log.error("新增用户失败:{}",e);
+			log.error("===新增用户失败:{}",e);
 			return ResponseData.error(ResultEnum.add_user_failed.getMsg());
 		}
 		return ResponseData.ok();
@@ -93,8 +102,17 @@ public class UserController {
 	 * @return
 	 */
 	public ResponseData updateUser(@RequestBody @Valid UserUpdateDTO dto, BindingResult bindingResult) {
-		
-		return null;
+		try {
+			userService.updateUserInfo(dto);
+			
+		}catch (BusinessException e) {
+			log.error("===修改用户失败:{}",e);
+			return ResponseData.error(e.getErrCode(),e.getErrMsg());
+		} catch (Exception e) {
+			log.error("===修改用户失败:{}",e);
+			return ResponseData.error(ResultEnum.add_user_failed.getMsg());
+		}
+		return ResponseData.ok();
 	}
 
 }
