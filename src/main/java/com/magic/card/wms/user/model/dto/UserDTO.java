@@ -3,7 +3,6 @@ package com.magic.card.wms.user.model.dto;
 import java.io.Serializable;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -37,7 +36,7 @@ public class UserDTO implements Serializable{
     /**
      * 姓名
      */
-	@ApiModelProperty("密码")
+	@ApiModelProperty("姓名")
     @NotBlank(message="姓名不能为空")
     private String name;
 }
