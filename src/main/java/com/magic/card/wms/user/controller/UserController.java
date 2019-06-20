@@ -15,6 +15,7 @@ import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.UserDTO;
+import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.service.IUserService;
 
 import io.swagger.annotations.Api;
@@ -35,6 +36,17 @@ public class UserController {
 
 	@Autowired
 	private IUserService userService;
+	
+	
+	/**
+	 *       登录接口
+	 * @param dto
+	 * @return
+	 */
+	public ResponseData userLogin(@RequestBody @Valid UserDTO dto, BindingResult bindingResult) {
+		
+		return null;
+	}
 
 	/***
 	 * 获取用户信息
@@ -71,6 +83,18 @@ public class UserController {
 			return ResponseData.error(ResultEnum.add_user_failed.getMsg());
 		}
 		return ResponseData.ok();
+	}
+	
+	
+	/**
+	 * 修改用户信息
+	 * @param dto
+	 * @param bindingResult
+	 * @return
+	 */
+	public ResponseData updateUser(@RequestBody @Valid UserUpdateDTO dto, BindingResult bindingResult) {
+		
+		return null;
 	}
 
 }
