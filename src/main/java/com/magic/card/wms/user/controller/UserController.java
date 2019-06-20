@@ -18,22 +18,19 @@ import com.magic.card.wms.user.model.dto.UserDTO;
 import com.magic.card.wms.user.service.IUserService;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * <p>
- * 用户前端控制器
- * </p>
+ * 用户 维护Controlller
  *
  * @author pengjie
  * @since 2019-06-13
  */
+@Slf4j
 @RestController
 @RequestMapping("/user")
-@Api("用户前端控制器")
-@Slf4j
+@Api("用户 维护Controlller")
 public class UserController {
 
 	@Autowired
@@ -41,7 +38,6 @@ public class UserController {
 
 	/***
 	 * 获取用户信息
-	 * 
 	 * @return
 	 */
 	@ApiOperation(value = "获取用户列表", notes = "获取用户列表")
@@ -57,9 +53,9 @@ public class UserController {
 		return ResponseData.ok(result);
 	}
 
+	
 	/***
-	 * 获取用户信息
-	 * 
+	 * 新增用户信息
 	 * @return
 	 */
 	@ApiOperation(value = "新增用户", notes = "新增用户")
