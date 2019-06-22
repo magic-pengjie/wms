@@ -224,6 +224,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!--	设置主函数类	-->
+					<mainClass>com.magic.card.wms.MagicWmsApplication</mainClass>
+					<fork>true</fork>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

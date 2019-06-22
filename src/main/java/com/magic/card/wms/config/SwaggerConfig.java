@@ -37,7 +37,7 @@ public class SwaggerConfig {
 	@Bean
 	public Docket createRestApi() {
 		return new Docket(DocumentationType.SWAGGER_2).apiInfo(apiInfo()).select()
-				.apis(SwaggerConfig.basePackage("com.magic.card.wms.user.controller"))
+				.apis(SwaggerConfig.basePackage("com.magic.card.wms"))
 				.paths(PathSelectors.any()).build();
 
 	}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.CustomerBaseInfo">
+        <id column="id" property="id" />
+        <result column="customer_code" property="customerCode" />
+        <result column="customer_name" property="customerName" />
+        <result column="brand_id" property="brandId" />
+        <result column="address" property="address" />
+        <result column="contact_person" property="contactPerson" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, customer_code, customer_name, brand_id, address, contact_person, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+    <sql id="select_cbf">
+        cbf.id, cbf.customer_name customerName, cbf.customer_code customerCode, cbf.address, cbf.phone, cbf.contact_person contactPerson, cbf.brand_id brandId,
+    </sql>
+    <sql id="table_cbf">
+        wms_customer_base_info cbf
+    </sql>
+    <sql id="table_bi">
+        wms_brand_info bi
+    </sql>
+    <select id="loadGrid" resultType="java.util.Map">
+        select
+            <include refid="select_cbf"></include>
+                bi.`name` brandName
+        from <include refid="table_cbf"></include>
+        left join
+            <include refid="table_bi"></include>
+        on cbf.brand_id = bi.id
+
+        <where>
+            ${ew.sqlSegment}
+        </where>
+
+    </select>
+
+
+    <!-- 获取用户商品全信息   -->
+    <select id="loadCustomerCommodities" resultType="java.util.Map">
+        SELECT
+            wcbi.id customerId,
+            wcbi.customer_name customerName,
+            wbi.`name` brandName,
+            wcs.sku_name skuName,
+            wcs.sku_code skuCode,
+            wcs.spec,
+            wcs.model_no modelNo,
+            wcs.bar_code barCode,
+            wsilj.store_code ljkw,
+            wsicc.store_code cckw,
+            wcs.single_volume singleVolume,
+            wcs.single_volume_unit	singleVolumeUnit,
+            wcs.single_weight singleWeight,
+            wcs.single_weight_unit singleWeightUnit,
+            wci.packing_num packingNum,
+            wcs.single_unit singleUnit,
+            wci.packing_unit packingUnit,
+            wci.id customerCommodityId,
+            wci.packing_volume packingVolume,
+            wci.packing_volume_unit packingVolumeUnit,
+            wci.packing_weight packingWeight,
+            wci.packing_weight_unit packingWeightUnit
+        FROM
+            wms_customer_base_info wcbi
+            LEFT JOIN wms_brand_info wbi ON wcbi.brand_id = wbi.id
+            LEFT JOIN wms_commodity_info wci ON wcbi.id = wci.customer_id
+            LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
+            LEFT JOIN wms_storehouse_config wsc ON wci.id = wsc.commodity_id
+            LEFT JOIN wms_storehouse_info wsilj ON wsilj.id = wsc.storehouse_id AND wsilj.house_code = 'CK-GN-JHQ'
+            LEFT JOIN wms_storehouse_info wsicc ON wsicc.id = wsc.storehouse_id AND wsicc.house_code = 'CK-GN-CCQ'
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+</mapper>

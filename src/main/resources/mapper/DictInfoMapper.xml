@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.DictInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.DictInfo">
+        <id column="id" property="id" />
+        <result column="dict_type" property="dictType" />
+        <result column="dict_type_name" property="dictTypeName" />
+        <result column="dict_code" property="dictCode" />
+        <result column="dict_type_p" property="dictTypeP" />
+        <result column="dict_name" property="dictName" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+        <result column="dict_type_name_p" property="dictTypeNameP" />
+        <result column="dict_code_p" property="dictCodeP" />
+        <result column="dict_name_p" property="dictNameP" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, dict_type, dict_type_name, dict_code, dict_type_p, dict_name, state, create_time, create_user, update_time, update_user, remark, dict_type_name_p, dict_code_p, dict_name_p
+    </sql>
+
+    <select id="loadGrid" resultType="java.util.Map">
+        SELECT
+            wdi.id,
+            wdi.dict_code dictCode,
+            wdi.dict_name dictName,
+            wdi.dict_code_p parentDictCode,
+            wdi.dict_name_p parentDictName
+        FROM
+            wms_dict_info wdi
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+</mapper>

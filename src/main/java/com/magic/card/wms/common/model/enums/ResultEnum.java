@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,11 +27,19 @@ public enum ResultEnum {
 	req_params_error(100000,"请求参数异常"),
 	req_params_null(100001,"请求参数为空"),
 	query_failed(100002,"查询异常"),
-	
+	data_check_exist(10003, "数据检测已存在"),
+	data_add_failed(10004, "数据添加失败"),
+	data_update_failed(10005, "数据更新失败"),
+	data_delete_failed(10006, "数据删除失败"),
+
+
 	query_user_failed(200000,"查询用户失败"),
 	add_user_failed(200001,"新增用户失败"),
-	add_user_exist(200002,"查询用户已存在，请重新新增");
-	
+	add_user_exist(200002,"查询用户已存在，请重新新增"),
+
+	dist_exist(20003, "常量的code已经存在，请重新填写"),
+	store_house_error(20004, "仓库信息异常");
+
 	
 	private static Map<Integer,ResultEnum> enumMap = new HashMap();
 	static {

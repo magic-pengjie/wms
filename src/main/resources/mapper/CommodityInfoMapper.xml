@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.CommodityInfoMapper">
+
+    <!-- 开启二级缓存 -->
+<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.CommodityInfo">
+        <id column="id" property="id" />
+        <result column="commodity_code" property="commodityCode" />
+        <result column="customer_id" property="customerId" />
+        <result column="commodity_name" property="commodityName" />
+        <result column="packing_num" property="packingNum" />
+        <result column="packing_unit" property="packingUnit" />
+        <result column="packing_weight" property="packingWeight" />
+        <result column="packing_weight_unit" property="packingWeightUnit" />
+        <result column="packing_volume" property="packingVolume" />
+        <result column="packing_volume_unit" property="packingVolumeUnit" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, commodity_code, customer_id, commodity_name, packing_num, packing_unit, packing_weight, packing_weight_unit, packing_volume, packing_volume_unit, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+</mapper>

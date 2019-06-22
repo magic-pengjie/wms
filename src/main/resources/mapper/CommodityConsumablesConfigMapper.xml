@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.CommodityConsumablesConfigMapper">
+
+    <!-- 开启二级缓存 -->
+<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.CommodityConsumablesConfig">
+        <id column="id" property="id" />
+        <result column="commodity_id" property="commodityId" />
+        <result column="sku_id" property="skuId" />
+        <result column="use_commodity_id" property="useCommodityId" />
+        <result column="use_sku_id" property="useSkuId" />
+        <result column="left_value" property="leftValue" />
+        <result column="right_value" property="rightValue" />
+        <result column="use_nums" property="useNums" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, commodity_id, sku_id, use_commodity_id, use_sku_id, left_value, right_value, use_nums, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+    <select id="loadGrid" resultType="java.util.Map">
+        SELECT
+            wccc.id,
+            wccc.commodity_id commodityId,
+            wccc.use_commodity_id useCommodityId,
+            wcbi.customer_name customerName,
+            wcs.sku_name skuName,
+            wcbixh.customer_name useCustomerName,
+            wcsxh.sku_name useSkuName,
+            wccc.left_value leftVale,
+            wccc.right_value rightValue,
+            wccc.use_nums userNums
+        FROM
+            wms_commodity_consumables_config wccc
+            LEFT JOIN wms_commodity_info wci ON wccc.commodity_id = wci.id
+            LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wci.customer_id
+            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code
+            LEFT JOIN wms_commodity_info wcixh ON wccc.use_commodity_id = wcixh.id
+            LEFT JOIN wms_customer_base_info wcbixh ON wcbixh.id = wcixh.customer_id
+            LEFT JOIN wms_commodity_sku wcsxh ON wcsxh.bar_code = wcixh.commodity_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
+
+</mapper>

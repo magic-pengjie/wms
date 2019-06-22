@@ -81,4 +81,12 @@ public class ResponseData<T> {
 		result.setStatus(0);
 		return result;
 	}
+
+	 public static ResponseData failed(ResultEnum failedResult){
+		 ResponseData result = new ResponseData();
+		 result.setCode(failedResult.getCode());
+		 result.setMsg(failedResult.getMsg());
+		 result.setStatus(0);
+		 return result;
+	 }
 }

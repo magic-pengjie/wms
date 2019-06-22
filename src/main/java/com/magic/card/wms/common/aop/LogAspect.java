@@ -2,6 +2,7 @@ package com.magic.card.wms.common.aop;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.magic.card.wms.common.exception.BusinessException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -46,8 +47,13 @@ public class LogAspect {
 			Object proceed = pjp.proceed();
 			return proceed;
 		} catch (Throwable t) {
-			log.error("around error:{}", t);
-			throw new Throwable();
+			log.error("around error:{}", t.getMessage());
+
+			//此处对异常不做处理，交于全局异常处理
+			throw  t;
+
+//			log.error("around error:{}", t);
+//			throw new Throwable();
 		} finally {
 			sw.stop();
 			log.info("request end cost :{}ms--{}", System.currentTimeMillis() - startTime,
