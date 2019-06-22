@@ -36,11 +36,12 @@ public enum ResultEnum {
 	query_user_failed(200000,"查询用户失败"),
 	add_user_failed(200001,"新增用户失败"),
 	add_user_exist(200002,"查询用户已存在，请重新新增"),
-
+    user_login_failed(200003,"用户登录失败"),
+	user_name_not_exist(200004,"用户不存在"),
+	user_pwd_error(200005,"用户或密码不正确，请确认！"),
+	user_state_error(200007,"用户状态不正确，请确认！"),
 	dist_exist(20003, "常量的code已经存在，请重新填写"),
 	store_house_error(20004, "仓库信息异常");
-
-	
 	private static Map<Integer,ResultEnum> enumMap = new HashMap();
 	static {
 		for (ResultEnum e : EnumSet.allOf(ResultEnum.class)) {

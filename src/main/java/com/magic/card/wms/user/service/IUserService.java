@@ -2,9 +2,13 @@ package com.magic.card.wms.user.service;
 
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.user.model.dto.UserDTO;
+import com.magic.card.wms.user.model.dto.UserLoginDTO;
+import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.model.po.User;
 
 import java.util.List;
+
+import javax.validation.Valid;
 
 import com.baomidou.mybatisplus.service.IService;
 
@@ -28,4 +32,17 @@ public interface IUserService extends IService<User> {
 	 * @param dto
 	 */
 	void addUser(UserDTO dto) throws BusinessException;
+	
+	/**
+	 * 用户登录
+	 * @param dto
+	 */
+	void login(UserLoginDTO dto) throws BusinessException;
+	
+	/**
+	 * 修改用户信息
+	 * @param dto
+	 * @throws BusinessException
+	 */
+	void updateUserInfo(@Valid UserUpdateDTO dto) throws BusinessException;
 }
