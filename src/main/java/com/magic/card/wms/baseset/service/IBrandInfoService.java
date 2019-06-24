@@ -31,7 +31,7 @@ public interface IBrandInfoService extends IService<BrandInfo> {
      * @param operator 操作人
      * @return
      */
-    Boolean addBrandInfo(BrandInfoDTO brandInfoDTO, String operator);
+    void addBrandInfo(BrandInfoDTO brandInfoDTO, String operator);
 
     /**
      * 更新品牌数据
@@ -39,7 +39,7 @@ public interface IBrandInfoService extends IService<BrandInfo> {
      * @param operator 操作人
      * @return
      */
-    Boolean updateBrandInfo(BrandInfoDTO brandInfoDTO, String operator);
+    void updateBrandInfo(BrandInfoDTO brandInfoDTO, String operator);
 
     /**
      * 更新删除品牌数据
@@ -48,5 +48,5 @@ public interface IBrandInfoService extends IService<BrandInfo> {
      * @param pyd 是否物理删除
      * @return
      */
-    Boolean deleteBrandInfo(Long id, String operator, Boolean pyd);
+    void deleteBrandInfo(Long id, String operator, Boolean pyd);
 }

@@ -8,12 +8,14 @@ import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.PoUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <p>
@@ -52,20 +54,39 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         return loadGrid;
     }
 
-    @Override
-    public Boolean addStorehouseInfo(StorehouseInfoDTO storehouseInfoDTO, String operator) {
+    @Override @Transactional
+    public void add(StorehouseInfoDTO storehouseInfoDTO, String operator) {
         checkStorehouse(storehouseInfoDTO, false);
         StorehouseInfo storehouseInfo = new StorehouseInfo();
         PoUtils.add(storehouseInfoDTO, storehouseInfo, operator);
-        return this.insert(storehouseInfo);
+
+        if (this.baseMapper.insert(storehouseInfo) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+
     }
 
-    @Override
-    public Boolean updateStorehouseInfo(StorehouseInfoDTO storehouseInfoDTO, String operator) {
+    @Override @Transactional
+    public void update(StorehouseInfoDTO storehouseInfoDTO, String operator) {
         checkStorehouse(storehouseInfoDTO, true);
         StorehouseInfo storehouseInfo = new StorehouseInfo();
         PoUtils.update(storehouseInfoDTO, storehouseInfo, operator);
-        return this.updateById(storehouseInfo);
+
+        if (this.baseMapper.updateById(storehouseInfo) < 1)
+            throw OperationException.DATA_OPERATION_UPDATE;
+
+    }
+
+    /**
+     * 数据删除
+     *
+     * @param id
+     */
+    @Override @Transactional
+    public void delete(Long id) {
+
+        if (this.baseMapper.deleteById(id) < 1) {
+            throw OperationException.DATA_OPERATION_DELETE;
+        }
     }
 
     /**
@@ -76,8 +97,8 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
      */
     private void checkStorehouse(StorehouseInfoDTO storehouseInfoDTO, Boolean updateOperation) {
 
-        if (updateOperation && (storehouseInfoDTO.getId() == null || storehouseInfoDTO.getId() == 0l)) {
-            throw new BusinessException(ResultEnum.req_params_error.getCode(), "更新标识ID不存在");
+        if (updateOperation) {
+            PoUtils.checkId(storehouseInfoDTO.getId());
         }
 
 
@@ -100,7 +121,9 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         wrapper = new EntityWrapper<>();
         wrapper.eq("store_code", storehouseInfoDTO.getStoreCode());
 
-        if (updateOperation) wrapper.ne("id", storehouseInfoDTO.getId());
+        if (updateOperation) {
+            wrapper.ne("id", storehouseInfoDTO.getId());
+        }
 
         // 确保数据是可用状态
         wrapper.eq("state", 1);
@@ -108,5 +131,6 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         if (this.selectCount(wrapper) > 0) {
             throw new BusinessException(ResultEnum.store_house_error.getCode(), "库位编号已被占用");
         }
+
     }
 }

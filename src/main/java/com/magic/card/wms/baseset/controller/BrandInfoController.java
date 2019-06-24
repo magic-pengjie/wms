@@ -42,30 +42,21 @@ public class BrandInfoController {
     @ApiOperation(value = "新增品牌基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid BrandInfoDTO dto, BindingResult result) {
-
-        if (!brandInfoService.addBrandInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        brandInfoService.addBrandInfo(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改品牌基本信息")
     @PostMapping("update")
     public ResponseData update(@RequestBody @Valid BrandInfoDTO dto, BindingResult result) {
-
-        if (!brandInfoService.updateBrandInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+        brandInfoService.updateBrandInfo(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "删除品牌基本信息(标记删除)")
     @GetMapping("updateDelete")
     public ResponseData updateDelete(@RequestParam Long id) {
-
-        if (!brandInfoService.deleteBrandInfo(id, Constants.DEFAULT_USER, false))
-            return ResponseData.failed(ResultEnum.data_delete_failed);
-
+        brandInfoService.deleteBrandInfo(id, Constants.DEFAULT_USER, false);
         return ResponseData.ok();
     }
 }

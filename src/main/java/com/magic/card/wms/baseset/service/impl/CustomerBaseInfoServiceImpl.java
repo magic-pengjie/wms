@@ -8,6 +8,7 @@ import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.po.PoUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -58,18 +59,19 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         return loadGrid;
     }
 
-    @Override
-    @Transactional
-    public Boolean addCustomerBaseInfo(CustomerBaseInfoDTO customerBaseInfoDTO, String operator) {
+    @Override @Transactional
+    public void add(CustomerBaseInfoDTO customerBaseInfoDTO, String operator) {
         CustomerBaseInfo customerBaseInfo = new CustomerBaseInfo();
         BeanUtils.copyProperties(customerBaseInfoDTO, customerBaseInfo);
         PoUtils.add(customerBaseInfo, operator);
-        return this.insert(customerBaseInfo);
+
+        if (this.baseMapper.insert(customerBaseInfo) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+
     }
 
-    @Override
-    @Transactional
-    public Boolean updateCustomerBaseInfo(CustomerBaseInfoDTO customerBaseInfoDTO, String operator) {
+    @Override @Transactional
+    public void update(CustomerBaseInfoDTO customerBaseInfoDTO, String operator) {
 //        Wrapper<CustomerBaseInfo> wrapper = new EntityWrapper<>();
 //        wrapper.eq("id", customerBaseInfoDTO.getId());
 //        CustomerBaseInfo customerBaseInfo = this.selectOne(wrapper);
@@ -78,7 +80,9 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         CustomerBaseInfo customerBaseInfo = new CustomerBaseInfo();
         BeanUtils.copyProperties(customerBaseInfoDTO, customerBaseInfo);
         PoUtils.update(customerBaseInfo, operator);
-        return this.updateById(customerBaseInfo);
+
+        if (this.baseMapper.updateById(customerBaseInfo) < 1)
+            throw OperationException.DATA_OPERATION_UPDATE;
 //        }
     }
 
@@ -113,15 +117,12 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         return loadGrid;
     }
 
-    @Override
-    @Transactional
-    public Boolean deleteCustomer(Long id, String operator, Boolean pyd) {
+    @Override @Transactional
+    public void delete(Long id, String operator, Boolean pyd) {
 
-        if (pyd) {
-            return this.deleteById(id);
-        }
+        if ((pyd && this.baseMapper.deleteById(id) < 1) || this.baseMapper.updateDelete(id, operator, new Date() ) < 1)
+            throw OperationException.DATA_OPERATION_DELETE;
 
-        return baseMapper.updateDelete(id, operator, new Date()) > 0;
     }
 
     /**

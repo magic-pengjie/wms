@@ -89,4 +89,12 @@ public class ResponseData<T> {
 		 result.setStatus(0);
 		 return result;
 	 }
+
+	 public static ResponseData failed(Integer code, String msg) {
+		 ResponseData result = new ResponseData();
+		 result.setCode(code);
+		 result.setMsg(msg);
+		 result.setStatus(0);
+		 return result;
+	 }
 }

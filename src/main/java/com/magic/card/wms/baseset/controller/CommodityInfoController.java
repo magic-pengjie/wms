@@ -1,11 +1,8 @@
 package com.magic.card.wms.baseset.controller;
 
 import com.magic.card.wms.baseset.model.dto.CommodityInfoDTO;
-import com.magic.card.wms.baseset.model.dto.CommoditySkuDTO;
 import com.magic.card.wms.baseset.service.ICommodityConsumablesConfigService;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
-import com.magic.card.wms.baseset.service.ICommoditySkuService;
-import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
@@ -43,30 +40,21 @@ public class CommodityInfoController {
     @ApiOperation(value = "新增商品-客户的关系")
     @PostMapping("add")
     public ResponseData addCommodityInfo(@RequestBody @Valid CommodityInfoDTO dto, BindingResult result) {
-
-        if (!commodityInfoService.addCommodityInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        commodityInfoService.add(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation("修改商品-客户的关系")
     @PostMapping("update")
     public ResponseData updateCommodityInfo(@RequestBody @Valid CommodityInfoDTO dto, BindingResult result) {
-
-        if (!commodityInfoService.updateCommodityInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+        commodityInfoService.update(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation("删除商品-客户的关系（物理删除）")
     @GetMapping("delete")
-    public ResponseData delete(@RequestParam @ApiParam("数据标识") String id) {
-
-        if (!commodityInfoService.deleteById(id))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+    public ResponseData delete(@RequestParam @ApiParam("数据标识") Long id) {
+        commodityInfoService.delete(id);
         return ResponseData.ok();
     }
 

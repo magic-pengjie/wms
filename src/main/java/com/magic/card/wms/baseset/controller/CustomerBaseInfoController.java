@@ -1,9 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
-import com.baomidou.mybatisplus.plugins.Page;
-import com.magic.card.wms.baseset.model.dto.BrandInfoDTO;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
-import com.magic.card.wms.baseset.service.IBrandInfoService;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
@@ -45,30 +42,21 @@ public class CustomerBaseInfoController {
     @ApiOperation(value = "新增客户基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid CustomerBaseInfoDTO dto, BindingResult result) {
-
-        if (!customerBaseInfoService.addCustomerBaseInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        customerBaseInfoService.add(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改品牌基本信息")
     @PostMapping("update")
     public ResponseData update(@RequestBody @Valid CustomerBaseInfoDTO dto, BindingResult result) {
-
-        if (!customerBaseInfoService.updateCustomerBaseInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+        customerBaseInfoService.update(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "删除品牌基本信息(标记删除)")
     @GetMapping("updateDelete")
     public ResponseData updateDelete(@RequestParam Long id) {
-
-        if (!customerBaseInfoService.deleteCustomer(id, Constants.DEFAULT_USER, false))
-            return ResponseData.failed(ResultEnum.data_delete_failed);
-
+        customerBaseInfoService.delete(id, Constants.DEFAULT_USER, false);
         return ResponseData.ok();
     }
 

@@ -1,5 +1,6 @@
 package com.magic.card.wms.common.model.po;
 
+import com.magic.card.wms.common.exception.OperationException;
 import org.springframework.beans.BeanUtils;
 import java.util.Date;
 
@@ -73,5 +74,16 @@ public class PoUtils {
     public static <Po extends BasePo> void update(Po po, String operator) {
         po.setUpdateTime(new Date());
         po.setUpdateUser(operator);
+    }
+
+    /**
+     * 主键检查
+     * @param id
+     */
+    public static void checkId(Long id) {
+
+        if (id == null || id == 0l)
+            throw OperationException.DATA_ID;
+
     }
 }

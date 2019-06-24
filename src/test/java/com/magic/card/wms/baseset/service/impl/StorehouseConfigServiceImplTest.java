@@ -8,8 +8,6 @@ import com.magic.card.wms.common.model.enums.Constants;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.junit.Assert.*;
-
 /**
  * com.magic.card.wms.baseset.service.impl
  *
@@ -33,7 +31,7 @@ public class StorehouseConfigServiceImplTest extends MagicWmsApplicationTests {
         dto.setAvailableNums(30000); // 可用数量
         dto.setLockNums(0);
 
-        storehouseConfigService.addStorehouseConfig(dto, Constants.DEFAULT_USER);
+        storehouseConfigService.add(dto, Constants.DEFAULT_USER);
     }
 
     @Test

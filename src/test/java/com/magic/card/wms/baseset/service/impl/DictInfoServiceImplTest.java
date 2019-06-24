@@ -9,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.junit.Assert.*;
-
 /**
  * com.magic.card.wms.baseset.service.impl
  *
@@ -41,7 +39,7 @@ public class DictInfoServiceImplTest extends MagicWmsApplicationTests {
         ckgn.setDictTypeName("仓储系统常量");
         ckgn.setDictCode("CK-GN");
         ckgn.setDictName("仓库功能属性");
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
 
         ckgn.setDictTypeP("WMC_CC");
@@ -54,42 +52,42 @@ public class DictInfoServiceImplTest extends MagicWmsApplicationTests {
         ckgn.setDictCode("CK-GN-KDZCQ");
         ckgn.setDictName("快递暂存区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-DRCQ");
         ckgn.setDictName("待入仓区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-CCQ");
         ckgn.setDictName("存储区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-JHQ");
         ckgn.setDictName("拣货区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-HCQ");
         ckgn.setDictName("缓存区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-BZQ");
         ckgn.setDictName("包装区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-THQ");
         ckgn.setDictName("退货区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
         ckgn.setDictCode("CK-GN-CPQ");
         ckgn.setDictName("次品区");
 
-        dictInfoService.addDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.add(ckgn, Constants.DEFAULT_USER);
 
     }
 
@@ -99,6 +97,6 @@ public class DictInfoServiceImplTest extends MagicWmsApplicationTests {
         ckgn.setDictTypeName("仓储系统常量123");
         ckgn.setId(1l);
 
-        dictInfoService.updateDictInfo(ckgn, Constants.DEFAULT_USER);
+        dictInfoService.update(ckgn, Constants.DEFAULT_USER);
     }
 }

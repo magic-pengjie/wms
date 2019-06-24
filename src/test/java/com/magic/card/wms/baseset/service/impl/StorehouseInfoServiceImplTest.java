@@ -10,8 +10,6 @@ import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.junit.Assert.*;
-
 /**
  * com.magic.card.wms.baseset.service.impl
  *
@@ -45,7 +43,7 @@ public class StorehouseInfoServiceImplTest extends MagicWmsApplicationTests {
                     int roadNum = RandomUtils.nextInt(1, 20);
                      storehouseInfoDTO.setStoreCode(areaCodes[i] + "-" + roadNum + "-" + store);
                      storehouseInfoDTO.setPriorityValue(order++);
-                     storehouseInfoService.addStorehouseInfo(storehouseInfoDTO, Constants.DEFAULT_USER);
+                     storehouseInfoService.add(storehouseInfoDTO, Constants.DEFAULT_USER);
                 }
 
                 i++;

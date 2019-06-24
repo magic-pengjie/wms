@@ -47,7 +47,7 @@ public class CustomerBaseInfoServiceImplTest extends MagicWmsApplicationTests {
         customerBaseInfoDTO.setAddress("上海市闵行区快乐大厦603室");
         customerBaseInfoDTO.setRemark("百度（上海）信息科技有限公司 \n 地址：上海市闵行区快乐大厦603室");
 
-        customerBaseInfoService.addCustomerBaseInfo(customerBaseInfoDTO, Constants.DEFAULT_USER);
+        customerBaseInfoService.add(customerBaseInfoDTO, Constants.DEFAULT_USER);
     }
 
     @Test

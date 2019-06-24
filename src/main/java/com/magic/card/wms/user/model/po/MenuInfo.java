@@ -24,10 +24,6 @@ public class MenuInfo extends BasePo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 菜单主键ID
-     */
-    private Integer id;
-    /**
      * 父级菜单ID
      */
     private Integer parentKey;

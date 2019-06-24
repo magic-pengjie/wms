@@ -1,6 +1,5 @@
 package com.magic.card.wms.baseset.controller;
 
-import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.DictInfoDTO;
 import com.magic.card.wms.baseset.service.IDictInfoService;
 import com.magic.card.wms.common.model.LoadGrid;
@@ -42,30 +41,21 @@ public class DictInfoController {
     @ApiOperation(value = "新增字典数据基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid DictInfoDTO dto, BindingResult result) {
-
-        if (!dictInfoService.addDictInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        dictInfoService.add(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改字典数据基本信息")
     @PostMapping("update")
     public ResponseData update(@RequestBody @Valid DictInfoDTO dto, BindingResult result) {
-
-        if (!dictInfoService.updateDictInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+        dictInfoService.update(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "删除字典基本信息(物理删除)")
     @GetMapping("delete")
     public ResponseData delete(@RequestParam Long id) {
-
-        if (!dictInfoService.deleteById(id))
-            return ResponseData.failed(ResultEnum.data_delete_failed);
-
+        dictInfoService.delete(id);
         return ResponseData.ok();
     }
 }

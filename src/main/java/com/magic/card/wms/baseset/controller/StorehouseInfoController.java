@@ -1,8 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
-import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
-import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
@@ -43,30 +41,21 @@ public class StorehouseInfoController {
     @ApiOperation(value = "新增库位基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid StorehouseInfoDTO dto, BindingResult result) {
-
-        if (!storehouseInfoService.addStorehouseInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        storehouseInfoService.add(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改库位基本信息")
     @PostMapping("update")
     public ResponseData update(@RequestBody @Valid StorehouseInfoDTO dto, BindingResult result) {
-
-        if (!storehouseInfoService.updateStorehouseInfo(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+        storehouseInfoService.update(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "删除库位基本信息(物理删除)")
     @GetMapping("delete")
     public ResponseData delete(@RequestParam Long id) {
-
-        if (!storehouseInfoService.deleteById(id))
-            return ResponseData.failed(ResultEnum.data_delete_failed);
-
+        storehouseInfoService.delete(id);
         return ResponseData.ok();
     }
 }

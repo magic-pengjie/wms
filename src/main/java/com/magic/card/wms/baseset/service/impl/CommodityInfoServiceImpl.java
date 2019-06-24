@@ -8,9 +8,11 @@ import com.magic.card.wms.baseset.mapper.CommodityInfoMapper;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.PoUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -41,12 +43,15 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
      * @param operator
      * @return
      */
-    @Override
-    public Boolean addCommodityInfo(CommodityInfoDTO commodityInfoDTO, String operator) {
+    @Override @Transactional
+    public void add(CommodityInfoDTO commodityInfoDTO, String operator) {
         checkCommodityInfo(commodityInfoDTO, false);
         CommodityInfo commodityInfo = new CommodityInfo();
         PoUtils.add(commodityInfoDTO, commodityInfo, operator);
-        return this.insert(commodityInfo);
+
+        if (this.baseMapper.insert(commodityInfo) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+
     }
 
     /**
@@ -56,18 +61,33 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
      * @param operator
      * @return
      */
-    @Override
-    public Boolean updateCommodityInfo(CommodityInfoDTO commodityInfoDTO, String operator) {
+    @Override @Transactional
+    public void update(CommodityInfoDTO commodityInfoDTO, String operator) {
         checkCommodityInfo(commodityInfoDTO, true);
         CommodityInfo commodityInfo = new CommodityInfo();
         PoUtils.update(commodityInfoDTO, commodityInfo, operator);
-        return this.updateById(commodityInfo);
+
+        if (this.baseMapper.updateById(commodityInfo) < 1)
+            throw OperationException.DATA_OPERATION_UPDATE;
+
+    }
+
+    /**
+     * 删除数据
+     *
+     * @param id
+     */
+    @Override @Transactional
+    public void delete(Long id) {
+
+        if (this.baseMapper.deleteById(id) < 1) throw OperationException.DATA_OPERATION_DELETE;
+
     }
 
     private void checkCommodityInfo(CommodityInfoDTO commodityInfoDTO, Boolean updateOperator) {
 
         if (updateOperator && (commodityInfoDTO.getId() == null || commodityInfoDTO.getId() == 0l))
-            throw new BusinessException(ResultEnum.req_params_error.getCode(), "修改商品关联信息没有ID");
+            throw OperationException.DATA_ID;
 
         EntityWrapper<CommodityInfo> wrapper = new EntityWrapper<>();
         wrapper.eq("state", 1)

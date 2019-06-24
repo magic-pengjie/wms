@@ -32,7 +32,7 @@ public interface ICommoditySkuService extends IService<CommoditySku> {
      * @param operation
      * @return
      */
-    Boolean addCommoditySKU(CommoditySkuDTO commoditySkuDTO, String operation);
+    void add(CommoditySkuDTO commoditySkuDTO, String operation);
 
     /**
      * 修改商品数据
@@ -40,5 +40,11 @@ public interface ICommoditySkuService extends IService<CommoditySku> {
      * @param operation
      * @return
      */
-    Boolean updateCommoditySKU(CommoditySkuDTO commoditySkuDTO, String operation);
+    void update(CommoditySkuDTO commoditySkuDTO, String operation);
+
+    /**
+     * 删除数据
+     * @param id
+     */
+    void delete(Long id);
 }

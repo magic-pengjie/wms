@@ -21,7 +21,7 @@ public interface ICommodityInfoService extends IService<CommodityInfo> {
      * @param operator
      * @return
      */
-    Boolean addCommodityInfo(CommodityInfoDTO commodityInfoDTO, String operator);
+    void add(CommodityInfoDTO commodityInfoDTO, String operator);
 
     /**
      * 修改商品关联信息
@@ -29,7 +29,13 @@ public interface ICommodityInfoService extends IService<CommodityInfo> {
      * @param operator
      * @return
      */
-    Boolean updateCommodityInfo(CommodityInfoDTO commodityInfoDTO, String operator);
+    void update(CommodityInfoDTO commodityInfoDTO, String operator);
+
+    /**
+     * 删除数据
+     * @param id
+     */
+    void delete(Long id);
 
 
 

@@ -28,7 +28,7 @@ public interface IStorehouseInfoService extends IService<StorehouseInfo> {
      * @param operator
      * @return
      */
-    Boolean addStorehouseInfo(StorehouseInfoDTO storehouseInfoDTO, String operator);
+    void add(StorehouseInfoDTO storehouseInfoDTO, String operator);
 
     /**
      * 修改仓库库位信息
@@ -36,5 +36,11 @@ public interface IStorehouseInfoService extends IService<StorehouseInfo> {
      * @param operator
      * @return
      */
-    Boolean updateStorehouseInfo(StorehouseInfoDTO storehouseInfoDTO, String operator);
+    void update(StorehouseInfoDTO storehouseInfoDTO, String operator);
+
+    /**
+     * 数据删除
+     * @param id
+     */
+    void delete(Long id);
 }

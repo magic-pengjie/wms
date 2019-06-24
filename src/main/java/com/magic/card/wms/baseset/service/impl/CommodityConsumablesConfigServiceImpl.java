@@ -5,12 +5,16 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.CommodityConsumablesConfigMapper;
+import com.magic.card.wms.baseset.model.dto.CommodityConsumablesConfigDTO;
 import com.magic.card.wms.baseset.model.po.CommodityConsumablesConfig;
 import com.magic.card.wms.baseset.service.ICommodityConsumablesConfigService;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.po.PoUtils;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -62,5 +66,45 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
 
         loadGrid.finallyResult(page, this.baseMapper.loadGrid(page, wrapper));
         return loadGrid;
+    }
+
+    /**
+     * 新增数据
+     *
+     * @param commodityConsumablesConfigDTO
+     * @param operator
+     */
+    @Override @Transactional
+    public void add(CommodityConsumablesConfigDTO commodityConsumablesConfigDTO, String operator) {
+
+    }
+
+    /**
+     * 更新修改
+     *
+     * @param commodityConsumablesConfigDTO
+     * @param operator
+     */
+    @Override @Transactional
+    public void update(CommodityConsumablesConfigDTO commodityConsumablesConfigDTO, String operator) {
+        PoUtils.checkId(commodityConsumablesConfigDTO.getId());
+        CommodityConsumablesConfig commodityConsumablesConfig = new CommodityConsumablesConfig();
+        PoUtils.update(commodityConsumablesConfigDTO, commodityConsumablesConfig, operator);
+
+        if (this.baseMapper.updateById(commodityConsumablesConfig) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+    }
+
+    /**
+     * 删除信息
+     *
+     * @param id
+     */
+    @Override @Transactional
+    public void delete(Long id) {
+
+        if (this.baseMapper.deleteById(id) < 1)
+            throw OperationException.DATA_OPERATION_DELETE;
+
     }
 }

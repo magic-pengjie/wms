@@ -10,14 +10,17 @@ import com.magic.card.wms.baseset.model.po.BrandInfo;
 import com.magic.card.wms.baseset.mapper.BrandInfoMapper;
 import com.magic.card.wms.baseset.service.IBrandInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.po.PoUtils;
 import com.magic.card.wms.common.utils.WrapperUtil;
+import com.sun.org.apache.bcel.internal.generic.I2F;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -45,6 +48,7 @@ public class BrandInfoServiceImpl extends ServiceImpl<BrandInfoMapper, BrandInfo
 
 
     @Override
+    @Transactional
     public LoadGrid loadGrid(LoadGrid loadGrid) {
         Page page = loadGrid.page();
         EntityWrapper<BrandInfo> brandInfo = new EntityWrapper<>();
@@ -64,32 +68,40 @@ public class BrandInfoServiceImpl extends ServiceImpl<BrandInfoMapper, BrandInfo
     }
 
     @Override
-    public Boolean addBrandInfo(BrandInfoDTO brandInfoDTO, String operator) {
+    @Transactional
+    public void addBrandInfo(BrandInfoDTO brandInfoDTO, String operator) {
         BrandInfo brandInfo = new BrandInfo();
         BeanUtils.copyProperties(brandInfoDTO, brandInfo);
         PoUtils.add(brandInfo, operator);
 
-        return this.insert(brandInfo);
+        if (this.baseMapper.insert(brandInfo) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+
     }
 
     @Override
-    public Boolean updateBrandInfo(BrandInfoDTO brandInfoDTO, String operator) {
+    @Transactional
+    public void updateBrandInfo(BrandInfoDTO brandInfoDTO, String operator) {
 
-        if (brandInfoDTO.getId() == null || brandInfoDTO.getId() == 0l) return false;
+        if (brandInfoDTO.getId() == null || brandInfoDTO.getId() == 0l)
+            throw OperationException.DATA_ID;
 
         BrandInfo brandInfo = new BrandInfo();
         BeanUtils.copyProperties(brandInfoDTO, brandInfo);
         PoUtils.update(brandInfo, operator);
-        Boolean flag = this.updateById(brandInfo);
-        log.info(" 数据更新情况： {}“", flag);
-        return flag;
+
+        if (this.baseMapper.updateById(brandInfo) <1 )
+            throw OperationException.DATA_OPERATION_UPDATE;
+
     }
 
     @Override
-    public Boolean deleteBrandInfo(Long id, String operator, Boolean pyd) {
+    @Transactional
+    public void deleteBrandInfo(Long id, String operator, Boolean pyd) {
 
-        if (pyd) return this.deleteById(id);
+        if ((pyd && this.baseMapper.deleteById(id) < 1)
+                || baseMapper.updateDelete(id, operator, new Date()) < 1)
+            throw OperationException.DATA_OPERATION_DELETE;
 
-        return baseMapper.updateDelete(id, operator, new Date()) > 1;
     }
 }

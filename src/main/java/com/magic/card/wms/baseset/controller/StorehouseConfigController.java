@@ -35,38 +35,27 @@ public class StorehouseConfigController {
     @ApiOperation(value = "加载库位数据（可分页查询）")
     @PostMapping("loadGrid")
     public ResponseData loadGrid( @ApiParam("搜索信息")@RequestBody LoadGrid loadGrid) {
-        // TODO 加载数据
-//        return ResponseData.ok(storehouseConfigService.loadGrid(new Page<>(currentPage, pageSize), searchInfo));
-        return ResponseData.ok();
+        return ResponseData.ok(storehouseConfigService.loadGrid(loadGrid));
     }
 
     @ApiOperation(value = "新增库位配置数据基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid StorehouseConfigDTO dto, BindingResult result) {
-
-        if (!storehouseConfigService.addStorehouseConfig(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        storehouseConfigService.add(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改库位配置数据基本信息")
     @PostMapping("update")
     public ResponseData update(@RequestBody @Valid StorehouseConfigDTO dto, BindingResult result) {
-
-        if (!storehouseConfigService.updateStorehouseConfig(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+        storehouseConfigService.update(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "删除库位配置基本信息(物理删除)")
     @GetMapping("delete")
     public ResponseData delete(@RequestParam Long id) {
-
-        if (!storehouseConfigService.deleteById(id))
-            return ResponseData.failed(ResultEnum.data_delete_failed);
-
+        storehouseConfigService.delete(id);
         return ResponseData.ok(storehouseConfigService.deleteById(id));
     }
 }

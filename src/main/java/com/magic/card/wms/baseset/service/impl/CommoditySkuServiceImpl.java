@@ -10,6 +10,7 @@ import com.magic.card.wms.baseset.model.dto.CommoditySkuDTO;
 import com.magic.card.wms.baseset.model.po.CommoditySku;
 import com.magic.card.wms.baseset.service.ICommoditySkuService;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
@@ -18,6 +19,7 @@ import com.magic.card.wms.common.utils.WrapperUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -56,9 +58,7 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
     /**
      * 加载商品数据
      *
-     * @param currentPage
-     * @param pageSize
-     * @param searchInfo
+     * @param loadGrid
      * @return
      */
     @Override
@@ -88,12 +88,15 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
      * @param operation
      * @return
      */
-    @Override
-    public Boolean addCommoditySKU(CommoditySkuDTO commoditySkuDTO, String operation) {
+    @Override @Transactional
+    public void add(CommoditySkuDTO commoditySkuDTO, String operation) {
         checkCommoditySKU(commoditySkuDTO, false);
         CommoditySku sku = new CommoditySku();
         PoUtils.add(commoditySkuDTO, sku, Constants.DEFAULT_USER);
-        return this.insert(sku);
+
+        if (this.baseMapper.insert(sku) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+
     }
 
     /**
@@ -103,12 +106,28 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
      * @param operation
      * @return
      */
-    @Override
-    public Boolean updateCommoditySKU(CommoditySkuDTO commoditySkuDTO, String operation) {
+    @Override @Transactional
+    public void update(CommoditySkuDTO commoditySkuDTO, String operation) {
         checkCommoditySKU(commoditySkuDTO, true);
         CommoditySku sku = new CommoditySku();
         PoUtils.update(commoditySkuDTO, sku, Constants.DEFAULT_USER);
-        return this.updateById(sku);
+
+        if (this.baseMapper.updateById(sku) < 1)
+            throw OperationException.DATA_OPERATION_UPDATE;
+
+    }
+
+    /**
+     * 删除数据
+     *
+     * @param id
+     */
+    @Override @Transactional
+    public void delete(Long id) {
+
+        if (this.baseMapper.deleteById(id) < 1)
+            throw OperationException.DATA_OPERATION_DELETE;
+
     }
 
     /**
@@ -118,8 +137,8 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
      */
     private void checkCommoditySKU(CommoditySkuDTO commoditySkuDTO, Boolean updateOperation) {
 
-        if (updateOperation && (commoditySkuDTO.getId() == null || commoditySkuDTO.getId() == 0l))
-            throw new BusinessException(ResultEnum.req_params_error.getCode(), "修改商品，没有ID");
+        if (updateOperation)
+            PoUtils.checkId(commoditySkuDTO.getId());
 
         // 检测 商品二维码是否已存在数据库
         EntityWrapper<CommoditySku> skuEntityWrapper = new EntityWrapper<>();

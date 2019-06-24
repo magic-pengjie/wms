@@ -1,7 +1,9 @@
 package com.magic.card.wms.config;
 
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.ResponseData;
+import io.swagger.models.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,6 +19,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class WmsControllerAdvice {
+
+    /**
+     * 处理常规操作异常
+     * @param operationException
+     * @return
+     */
+    @ExceptionHandler(OperationException.class)
+    public ResponseData handlerOperationException(OperationException operationException) {
+        log.error("用户操作产生异常 \n code ： {} ---- msg : {}", operationException.getErrCode(), operationException.getErrMsg());
+        return ResponseData.failed(operationException.getErrCode(), operationException.getErrMsg());
+    }
 
     /**
      * 处理BusinessException

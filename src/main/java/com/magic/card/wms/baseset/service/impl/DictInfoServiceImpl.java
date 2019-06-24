@@ -9,12 +9,15 @@ import com.magic.card.wms.baseset.model.po.DictInfo;
 import com.magic.card.wms.baseset.service.IDictInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.PoUtils;
 import com.magic.card.wms.common.utils.WrapperUtil;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -65,21 +68,40 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
         return null;
     }
 
-    @Override
-    public Boolean addDictInfo(DictInfoDTO dictInfoDTO, String operator) {
+    @Override @Transactional
+    public void add(DictInfoDTO dictInfoDTO, String operator) {
         // 判断当前添加数据 dict_code 是否已经存在
         checkDict(null, dictInfoDTO.getDictCode(), false);
         DictInfo dictInfo = new DictInfo();
         PoUtils.add(dictInfoDTO, dictInfo, operator);
-        return this.insert(dictInfo);
+
+        if (this.baseMapper.insert(dictInfo) < 1)
+            throw OperationException.DATA_OPERATION_ADD;
+
     }
 
-    @Override
-    public Boolean updateDictInfo(DictInfoDTO dictInfoDTO, String operator) {
+    @Override @Transactional
+    public void update(DictInfoDTO dictInfoDTO, String operator) {
         checkDict(dictInfoDTO.getId(), dictInfoDTO.getDictCode(), true);
         DictInfo dictInfo = new DictInfo();
         PoUtils.update(dictInfoDTO, dictInfo, operator);
-        return this.updateById(dictInfo);
+
+        if (this.baseMapper.updateById(dictInfo) < 1)
+            throw OperationException.DATA_OPERATION_UPDATE;
+
+    }
+
+    /**
+     * 删除数据
+     *
+     * @param id
+     */
+    @Override @Transactional
+    public void delete(Long id) {
+
+        if (this.baseMapper.deleteById(id) < 1)
+            throw OperationException.DATA_OPERATION_DELETE;
+
     }
 
     /**

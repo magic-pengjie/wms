@@ -34,7 +34,7 @@ public class CommoditySkuController {
     private ICommoditySkuService commoditySkuService;
 
     @ApiOperation(value = "新增商品SKU基本信息")
-    @GetMapping("loadGrid")
+    @PostMapping("loadGrid")
     public ResponseData loadGrid( @ApiParam("搜索信息") @RequestBody LoadGrid loadGrid) {
         return ResponseData.ok(commoditySkuService.loadGrid(loadGrid));
     }
@@ -42,20 +42,20 @@ public class CommoditySkuController {
     @ApiOperation(value = "新增商品SKU基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid CommoditySkuDTO dto, BindingResult result) {
-
-        if (!commoditySkuService.addCommoditySKU(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_add_failed);
-
+        commoditySkuService.add(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改商品SKU基本信息")
     @PostMapping("update")
     public ResponseData update(@RequestBody @Valid CommoditySkuDTO dto, BindingResult result) {
+        commoditySkuService.update(dto, Constants.DEFAULT_USER);
+        return ResponseData.ok();
+    }
 
-        if (!commoditySkuService.updateCommoditySKU(dto, Constants.DEFAULT_USER))
-            return ResponseData.failed(ResultEnum.data_update_failed);
-
+    @ApiOperation(value = "删除商品SKU基本信息（物理删除）")
+    @GetMapping("delete")
+    public ResponseData delete(@ApiParam("主键ID")@RequestParam Long id) {
         return ResponseData.ok();
     }
 }

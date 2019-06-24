@@ -7,9 +7,13 @@ import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.PoUtils;
+import com.sun.org.apache.bcel.internal.generic.I2F;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -23,19 +27,35 @@ import org.springframework.stereotype.Service;
 public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMapper, StorehouseConfig> implements IStorehouseConfigService {
 
     /**
+     * 查询仓库配置信息
+     *
+     * @param loadGrid
+     * @return
+     */
+    @Override
+    public LoadGrid loadGrid(LoadGrid loadGrid) {
+        // TODO 仓库信息配置查询 待确定
+
+        return loadGrid;
+    }
+
+    /**
      * 添加库位配置
      *
      * @param storehouseConfigDTO
      * @param operator
      * @return
      */
-    @Override
-    public Boolean addStorehouseConfig(StorehouseConfigDTO storehouseConfigDTO, String operator) {
+    @Override @Transactional
+    public void add(StorehouseConfigDTO storehouseConfigDTO, String operator) {
         checkStorehouseConfig(storehouseConfigDTO, false);
         StorehouseConfig config = new StorehouseConfig();
         PoUtils.add(storehouseConfigDTO, config, operator);
 
-        return this.insert(config);
+        if (this.baseMapper.insert(config) < 1) {
+            throw OperationException.DATA_OPERATION_ADD;
+        }
+
     }
 
     /**
@@ -45,12 +65,30 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
      * @param operator
      * @return
      */
-    @Override
-    public Boolean updateStorehouseConfig(StorehouseConfigDTO storehouseConfigDTO, String operator) {
+    @Override @Transactional
+    public void update(StorehouseConfigDTO storehouseConfigDTO, String operator) {
         checkStorehouseConfig(storehouseConfigDTO, true);
         StorehouseConfig config = new StorehouseConfig();
         PoUtils.update(storehouseConfigDTO, config, operator);
-        return this.updateById(config);
+
+        if (this.baseMapper.updateById(config) < 1) {
+            throw OperationException.DATA_OPERATION_UPDATE;
+        }
+
+    }
+
+    /**
+     * 删除数据
+     *
+     * @param id
+     */
+    @Override @Transactional
+    public void delete(Long id) {
+
+        if (this.baseMapper.deleteById(id) < 1) {
+            throw OperationException.DATA_OPERATION_DELETE;
+        }
+
     }
 
     /**
@@ -60,8 +98,9 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
      */
     private void checkStorehouseConfig(StorehouseConfigDTO storehouseConfigDTO, Boolean updateOperation) {
 
-        if (updateOperation && (storehouseConfigDTO.getId() == null || storehouseConfigDTO.getId() == 0l))
-            throw new BusinessException(ResultEnum.req_params_error.getCode(), "库位配置信息修改ID异常");
+        if (updateOperation) {
+            PoUtils.checkId(storehouseConfigDTO.getId());
+        }
 
         // 检查当前库位是否已经使用
         EntityWrapper<StorehouseConfig> wrapper = new EntityWrapper<>();
@@ -72,7 +111,8 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
             wrapper.ne("id", storehouseConfigDTO.getId());
         }
 
-        if (this.selectCount(wrapper) > 0)
+        if (this.selectCount(wrapper) > 0) {
             throw new BusinessException(ResultEnum.data_check_exist.getCode(), "库区已经被配置");
+        }
     }
 }

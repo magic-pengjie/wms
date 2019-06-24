@@ -32,14 +32,14 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
      * @param customerBaseInfoDTO 客户基本信息
      * @param operator 操作人员
      */
-    Boolean addCustomerBaseInfo(CustomerBaseInfoDTO customerBaseInfoDTO, String operator);
+    void add(CustomerBaseInfoDTO customerBaseInfoDTO, String operator);
 
     /**
      * 更新用户档案
      * @param customerBaseInfoDTO
      * @param operator 操作人员
      */
-    Boolean updateCustomerBaseInfo(CustomerBaseInfoDTO customerBaseInfoDTO, String operator);
+    void update(CustomerBaseInfoDTO customerBaseInfoDTO, String operator);
 
     /**
      * 更新删除（非物理删除）用户档案
@@ -47,7 +47,7 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
      * @param operator
      * @param pyd
      */
-    Boolean deleteCustomer(Long id, String operator, Boolean pyd);
+    void delete(Long id, String operator, Boolean pyd);
 
     /**
      * 加载商家产品列表（可分页搜索查询）

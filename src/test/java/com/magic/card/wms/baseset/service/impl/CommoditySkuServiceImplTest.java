@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.*;
-
 /**
  * com.magic.card.wms.baseset.service.impl
  *
@@ -41,7 +39,7 @@ public class CommoditySkuServiceImplTest extends MagicWmsApplicationTests {
         skuDTO.setSingleVolumeUnit("L");
         skuDTO.setSingleWeight(new BigDecimal(255)); // 255 G
         skuDTO.setSingleWeightUnit("g");
-        commoditySkuService.addCommoditySKU(skuDTO, Constants.DEFAULT_USER);
+        commoditySkuService.add(skuDTO, Constants.DEFAULT_USER);
     }
 
     @Test

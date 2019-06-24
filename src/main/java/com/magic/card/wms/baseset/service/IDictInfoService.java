@@ -39,7 +39,7 @@ public interface IDictInfoService extends IService<DictInfo> {
      * @param operator
      * @return
      */
-    Boolean addDictInfo(DictInfoDTO dictInfoDTO, String operator);
+    void add(DictInfoDTO dictInfoDTO, String operator);
 
     /**
      * 更新字典常量
@@ -47,5 +47,11 @@ public interface IDictInfoService extends IService<DictInfo> {
      * @param operator
      * @return
      */
-    Boolean updateDictInfo(DictInfoDTO dictInfoDTO, String operator);
+    void update(DictInfoDTO dictInfoDTO, String operator);
+
+    /**
+     * 删除数据
+     * @param id
+     */
+    void delete(Long id);
 }
