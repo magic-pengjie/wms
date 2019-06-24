@@ -24,7 +24,7 @@ public class BusinessException extends Exception{
 	
 	public  BusinessException(int errCode,String errMsg) {
 		this.errCode = errCode;
-		this.errCode = errCode;
+		this.errMsg = errMsg;
 		
 	}
 

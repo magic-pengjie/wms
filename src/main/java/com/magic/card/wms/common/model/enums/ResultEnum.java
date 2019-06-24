@@ -35,7 +35,9 @@ public enum ResultEnum {
 	user_login_failed(200003,"用户登录失败"),
 	user_name_not_exist(200004,"用户不存在"),
 	user_pwd_error(200005,"用户或密码不正确，请确认！"),
-	user_state_error(200007,"用户状态不正确，请确认！")
+	user_state_error(200006,"用户状态不正确，请确认！"),
+	query_role_failed(200007,"查询角色列表失败"),
+	add_role_failed(200008,"新增角色失败")
 	;
 	
 	

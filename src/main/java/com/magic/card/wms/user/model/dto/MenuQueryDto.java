@@ -1,63 +1,68 @@
-package com.magic.card.wms.user.model.po;
+package com.magic.card.wms.user.model.dto;
 
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotations.TableName;
-import com.magic.card.wms.common.model.po.BasePo;
-
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 
+ *	菜单 List查詢請求实体类
  * </p>
- *
  * @author zhouhao
  * @since 2019-06-22
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@TableName("wms_menu_info")
-public class MenuInfo extends BasePo implements Serializable {
+@ApiModel(description = "菜单 List查詢請求实体类")
+public class MenuQueryDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 父级菜单ID
+     * 	父级菜单ID
      */
+    @ApiModelProperty("父级菜单ID")
     private Integer parentKey;
     /**
-     * 菜单编码
+     * 	菜单编码
      */
+    @ApiModelProperty("菜单编码")
     private String menuCode;
     /**
-     * 菜单名称
+     * 	菜单名称
      */
+    @ApiModelProperty("菜单名称")
     private String menuName;
     /**
-     * 菜单描述
+     * 	菜单描述
      */
+    @ApiModelProperty("菜单描述")
     private String menuDesc;
     /**
-     * 根目录
+     * 	根目录
      */
+    @ApiModelProperty("根目录")
     private String rootMenuCode;
     /**
-     * 菜单级别1~5
+     * 	菜单级别1~5
      */
+    @ApiModelProperty("菜单级别1~5")
     private String menuGrade;
     /**
-     * 路由URL
+     * 	路由URL
      */
+    @ApiModelProperty("路由URL")
     private String routeUrl;
     /**
-     * 0:页面，1:按钮
+     * 	目录或按钮；0:页面，1:按钮
      */
+    @ApiModelProperty("目录或按钮标志：0:页面，1:按钮")
     private String pageBtnFlag;
     /**
-     * 接口URL
+     * 	接口URL
      */
+    @ApiModelProperty("接口URL")
     private String apiUrl;
     
 	@Override

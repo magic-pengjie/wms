@@ -1,7 +1,7 @@
 package com.magic.card.wms.user.mapper;
 
-import com.magic.card.wms.user.model.po.RoleMenuMapping;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.magic.card.wms.user.model.po.RoleMenuMapping;
 
 /**
  * <p>

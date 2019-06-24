@@ -11,17 +11,35 @@
         <result column="menu_desc" property="menuDesc" />
         <result column="root_menu_code" property="rootMenuCode" />
         <result column="menu_grade" property="menuGrade" />
+        <result column="route_url" property="routeUrl" />
+        <result column="page_btn_flag" property="pageBtnFlag" />
         <result column="api_url" property="apiUrl" />
-        <result column="del_flag" property="delFlag" />
+        <result column="state" property="state" />
         <result column="create_time" property="createTime" />
         <result column="create_user" property="createUser" />
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, parent_key, menu_code, menu_name, menu_desc, root_menu_code, menu_grade, api_url, del_flag, create_time, create_user, update_time, update_user
+        id, parent_key, menu_code, menu_name, menu_desc, root_menu_code, menu_grade, route_url, page_btn_flag, api_url, state, create_time, create_user, update_time, update_user, remark
     </sql>
+    
+    <select id="queryMenuByRoleKey" resultMap="BaseResultMap" parameterType="java.util.List">
+		    	
+		select 
+		mi.* 
+		from wms_role_menu_mapping rmm 
+		left join wms_menu_info mi on rmm.menu_key = mi.id
+		where rmm.state = 0
+		and mi.state = 0  
+		and rmm.role_key in 
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+    	
+    </select>
 
 </mapper>

@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.magic.card.wms.common.exception.BusinessException;
@@ -16,6 +17,7 @@ import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.UserDTO;
 import com.magic.card.wms.user.model.dto.UserLoginDTO;
+import com.magic.card.wms.user.model.dto.UserRoleMenuQueryDTO;
 import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.service.IUserService;
 
@@ -44,6 +46,8 @@ public class UserController {
 	 * @param dto
 	 * @return
 	 */
+	@ApiOperation(value = "用户登录", notes = "用户密码登录")
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseData userLogin(@RequestBody @Valid UserLoginDTO dto, BindingResult bindingResult) {
 		try {
 			userService.login(dto);
@@ -101,6 +105,8 @@ public class UserController {
 	 * @param bindingResult
 	 * @return
 	 */
+	@ApiOperation(value = "修改用户信息", notes = "修改用户信息")
+	@RequestMapping(value = "/updateUser", method = RequestMethod.POST)
 	public ResponseData updateUser(@RequestBody @Valid UserUpdateDTO dto, BindingResult bindingResult) {
 		try {
 			userService.updateUserInfo(dto);
@@ -114,5 +120,27 @@ public class UserController {
 		}
 		return ResponseData.ok();
 	}
+	
+	
+
+	
+	/**
+	 * 根据用户id查询角色及菜单信息
+	 * @return
+	 */
+	@ApiOperation(value="查询用户角色及菜单权限信息", notes="查询用户角色及菜单权限信息")
+	@RequestMapping(value="/queryUserRoleMenu", method = RequestMethod.GET)
+	public ResponseData queryUserRoleMenuInfo(@RequestParam("userKey") Integer userKey) {
+		UserRoleMenuQueryDTO userRoleMenuList = null;
+		try {
+			userRoleMenuList = userService.queryUserRoleMenuInfoList(userKey);
+		} catch (Exception e) {
+			log.error("===查询用户角色菜单信息失败，e:{}", e);
+			return ResponseData.error(00, "查询用户角色菜单信息失败！请稍后再试！");
+		}
+		return ResponseData.ok(userRoleMenuList);
+	}
+
+	
 
 }

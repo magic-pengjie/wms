@@ -10,15 +10,15 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 
+ * 	角色菜单关系映射表实体
  * </p>
  *
  * @author zhouhao
  * @since 2019-06-18
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@TableName("wms_role_menu_info")
+@EqualsAndHashCode(callSuper = true)
+@TableName("wms_role_menu_mapping")
 public class RoleMenuMapping extends BasePo implements Serializable {
 
     private static final long serialVersionUID = 1L;

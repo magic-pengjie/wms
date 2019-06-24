@@ -18,5 +18,5 @@
     <sql id="Base_Column_List">
         id, user_key, role_key, del_flag, create_time, create_user, update_time, update_user
     </sql>
-
+    
 </mapper>
