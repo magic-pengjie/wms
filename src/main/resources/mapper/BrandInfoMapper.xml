@@ -3,7 +3,7 @@
 <mapper namespace="com.magic.card.wms.baseset.mapper.BrandInfoMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.BrandInfo">
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.Brand">
         <id column="id" property="id" />
         <result column="name" property="name" />
         <result column="state" property="state" />

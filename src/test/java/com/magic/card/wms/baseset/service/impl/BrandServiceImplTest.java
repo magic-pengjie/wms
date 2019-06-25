@@ -22,7 +22,7 @@ import java.util.List;
  * @since : 1.0.0
  */
 @Slf4j
-public class BrandInfoServiceImplTest extends MagicWmsApplicationTests {
+public class BrandServiceImplTest extends MagicWmsApplicationTests {
 
     @Autowired
     private IBrandInfoService brandInfoService;

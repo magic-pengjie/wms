@@ -48,4 +48,37 @@ public class OperationException extends RuntimeException {
         this.errCode = failedResult.getCode();
         this.errMsg = failedResult.getMsg();
     }
+
+    /**
+     * 添加操作异常, 定制错误信息
+     * @param errMsg
+     * @return
+     */
+    public static OperationException addException(String errMsg) {
+        OperationException exception = new OperationException(ResultEnum.data_add_failed);
+        exception.setErrMsg(errMsg);
+        return exception;
+    }
+
+    /**
+     * 更新操作异常，定制错误信息
+     * @param errMsg
+     * @return
+     */
+    public static OperationException updateException(String errMsg) {
+        OperationException exception = new OperationException(ResultEnum.data_update_failed);
+        exception.setErrMsg(errMsg);
+        return exception;
+    }
+
+    /**
+     * 删除操作异常，定制错误信息
+     * @param errMsg
+     * @return
+     */
+    public static OperationException deleteException(String errMsg) {
+        OperationException exception = new OperationException(ResultEnum.data_delete_failed);
+        exception.setErrMsg(errMsg);
+        return exception;
+    }
 }

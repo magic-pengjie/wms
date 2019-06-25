@@ -3,7 +3,7 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.model.dto.CommodityInfoDTO;
-import com.magic.card.wms.baseset.model.po.CommodityInfo;
+import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.mapper.CommodityInfoMapper;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -25,7 +25,7 @@ import java.util.Map;
  * @since 2019-06-19
  */
 @Service
-public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, CommodityInfo> implements ICommodityInfoService {
+public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, Commodity> implements ICommodityInfoService {
 
     /**
      *
@@ -46,10 +46,10 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
     @Override @Transactional
     public void add(CommodityInfoDTO commodityInfoDTO, String operator) {
         checkCommodityInfo(commodityInfoDTO, false);
-        CommodityInfo commodityInfo = new CommodityInfo();
-        PoUtils.add(commodityInfoDTO, commodityInfo, operator);
+        Commodity commodity = new Commodity();
+        PoUtils.add(commodityInfoDTO, commodity, operator);
 
-        if (this.baseMapper.insert(commodityInfo) < 1)
+        if (this.baseMapper.insert(commodity) < 1)
             throw OperationException.DATA_OPERATION_ADD;
 
     }
@@ -64,10 +64,10 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
     @Override @Transactional
     public void update(CommodityInfoDTO commodityInfoDTO, String operator) {
         checkCommodityInfo(commodityInfoDTO, true);
-        CommodityInfo commodityInfo = new CommodityInfo();
-        PoUtils.update(commodityInfoDTO, commodityInfo, operator);
+        Commodity commodity = new Commodity();
+        PoUtils.update(commodityInfoDTO, commodity, operator);
 
-        if (this.baseMapper.updateById(commodityInfo) < 1)
+        if (this.baseMapper.updateById(commodity) < 1)
             throw OperationException.DATA_OPERATION_UPDATE;
 
     }
@@ -89,7 +89,7 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
         if (updateOperator && (commodityInfoDTO.getId() == null || commodityInfoDTO.getId() == 0l))
             throw OperationException.DATA_ID;
 
-        EntityWrapper<CommodityInfo> wrapper = new EntityWrapper<>();
+        EntityWrapper<Commodity> wrapper = new EntityWrapper<>();
         wrapper.eq("state", 1)
                 .eq("customer_id", commodityInfoDTO.getCustomerId())
                 .eq("commodity_code", commodityInfoDTO.getCommodityCode());

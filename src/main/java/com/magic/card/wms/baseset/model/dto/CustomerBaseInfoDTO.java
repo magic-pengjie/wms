@@ -6,6 +6,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -27,7 +28,9 @@ public class CustomerBaseInfoDTO implements Serializable {
     /**
      * 客户编码
      */
+    @NotNull(message = "客户编码不可为空")
     @Length(max = 32, message = "客户编码最多包含32个字符")
+    @ApiModelProperty("客户编码不可为空，否则验证不通过")
     private String customerCode;
 
     /**

@@ -10,8 +10,9 @@ import lombok.Getter;
 @Getter
 public enum StateEnum {
 
-	normal(0,"正常"),
-	delete(1,"删除");
+	delete(0,"删除"),
+	normal(1,"正常"),
+	order_pick(3, "订单已生成拣货单");
 	
 	private Integer code;
 	private String desc;

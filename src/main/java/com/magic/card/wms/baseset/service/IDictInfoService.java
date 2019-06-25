@@ -8,6 +8,7 @@ import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.LoadGrid;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -54,4 +55,10 @@ public interface IDictInfoService extends IService<DictInfo> {
      * @param id
      */
     void delete(Long id);
+
+    /**
+     * 加载所有数据
+     * @return
+     */
+    Map loadAll();
 }

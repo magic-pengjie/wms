@@ -1,12 +1,9 @@
 package com.magic.card.wms.baseset.service;
 
-import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.BrandInfoDTO;
-import com.magic.card.wms.baseset.model.po.BrandInfo;
+import com.magic.card.wms.baseset.model.po.Brand;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.common.model.LoadGrid;
-
-import java.util.List;
 
 /**
  * <p>
@@ -16,7 +13,7 @@ import java.util.List;
  * @author Mr.Zhang
  * @since 2019-06-18
  */
-public interface IBrandInfoService extends IService<BrandInfo> {
+public interface IBrandInfoService extends IService<Brand> {
 
     /**
      * 加载品牌数据列表

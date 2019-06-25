@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.OrderCommodityMapper">
+
+    <!-- 开启二级缓存 -->
+<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.OrderCommodity">
+        <id column="id" property="id" />
+        <result column="order_no" property="orderNo" />
+        <result column="customer_code" property="customerCode" />
+        <result column="bar_code" property="barCode" />
+        <result column="model_no" property="modelNo" />
+        <result column="spec" property="spec" />
+        <result column="numbers" property="numbers" />
+        <result column="pick_numbers" property="pickNumbers" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, order_no, customer_code, bar_code, model_no, spec, numbers, pick_numbers, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+</mapper>

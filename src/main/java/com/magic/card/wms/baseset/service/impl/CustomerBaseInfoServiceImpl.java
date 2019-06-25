@@ -3,14 +3,19 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * <p>
@@ -32,25 +38,31 @@ import java.util.Date;
 @Service
 public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMapper, CustomerBaseInfo> implements ICustomerBaseInfoService {
 
+    /**
+     * 默认提供的Columns
+     */
+    private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
+    static {
+        defaultColumns.put("id", "cbf.id");
+        defaultColumns.put("customerName", "cbf.customer_name");
+        defaultColumns.put("customerCode", "cbf.customer_code");
+        defaultColumns.put("address", "cbf.address");
+        defaultColumns.put("phone", "cbf.phone");
+        defaultColumns.put("contactPerson", "cbf.contact_person");
+        defaultColumns.put("brandId", "cbf.brand_id");
+        defaultColumns.put("brandName", "name");
+        defaultColumns.put("brandName", "bi.`name`");
+    }
+
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
         Page page = loadGrid.page();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("cbf.state", 1);
-
-        if (MapUtils.isNotEmpty(loadGrid.getSearch())) {
-            String address = MapUtils.getString(loadGrid.getSearch(), "address");
-
-
-            // TODO 设置客户自定义栏位搜索
-            if (StringUtils.isNotBlank(address)){
-                wrapper.like("cbf.address", address);
-            }
-
-        }
+        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
 
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            // TODO 设置客户自定义排序
+            WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
         } else {
             wrapper.orderBy("cbf.update_time", false);
         }
@@ -61,6 +73,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
 
     @Override @Transactional
     public void add(CustomerBaseInfoDTO customerBaseInfoDTO, String operator) {
+        checkCustomer(customerBaseInfoDTO, false);
         CustomerBaseInfo customerBaseInfo = new CustomerBaseInfo();
         BeanUtils.copyProperties(customerBaseInfoDTO, customerBaseInfo);
         PoUtils.add(customerBaseInfo, operator);
@@ -72,19 +85,17 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
 
     @Override @Transactional
     public void update(CustomerBaseInfoDTO customerBaseInfoDTO, String operator) {
-//        Wrapper<CustomerBaseInfo> wrapper = new EntityWrapper<>();
-//        wrapper.eq("id", customerBaseInfoDTO.getId());
-//        CustomerBaseInfo customerBaseInfo = this.selectOne(wrapper);
-//
-//        if (customerBaseInfo != null) {
+        checkCustomer(customerBaseInfoDTO, true);
         CustomerBaseInfo customerBaseInfo = new CustomerBaseInfo();
         BeanUtils.copyProperties(customerBaseInfoDTO, customerBaseInfo);
         PoUtils.update(customerBaseInfo, operator);
 
-        if (this.baseMapper.updateById(customerBaseInfo) < 1)
+        if (this.baseMapper.updateById(customerBaseInfo) < 1) {
             throw OperationException.DATA_OPERATION_UPDATE;
-//        }
+        }
+
     }
+
 
 
     /**
@@ -145,4 +156,26 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         return LoadGrid.instance(page, baseMapper.loadCustomerCommodities(page, wrapper));
     }
 
+    /**
+     * 检查客户信息
+     * @param customerBaseInfoDTO
+     * @param updateOperation
+     */
+    private void checkCustomer(CustomerBaseInfoDTO customerBaseInfoDTO, Boolean updateOperation) {
+        EntityWrapper wrapper = new EntityWrapper();
+
+        if (updateOperation) {
+            PoUtils.checkId(customerBaseInfoDTO.getId());
+            wrapper.ne("id", customerBaseInfoDTO.getId());
+        }
+
+        // 检查 Customer Code 是否已经存在数据库
+        wrapper.eq("state", Constants.ACTIVITY_STATE)
+                .eq("customer_code", customerBaseInfoDTO.getCustomerCode());
+
+        if (this.selectCount(wrapper) > 0) {
+            throw new BusinessException(ResultEnum.data_check_exist.getCode(), "客户Code已存在");
+        }
+
+    }
 }

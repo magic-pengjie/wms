@@ -18,7 +18,7 @@ import java.math.BigDecimal;
  * @date : 2019/6/19/019 16:55
  * @since : 1.0.0
  */
-public class CommodityInfoServiceImplTest extends MagicWmsApplicationTests {
+public class CommodityServiceImplTest extends MagicWmsApplicationTests {
     @Autowired
     private ICommodityInfoService commodityInfoService;
 

@@ -1,9 +1,8 @@
 package com.magic.card.wms.baseset.service;
 
 import com.magic.card.wms.baseset.model.dto.CommodityInfoDTO;
-import com.magic.card.wms.baseset.model.po.CommodityInfo;
+import com.magic.card.wms.baseset.model.po.Commodity;
 import com.baomidou.mybatisplus.service.IService;
-import com.magic.card.wms.common.exception.BusinessException;
 
 /**
  * <p>
@@ -13,7 +12,7 @@ import com.magic.card.wms.common.exception.BusinessException;
  * @author Mr.Zhang
  * @since 2019-06-19
  */
-public interface ICommodityInfoService extends IService<CommodityInfo> {
+public interface ICommodityInfoService extends IService<Commodity> {
 
     /**
      * 添加商品关联信息

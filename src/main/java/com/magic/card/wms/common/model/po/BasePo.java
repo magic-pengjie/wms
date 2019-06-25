@@ -1,5 +1,6 @@
 package com.magic.card.wms.common.model.po;
 
+import com.baomidou.mybatisplus.activerecord.Model;
 import com.baomidou.mybatisplus.enums.IdType;
 
 import lombok.Data;
@@ -17,7 +18,7 @@ import java.io.Serializable;
  * @since 2019-06-13
  */
 @Data
-public class BasePo implements Serializable {
+public class BasePo extends Model<BasePo> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -52,4 +53,11 @@ public class BasePo implements Serializable {
      */
     private String remark;
 
+    /**
+     * 主键值
+     */
+    @Override
+    protected Serializable pkVal() {
+        return this.id;
+    }
 }

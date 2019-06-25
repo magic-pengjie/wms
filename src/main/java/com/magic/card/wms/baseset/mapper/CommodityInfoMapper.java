@@ -2,7 +2,7 @@ package com.magic.card.wms.baseset.mapper;
 
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.magic.card.wms.baseset.model.po.CommodityInfo;
+import com.magic.card.wms.baseset.model.po.Commodity;
 
 /**
  * <p>
@@ -12,6 +12,6 @@ import com.magic.card.wms.baseset.model.po.CommodityInfo;
  * @author Mr.Zhang
  * @since 2019-06-19
  */
-public interface CommodityInfoMapper extends BaseMapper<CommodityInfo> {
+public interface CommodityInfoMapper extends BaseMapper<Commodity> {
 
 }

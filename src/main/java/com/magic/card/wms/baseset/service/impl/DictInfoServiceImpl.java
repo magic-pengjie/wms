@@ -2,7 +2,9 @@ package com.magic.card.wms.baseset.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.magic.card.wms.baseset.mapper.DictInfoMapper;
 import com.magic.card.wms.baseset.model.dto.DictInfoDTO;
 import com.magic.card.wms.baseset.model.po.DictInfo;
@@ -11,16 +13,24 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.PoUtils;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -92,6 +102,53 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
     }
 
     /**
+     * 加载所有数据
+     *
+     * @return
+     */
+    @Override
+    public Map loadAll() {
+        // 获取所有数据
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("state", Constants.ACTIVITY_STATE);
+        wrapper.orderBy("dict_code_p");
+        List<DictInfo> dictInfos = this.selectList(wrapper);
+        //获取一级常量
+        Map<String, List> dictThree = Maps.newLinkedHashMap();
+        dictInfos.stream()
+                .filter(dictInfo -> {
+                   boolean flag = StringUtils.isBlank(dictInfo.getDictCodeP());
+
+                   if (flag) {
+                       LinkedList<Object> list = Lists.newLinkedList();
+                       dictThree.put(dictInfo.getDictCode(), list);
+                   }
+
+                   return !flag;
+                })
+                .filter(dictInfo -> {
+                    // 二级常量
+                    boolean flag = dictThree.containsKey(dictInfo.getDictCodeP());
+
+                    if (!flag) {
+                        LinkedList<Object> list = Lists.newLinkedList();
+                        dictThree.put(dictInfo.getDictCode(), list);
+                    } else {
+                        LinkedHashMap<String, Object> map = Maps.newLinkedHashMap();
+                        map.put("id", dictInfo.getId());
+                        map.put("code", dictInfo.getDictCode());
+                        map.put("name", dictInfo.getDictName());
+                        dictThree.get(dictInfo.getDictCodeP()).add(map);
+                    }
+
+                    return flag;
+                })
+                .collect(Collectors.toList());
+
+        return dictThree;
+    }
+
+    /**
      * 删除数据
      *
      * @param id
@@ -126,5 +183,8 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
         if (this.selectCount(dictInfoEntityWrapper) > 0) {
             throw new BusinessException(ResultEnum.dist_exist.getCode(), ResultEnum.dist_exist.getMsg());
         }
+    }
+
+    private void bulidDictThree(DictInfo dictInfo, Map<String, List> dictThree) {
     }
 }

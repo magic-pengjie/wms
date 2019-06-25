@@ -23,7 +23,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @TableName("wms_brand_info")
-public class BrandInfo extends BasePo implements Serializable {
+public class Brand extends BasePo implements Serializable {
 
     private static final long serialVersionUID = 8449935019393752005L;
 

@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @TableName("wms_commodity_info")
 @EqualsAndHashCode(callSuper = false)
-public class CommodityInfo extends BasePo implements Serializable {
+public class Commodity extends BasePo implements Serializable {
 
     private static final long serialVersionUID = -2959178971546487607L;
 

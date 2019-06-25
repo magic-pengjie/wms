@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.OrderInfoMapper">
+
+    <!-- 开启二级缓存 -->
+    <!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.Order">
+        <id column="id" property="id" />
+        <result column="order_no" property="orderNo" />
+        <result column="customer_code" property="customerCode" />
+        <result column="customer_name" property="customerName" />
+        <result column="recipt_name" property="reciptName" />
+        <result column="recipt_addr" property="reciptAddr" />
+        <result column="recipt_phone" property="reciptPhone" />
+        <result column="is_b2b" property="isB2b" />
+        <result column="bill_state" property="billState" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, order_no, customer_code, customer_name, recipt_name, recipt_addr, recipt_phone, is_b2b, bill_state, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+    <select id="orderCommodityWeightMap" resultType="java.util.Map">
+        SELECT
+            woc.order_no orderNo,
+            woc.customer_code customerCode,
+            woc.bar_code barCode,
+            woc.numbers bayNums,
+            wcs.single_weight singleWeigh,
+            wcs.single_weight_unit singleWeighUnit,
+            wcshc.bar_code useBarCode,
+            wcshc.single_weight useSingleWeigh,
+            wcshc.single_weight_unit useSingleWeighUnit,
+            wccc.left_value leftVale,
+            wccc.right_value rightVale,
+            wccc.use_nums useNums
+        FROM
+            wms_order_info woi
+            LEFT JOIN wms_order_commodity woc ON woi.order_no = woc.order_no AND woi.customer_code = woc.customer_code
+            LEFT JOIN wms_customer_base_info wcbi ON wcbi.customer_code = woi.customer_code
+            LEFT JOIN wms_commodity_info wci ON wci.customer_id = wcbi.id  AND wci.commodity_code = woc.bar_code
+            LEFT JOIN wms_commodity_consumables_config wccc ON wccc.commodity_id = wci.id
+            LEFT JOIN wms_commodity_info wcihc ON wccc.use_commodity_id = wcihc.id
+            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code
+            LEFT JOIN wms_commodity_sku wcshc ON wcshc.bar_code = wcihc.commodity_code
+        WHERE
+            woc.order_no = #{orderNo} AND woc.customer_code = #{customerCode}
+    </select>
+
+</mapper>

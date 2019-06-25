@@ -1,6 +1,6 @@
 package com.magic.card.wms.baseset.mapper;
 
-import com.magic.card.wms.baseset.model.po.BrandInfo;
+import com.magic.card.wms.baseset.model.po.Brand;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
@@ -15,7 +15,7 @@ import java.util.Date;
  * @author Mr.Zhang
  * @since 2019-06-18
  */
-public interface BrandInfoMapper extends BaseMapper<BrandInfo> {
+public interface BrandInfoMapper extends BaseMapper<Brand> {
 
     /**
      * 更新删除操作

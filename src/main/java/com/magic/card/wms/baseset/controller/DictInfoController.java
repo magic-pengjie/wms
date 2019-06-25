@@ -38,6 +38,12 @@ public class DictInfoController {
         return ResponseData.ok(dictInfoService.loadGrid(loadGrid));
     }
 
+    @ApiOperation("加载所有字典数据")
+    @GetMapping("loadAll")
+    public ResponseData loadAll() {
+        return ResponseData.ok(dictInfoService.loadAll());
+    }
+
     @ApiOperation(value = "新增字典数据基本信息")
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid DictInfoDTO dto, BindingResult result) {

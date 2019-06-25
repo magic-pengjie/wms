@@ -12,9 +12,11 @@ import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 
 public class CodeGenerator extends MagicWmsApplicationTests{
 
+
+
 	@Test
 	public void start() {
-		 String packageName = "com.magic.card.wms.user";
+		 String packageName = "com.magic.card.wms.baseset";
 		 String[] tableNames = {
 				 "WMS_USER"
 		 };
@@ -38,11 +40,11 @@ public class CodeGenerator extends MagicWmsApplicationTests{
                 .setDbColumnUnderline(true)
                 .setNaming(NamingStrategy.underline_to_camel)
                 .setTablePrefix("WMS_")
-                .setRestControllerStyle(true)
-                .setInclude(tableNames);//修改替换成你需要的表名，多个表名传数组
+                .setRestControllerStyle(true);
+//                .setInclude(tableNames);//修改替换成你需要的表名，多个表名传数组
         config.setActiveRecord(false)
-                .setAuthor("pengjie")
-                .setOutputDir("D:\\work\\projects\\workspace")
+                .setAuthor("Mr.Zhang")
+                .setOutputDir("F:\\GeneratorCodeFile")
                 .setBaseResultMap(true)
                 .setBaseColumnList(true)
                 //.setServiceName("%Service")

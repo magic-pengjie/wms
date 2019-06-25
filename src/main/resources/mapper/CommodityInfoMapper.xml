@@ -6,7 +6,7 @@
 <!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.CommodityInfo">
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.Commodity">
         <id column="id" property="id" />
         <result column="commodity_code" property="commodityCode" />
         <result column="customer_id" property="customerId" />

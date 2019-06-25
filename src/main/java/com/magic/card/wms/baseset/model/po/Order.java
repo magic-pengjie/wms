@@ -1,0 +1,69 @@
+package com.magic.card.wms.baseset.model.po;
+
+import java.util.Date;
+import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.annotations.Version;
+
+import com.magic.card.wms.common.model.po.BasePo;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+/**
+ * <p>
+ * 订单表
+ * </p>
+ *
+ * @author Mr.Zhang
+ * @since 2019-06-24
+ */
+@Data
+@TableName("wms_order_info")
+@EqualsAndHashCode(callSuper = false)
+public class Order extends BasePo implements Serializable {
+
+    private static final long serialVersionUID = -8181490159280427275L;
+
+    /**
+     * 订单号
+     */
+    private String orderNo;
+    /**
+     * 商家编码
+     */
+    private String customerCode;
+    /**
+     * 商家名称
+     */
+    private String customerName;
+    /**
+     * 收件人姓名
+     */
+    private String reciptName;
+    /**
+     * 地址
+     */
+    private String reciptAddr;
+    /**
+     * 电话
+     */
+    private String reciptPhone;
+    /**
+     * 快递公司标识
+     */
+    private String expressKey;
+    /**
+     * 是否B2B
+     */
+    private Boolean isB2b;
+    /**
+     * 单据状态(保存:save确认:confirm 作废及退单:cancel )
+     */
+    private String billState;
+
+    public Boolean getB2b() {
+        return isB2b;
+    }
+}
