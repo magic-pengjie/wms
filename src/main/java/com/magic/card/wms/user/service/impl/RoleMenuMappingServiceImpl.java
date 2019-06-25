@@ -4,6 +4,7 @@ import com.magic.card.wms.user.model.dto.RoleMenuAddDto;
 import com.magic.card.wms.user.model.dto.RoleMenuUpdateDto;
 import com.magic.card.wms.user.model.po.RoleMenuMapping;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.user.mapper.RoleMenuMappingMapper;
 import com.magic.card.wms.user.service.IRoleMenuMappingService;
 
@@ -51,7 +52,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 				RoleMenuMapping roleMenu = new RoleMenuMapping();
 				roleMenu.setRoleKey(dto.getRoleKey());
 				roleMenu.setMenuKey(menuKey);
-				roleMenu.setState(0);
+				roleMenu.setState(StateEnum.normal.getCode());
 				roleMenu.setCreateTime(date);
 				roleMenu.setCreateUser("SYSTEM");
 				roleMenuMappingList.add(roleMenu);
@@ -82,7 +83,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 					RoleMenuMapping roleMenu = new RoleMenuMapping();
 					roleMenu.setRoleKey(dto.getRoleKey());
 					roleMenu.setMenuKey(menuKey);
-					roleMenu.setState(0);
+					roleMenu.setState(StateEnum.normal.getCode());
 					roleMenu.setCreateTime(date);
 					roleMenu.setCreateUser("SYSTEM");
 					roleMenuMappingList.add(roleMenu);
@@ -100,7 +101,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 					roleMenuWarWrapper.eq("menu_key", delMenuKey);
 					roleMenuWarWrapper.eq("state", 0);
 					RoleMenuMapping entity = new RoleMenuMapping();
-					entity.setState(1);//逻辑删除,state=1
+					entity.setState(StateEnum.delete.getCode());//逻辑删除,state=1
 					entity.setUpdateTime(date);
 					entity.setUpdateUser("SYSTEM");
 					this.update(entity , roleMenuWarWrapper);

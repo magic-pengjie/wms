@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.user.mapper.RoleInfoMapper;
 import com.magic.card.wms.user.model.dto.RoleAddDto;
 import com.magic.card.wms.user.model.dto.RoleQueryDto;
@@ -36,7 +37,7 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 	public List<RoleInfo> getRoleList(RoleQueryDto dto) {
 		//查询所以正常状态的角色
 		Wrapper<RoleInfo> wrapper= new EntityWrapper<RoleInfo>();
-		wrapper.eq("state", 0);
+		wrapper.eq("state", StateEnum.normal.getCode());
 		if(!StringUtils.isEmpty(dto.getRoleCode())) {
 			wrapper.eq("role_code", dto.getRoleCode());
 		}
@@ -63,14 +64,14 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 	public void addRoleInfo(RoleAddDto dto) throws BusinessException {
 		Wrapper<RoleInfo> wrapper = new EntityWrapper<RoleInfo>();
 		wrapper.eq("role_code", dto.getRoleCode());
-		wrapper.eq("state", 0);
+		wrapper.eq("state", StateEnum.normal.getCode());
 		RoleInfo roleInfo = this.selectOne(wrapper);
 		if(StringUtils.isEmpty(roleInfo)) {
 			roleInfo = new RoleInfo();
 			BeanUtils.copyProperties(dto, roleInfo);
 			roleInfo.setCreateTime(new Date());
 			roleInfo.setCreateUser("SYSTEM");
-			roleInfo.setState(0);
+			roleInfo.setState(StateEnum.normal.getCode());
 			roleInfo.setDisplayFlag(1);
 			log.info("===inserRoleInfo.params:{}",roleInfo);
 			this.insert(roleInfo);
@@ -88,7 +89,7 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 	public void updateRoleInfo(RoleUpdateDto dto) throws BusinessException {
 		Wrapper<RoleInfo> wrapper = new EntityWrapper<RoleInfo>();
 		wrapper.eq("role_code", dto.getRoleCode());
-		wrapper.eq("state", 0);
+		wrapper.eq("state", StateEnum.normal.getCode());
 		wrapper.ne("id", dto.getRoleKey());
 		RoleInfo roleInfo = this.selectOne(wrapper);
 		//判断roleCode是否重复

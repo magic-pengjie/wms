@@ -72,7 +72,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			if(StringUtils.isEmpty(dto.getPassword())) {
 				user.setPassword("wms888888");
 			}
-			user.setState(0);
+			user.setState(StateEnum.normal.getCode());
 			BeanUtils.copyProperties(dto, user);
 			//新增用户
 			boolean insertFlag = this.insert(user);
@@ -83,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				entity.setRoleKey(dto.getRoleKey());
 				entity.setCreateTime(new Date());
 				entity.setCreateUser(user.getName());
-				entity.setState(0);
+				entity.setState(StateEnum.normal.getCode());
 				//新增用户角色信息
 				Integer insertMappingFlag = userRoleMappingMapper.insert(entity);
 				log.info("===insertUserRoleMapping.params:{},change {} rows", entity,insertMappingFlag);

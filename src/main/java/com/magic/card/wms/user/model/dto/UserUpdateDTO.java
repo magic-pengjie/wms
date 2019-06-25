@@ -46,7 +46,7 @@ public class UserUpdateDTO implements Serializable{
 	/**
 	 * 姓名
 	 */
-	@ApiModelProperty("数据状态(0:正常，1:删除)")
+	@ApiModelProperty("数据状态(1:正常，0:删除)")
 	private Integer state;
 	
 	/**

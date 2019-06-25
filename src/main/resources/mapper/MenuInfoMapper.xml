@@ -33,8 +33,8 @@
 		mi.* 
 		from wms_role_menu_mapping rmm 
 		left join wms_menu_info mi on rmm.menu_key = mi.id
-		where rmm.state = 0
-		and mi.state = 0  
+		where rmm.state = 1
+		and mi.state = 1  
 		and rmm.role_key in 
 		<foreach collection="list" item="item" open="(" separator="," close=")">
 			#{item}

@@ -42,7 +42,7 @@ public class RoleQueryDto implements Serializable {
 	/**
 	 * 数据状态
 	 */
-	@ApiModelProperty("数据状态")
+	@ApiModelProperty("数据状态(1:正常，0:删除)")
 	private String state;
 	
 	@Override

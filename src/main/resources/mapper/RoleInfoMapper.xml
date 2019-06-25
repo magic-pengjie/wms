@@ -10,7 +10,7 @@
 		<result column="role_name" property="roleName" />
 		<result column="role_desc" property="roleDesc" />
 		<result column="display_flag" property="displayFlag" />
-		<result column="del_flag" property="delFlag" />
+		<result column="state" property="state" />
 		<result column="create_time" property="createTime" />
 		<result column="create_user" property="createUser" />
 		<result column="update_time" property="updateTime" />
@@ -19,7 +19,7 @@
 
 	<!-- 通用查询结果列 -->
 	<sql id="Base_Column_List">
-		id, role_type, role_code, role_name, role_desc, display_flag, del_flag,	create_time, create_user, update_time, update_user
+		id, role_type, role_code, role_name, role_desc, display_flag, state, create_time, create_user, update_time, update_user
 	</sql>
 
 	<select id="queryRoleByUserKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
@@ -28,8 +28,8 @@
 		FROM wms_user_role_mapping urm
 		left join wms_role_info ri on urm.role_key = ri.id
 		where urm.user_key = #{userKey}
-		and urm.state = 0
-		and ri.state = 0
+		and urm.state = 1
+		and ri.state = 1
 	</select>
 
 </mapper>
