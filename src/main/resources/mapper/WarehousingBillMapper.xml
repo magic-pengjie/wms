@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.warehousing.mapper.WarehousingBillMapper">
+
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.warehousing.model.po.WarehousingBill">
+        <id column="id" property="id" />
+        <result column="warehousing_no" property="warehousingNo" />
+        <result column="receiv_id" property="receivId" />
+        <result column="warehousing_nums" property="warehousingNums" />
+        <result column="warehousing_time" property="warehousingTime" />
+        <result column="storehouse_code" property="storehouseCode" />
+        <result column="approver" property="approver" />
+        <result column="approve_time" property="approveTime" />
+        <result column="bill_state" property="billState" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, warehousing_no, receiv_id, warehousing_nums, warehousing_time, storehouse_code, approver, approve_time, bill_state, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+</mapper>

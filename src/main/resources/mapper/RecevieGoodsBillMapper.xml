@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.warehousing.mapper.RecevieGoodsBillMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.warehousing.model.po.RecevieGoodsBill">
+        <id column="id" property="id" />
+        <result column="purchase_id" property="purchaseId" />
+        <result column="receiv_no" property="receivNo" />
+        <result column="receiv_nums" property="receivNums" />
+        <result column="receiv_user" property="receivUser" />
+        <result column="receiv_time" property="receivTime" />
+        <result column="bill_state" property="billState" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, purchase_id, receiv_no, receiv_nums, receiv_user, receiv_time, bill_state, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+</mapper>

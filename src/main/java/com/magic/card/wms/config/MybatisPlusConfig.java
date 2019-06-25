@@ -16,7 +16,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Configuration
-@MapperScan({"com.magic.card.wms.user.mapper", "com.magic.card.wms.baseset.mapper"})
+@MapperScan({"com.magic.card.wms.user.mapper",
+	"com.magic.card.wms.baseset.mapper",
+	"com.magic.card.wms.warehousing.mapper",
+	"com.magic.card.wms.common.mapper"})
 @Slf4j
 public class MybatisPlusConfig {
 

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
@@ -21,6 +22,7 @@ import org.apache.commons.lang3.Validate;
 
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
@@ -34,6 +36,29 @@ import com.magic.card.wms.common.model.EasyExcelParams;
  * @date 2019年6月18日
  */
 public class EasyExcelUtil {
+	
+	/**
+	 * 读取excle数据
+	 * 
+	 * @param <T>         excel数据
+	 * @param inputStream
+	 * @param clazz       模型类型
+	 * @param sheetNo     sheet序号
+	 * @param headRow     表头行数
+	 * @return
+	 */
+	public static <T extends BaseRowModel> List<T> readExcel2(final InputStream inputStream,
+			final Class<? extends BaseRowModel> clazz, int sheetNo, int headRow) {
+		if (null == inputStream) {
+			throw new NullPointerException("the inputStream is null!");
+		}
+		AnalysisEventListener listener = new ExcelListener();
+		ExcelReader reader = new ExcelReader(inputStream, null, listener);
+
+		reader.read(new Sheet(sheetNo, headRow, clazz));
+
+		return ((ExcelListener) listener).getData();
+	}
 
 	/**
 	 * 读取excle数据
@@ -50,7 +75,20 @@ public class EasyExcelUtil {
 		if (null == inputStream) {
 			throw new NullPointerException("the inputStream is null!");
 		}
-		AnalysisEventListener listener = new ExcelListener();
+		
+		List<T> data = new ArrayList<>();
+		AnalysisEventListener listener = new AnalysisEventListener<T>() {
+
+			@Override
+			public void invoke(T object, AnalysisContext context) {
+				data.add(object);
+			}
+
+			@Override
+			public void doAfterAllAnalysed(AnalysisContext context) {
+			}
+			
+		};
 		ExcelReader reader = new ExcelReader(inputStream, null, listener);
 
 		reader.read(new Sheet(sheetNo, headRow, clazz));
@@ -117,9 +155,11 @@ public class EasyExcelUtil {
 	 * 
 	 * @throws UnsupportedEncodingException
 	 */
-	private static void prepareResponds(HttpServletRequest request, HttpServletResponse response, String fileName,
+	public static void prepareResponds(HttpServletRequest request, HttpServletResponse response, String fileName,
 			ExcelTypeEnum typeEnum) throws UnsupportedEncodingException {
 		response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+		response.addHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+		response.addHeader("Prama", "no-cache");
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Content-disposition",
 				"attachment;filename=" + encodeCNFileName(request, fileName) + typeEnum.getValue());
