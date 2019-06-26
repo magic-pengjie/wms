@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
  * @since 2019-06-18
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @TableName("wms_role_info")
 public class RoleInfo extends BasePo implements Serializable {
 

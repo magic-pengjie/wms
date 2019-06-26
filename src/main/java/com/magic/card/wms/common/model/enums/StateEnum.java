@@ -10,8 +10,8 @@ import lombok.Getter;
 @Getter
 public enum StateEnum {
 
-	normal(0,"正常"),
-	delete(1,"删除");
+	normal(1,"正常"),
+	delete(0,"删除");
 	
 	private Integer code;
 	private String desc;

@@ -1,7 +1,9 @@
 package com.magic.card.wms.user.mapper;
 
-import com.magic.card.wms.user.model.po.MenuInfo;
+import java.util.List;
+
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.magic.card.wms.user.model.po.MenuInfo;
 
 /**
  * <p>
@@ -9,8 +11,10 @@ import com.baomidou.mybatisplus.mapper.BaseMapper;
  * </p>
  *
  * @author zhouhao
- * @since 2019-06-18
+ * @since 2019-06-22
  */
 public interface MenuInfoMapper extends BaseMapper<MenuInfo> {
 
+	List<MenuInfo> queryMenuByRoleKey(List<Integer> roleKeyList);
+	
 }
