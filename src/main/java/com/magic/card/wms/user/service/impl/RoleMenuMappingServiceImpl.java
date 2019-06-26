@@ -99,7 +99,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 					Wrapper<RoleMenuMapping> roleMenuWarWrapper = new EntityWrapper<RoleMenuMapping>();
 					roleMenuWarWrapper.eq("role_key", dto.getRoleKey());
 					roleMenuWarWrapper.eq("menu_key", delMenuKey);
-					roleMenuWarWrapper.eq("state", 0);
+					roleMenuWarWrapper.eq("state", StateEnum.normal.getCode());
 					RoleMenuMapping entity = new RoleMenuMapping();
 					entity.setState(StateEnum.delete.getCode());//逻辑删除,state=1
 					entity.setUpdateTime(date);
