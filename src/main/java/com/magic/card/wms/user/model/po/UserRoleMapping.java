@@ -17,8 +17,8 @@ import lombok.EqualsAndHashCode;
  * @since 2019-06-18
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@TableName("wms_user_role_info")
+@EqualsAndHashCode(callSuper=true)
+@TableName("wms_user_role_mapping")
 public class UserRoleMapping extends BasePo implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -1,7 +1,13 @@
 package com.magic.card.wms.user.service;
 
-import com.magic.card.wms.user.model.po.RoleInfo;
+import java.util.List;
+
 import com.baomidou.mybatisplus.service.IService;
+import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.user.model.dto.RoleAddDto;
+import com.magic.card.wms.user.model.dto.RoleQueryDto;
+import com.magic.card.wms.user.model.dto.RoleUpdateDto;
+import com.magic.card.wms.user.model.po.RoleInfo;
 
 /**
  * <p>
@@ -13,4 +19,10 @@ import com.baomidou.mybatisplus.service.IService;
  */
 public interface IRoleInfoService extends IService<RoleInfo> {
 
+	public List<RoleInfo> getRoleList(RoleQueryDto dto);
+	
+	public void addRoleInfo(RoleAddDto dto) throws BusinessException;
+
+	public void updateRoleInfo(RoleUpdateDto dto) throws BusinessException;
+	
 }

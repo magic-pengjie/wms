@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.check.mapper.CheckRecordMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.check.model.po.CheckRecord">
+        <id column="id" property="id" />
+        <result column="customer_code" property="customerCode" />
+        <result column="sku_id" property="skuId" />
+        <result column="check_user" property="checkUser" />
+        <result column="storehouse_p" property="storehouseP" />
+        <result column="storehouse_s" property="storehouseS" />
+        <result column="store_nums" property="storeNums" />
+        <result column="check_nums" property="checkNums" />
+        <result column="check_date" property="checkDate" />
+        <result column="diff_nums" property="diffNums" />
+        <result column="approver" property="approver" />
+        <result column="approve_time" property="approveTime" />
+        <result column="bill_state" property="billState" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, customer_code, sku_id, check_user, storehouse_p, storehouse_s, store_nums, check_nums, check_date, diff_nums, approver, approve_time, bill_state, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+</mapper>
