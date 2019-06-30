@@ -4,23 +4,18 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.magic.card.wms.baseset.mapper.DictInfoMapper;
 import com.magic.card.wms.baseset.model.dto.DictInfoDTO;
 import com.magic.card.wms.baseset.model.po.DictInfo;
 import com.magic.card.wms.baseset.service.IDictInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>
@@ -56,7 +50,6 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
 
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        //TODO 字典常量LoadGrid
         Page page = loadGrid.page();
         EntityWrapper wrapper = new EntityWrapper<>();
         wrapper.eq("wdi.state", 1);
@@ -83,7 +76,7 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
         // 判断当前添加数据 dict_code 是否已经存在
         checkDict(null, dictInfoDTO.getDictCode(), false);
         DictInfo dictInfo = new DictInfo();
-        PoUtils.add(dictInfoDTO, dictInfo, operator);
+        PoUtil.add(dictInfoDTO, dictInfo, operator);
 
         if (this.baseMapper.insert(dictInfo) < 1)
             throw OperationException.DATA_OPERATION_ADD;
@@ -94,7 +87,7 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
     public void update(DictInfoDTO dictInfoDTO, String operator) {
         checkDict(dictInfoDTO.getId(), dictInfoDTO.getDictCode(), true);
         DictInfo dictInfo = new DictInfo();
-        PoUtils.update(dictInfoDTO, dictInfo, operator);
+        PoUtil.update(dictInfoDTO, dictInfo, operator);
 
         if (this.baseMapper.updateById(dictInfo) < 1)
             throw OperationException.DATA_OPERATION_UPDATE;
@@ -173,15 +166,12 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
         // 是否为更新数据时检查
         if (updateOperation) {
             // 检测 ID 是否异常
-            if (id == null || id == 0l) {
-                throw new BusinessException(ResultEnum.req_params_error.getCode(), ResultEnum.req_params_error.getMsg());
-            }
-
+            PoUtil.checkId(id);
             dictInfoEntityWrapper.ne("id", id);
         }
         // 判断当前添加数据 dict_code 是否已经存在
         if (this.selectCount(dictInfoEntityWrapper) > 0) {
-            throw new BusinessException(ResultEnum.dist_exist.getCode(), ResultEnum.dist_exist.getMsg());
+            throw OperationException.customException(ResultEnum.data_check_exist);
         }
     }
 

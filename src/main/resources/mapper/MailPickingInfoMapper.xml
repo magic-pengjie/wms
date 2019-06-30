@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.MailPickingMapper">
+
+    <!-- 开启二级缓存 -->
+<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.MailPicking">
+        <id column="id" property="id" />
+        <result column="order_no" property="orderNo" />
+        <result column="mail_no" property="mailNo" />
+        <result column="pick_no" property="pickNo" />
+        <result column="basket_num" property="basketNum" />
+        <result column="preset_weight" property="presetWeight" />
+        <result column="real_weight" property="realWeight" />
+        <result column="is_finish" property="isFinish" />
+        <result column="merge_state" property="mergeState" />
+        <result column="merge_mail_no" property="mergeMailNo" />
+        <result column="send_state" property="sendState" />
+        <result column="send_nums" property="sendNums" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, order_no, mail_no, pick_no, basket_num, preset_weight, real_weight, is_finish, merge_state, merge_mail_no, send_state, send_nums, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+    <select id="invoiceList" resultType="java.util.Map">
+        SELECT
+            pick_no pickNo,
+            customer_code customerCode,
+            bar_code barCode,
+            SUM( numbers ) bayNums,
+            store_code storeCode,
+            available_nums availableNums,
+            single_unit single
+        FROM
+            v_wms_invoice
+        WHERE
+            pick_no = #{pickNo}  AND bill_state != #{billState} AND house_code = #{houseCode}
+        GROUP BY
+            pick_no,
+            customer_code,
+            bar_code,
+            store_code,
+            available_nums
+    </select>
+
+    <!--  配货单  -->
+    <select id="invoiceCheckList" resultType="java.util.Map">
+        SELECT
+            pick_no pickNo,
+            mail_no mailNo,
+            order_no orderNo,
+            basket_num basketNum,
+            orderCommodityId,
+            bar_code barCode,
+            numbers,
+            pick_numbers pickNumbers,
+            orderBillState,
+            pickState
+        FROM v_wms_invoice_check
+        WHERE pick_no = #{pickNo} AND bar_code = #{barCode}
+        ORDER BY pick_no, order_no, basket_num, orderCommodityId
+    </select>
+    <!--    获取拣货单各个拣货篮的完成状态 -->
+    <select id="obtainPickingFinishState" resultType="java.util.Map">
+        SELECT
+            pick_no pickNo,
+            mail_no mailNo,
+            order_no orderNo,
+            basket_num basketNum,
+            is_finish isFinish
+        FROM
+            wms_mail_picking_info
+        WHERE
+            pick_no = #{pickNo}
+    </select>
+    <!--    获取拣货单所有漏检商品数据信息  -->
+    <select id="omitOrderCommodityList" resultType="java.util.Map">
+        SELECT
+            wmpi.pick_no pickNo,
+            woc.order_no orderNo,
+            woc.bar_code barCode,
+            SUM( woc.numbers - woc.pick_numbers ) omitNum
+        FROM
+            wms_mail_picking_info wmpi
+            LEFT JOIN wms_order_commodity woc ON wmpi.order_no = woc.order_no
+        WHERE
+            wmpi.is_finish = 0
+            AND wmpi.state = #{state}
+            AND wmpi.pick_no = #{pickNo}
+        GROUP BY
+            wmpi.pick_no,
+            woc.order_no,
+            woc.bar_code
+    </select>
+
+</mapper>

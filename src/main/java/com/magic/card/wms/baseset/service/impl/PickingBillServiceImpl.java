@@ -1,25 +1,31 @@
 package com.magic.card.wms.baseset.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.magic.card.wms.baseset.mapper.PickingBillMapper;
-import com.magic.card.wms.baseset.model.po.MailPicking;
-import com.magic.card.wms.baseset.model.po.Order;
-import com.magic.card.wms.baseset.model.po.PickingBill;
-import com.magic.card.wms.baseset.service.IMailPickingService;
-import com.magic.card.wms.baseset.service.IOrderService;
-import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.baseset.model.po.*;
+import com.magic.card.wms.baseset.service.*;
+import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.config.express.ExpressProviderManager;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -35,19 +41,215 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     @Autowired
     private IOrderService orderService;
     @Autowired
+    private IOrderCommodityService orderCommodityService;
+    @Autowired
     private IMailPickingService mailPickingService;
     @Autowired
     private ExpressProviderManager expressProviderManager;
+    @Autowired
+    private IPickingBillExceptionService pickingBillExceptionService;
 
     /**
      * 触发生成
      *
      * @param customerCode
      */
-    @Transactional
-    @Override @Synchronized // 添加同步锁
+    @Override @Transactional
     public void triggerGenerator(String customerCode, Integer executeSize) {
-        long flag = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
+        log.info("触发规则生成拣货单开始****** start times: {}ms", System.currentTimeMillis() );
+        generatorPickingBill(customerCode, executeSize, Constants.TRIGGER_GENERATOR_PICK_USER);
+        long end = System.currentTimeMillis();
+        log.info("触发规则生成拣货单结束****** end times: {}ms, 总耗时 {}ms", end,end - start );
+
+    }
+
+    /**
+     * 配货单检测结束
+     * @param pickNo
+     * @param operator
+     * @return
+     */
+    @Override @Transactional
+    public Object checkInvoiceClose(String pickNo, String operator) {
+        // 检出拣货单基本信息
+        PickingBill pickingBill = checkOutPickBill(pickNo);
+
+
+        // 统计拣货单所有订单商品未分拣完成
+        List<Map> omitOrderCommodities = mailPickingService.omitOrderCommodityList(pickNo, StateEnum.normal.getCode());
+        BillState exceptionFlag = BillState.pick_finish;
+
+        if (CollectionUtils.isNotEmpty(omitOrderCommodities)) {
+            log.warn("配货单检测结束检查数据存在漏拣情况-----拣货单号：{}，操作人： {}", pickNo, operator);
+            exceptionFlag = BillState.pick_exception;
+            // 统计订单缺少商品量，记入异常流程
+            new Thread(() ->
+                    omitOrderCommodities.forEach(omitOrderCommodity ->
+                            pickingBillExceptionService.handleException(
+                                    StringUtils.joinWith(
+                                            "&&",
+                                            MapUtils.getString(omitOrderCommodity, "pickNo"),
+                                            MapUtils.getString(omitOrderCommodity, "orderNo"))
+                                    ,
+                                    StringUtils.joinWith(
+                                            "&&",
+                                            MapUtils.getString(omitOrderCommodity, "barCode"),
+                                            MapUtils.getString(omitOrderCommodity, "omitNum")
+                                    )
+                                    ,
+                                    BillState.pick_exception_omit
+                                    ,
+                                    operator
+                            )
+                    )
+            , "Omit-Invoice-Exception." + System.currentTimeMillis()).start();
+        } else {
+            // 若是没有缺少量，则获取异常流程中是否有错拣、多拣数据
+            EntityWrapper wrapper = new EntityWrapper();
+            wrapper.eq("pick_no", pickNo).
+                    eq("state", StateEnum.normal.getCode());
+
+            if (pickingBillExceptionService.selectCount(wrapper) > 0) {
+                log.warn("配货单检测结束检查数据存在错拣、多拣情况-----拣货单号：{}，操作人： {}", pickNo, operator);
+                exceptionFlag = BillState.pick_exception;
+            }
+
+        }
+
+        pickingBill.setBillState(exceptionFlag.getCode());
+        //复检结束
+        pickingBill.setProcessStage(BillState.pick_process_check_close.getCode());
+        PoUtil.update(pickingBill, operator);
+        updateById(pickingBill);
+        return exceptionFlag;
+    }
+
+    /**
+     * 配货单检测
+     *
+     * @param pickNo
+     * @param commodityCode
+     * @param operator
+     */
+    @Override @Transactional
+    public Integer checkInvoice(String pickNo, String commodityCode, String operator) {
+        // 先检测 拣货单是否存在
+        PickingBill pickingBill = checkOutPickBill(pickNo);
+        // 更新拣货单状态
+        if (BillState.pick_save.getCode().equalsIgnoreCase(pickingBill.getBillState())) {
+            pickingBill.setBillState(BillState.pick_ing.getCode());
+            PoUtil.update(pickingBill, operator);
+            updateById(pickingBill);
+        }
+
+        // 检测清单物品
+        List<Map> checkList = this.mailPickingService.invoiceCheckList(pickNo, commodityCode);
+
+        if (CollectionUtils.isEmpty(checkList)) {
+            // 拣错商品，异常处理
+            checkInvoiceException(pickNo, commodityCode, BillState.pick_exception_error, operator);
+        }
+        // 过滤商品已拣好订单
+        checkList = checkList.stream().filter( checkInvoice ->
+            MapUtils.getBoolean(checkInvoice, "pickState")
+        ).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(checkList)) {
+            // 商品拣多，异常处理
+            checkInvoiceException(pickNo, commodityCode, BillState.pick_exception_overflow, operator);
+        }
+
+        // 获取一个数据进行拣货处理
+        Map invoice = checkList.get(0);
+        // 获取订单商品数据
+        String orderCommodityId = MapUtils.getString(invoice, "orderCommodityId");
+        OrderCommodity orderCommodity = orderCommodityService.selectById(orderCommodityId);
+        // 增量拣货商品
+        orderCommodity.pickNumberPlus(1);
+        PoUtil.update(orderCommodity, operator);
+        // 更新订单商品数据
+        orderCommodityService.updateById(orderCommodity);
+        //执行货篮 拣货状态更新
+        Thread updatePickingFinishState = new Thread(() ->
+                mailPickingService.updatePickingFinishState(pickNo, orderCommodity.getOrderNo(), operator)
+        );
+        updatePickingFinishState.setName("Update-Picking-Finish-State." + System.currentTimeMillis());
+        updatePickingFinishState.start();
+        // 返回货篮号
+        return (Integer) invoice.get("basketNum");
+    }
+
+    /**
+     * 定时任务生成(每个整点半执行一次)
+     */
+    @Override @Transactional
+    public void timingGenerator() {
+        long start = System.currentTimeMillis();
+        log.info("定时任务执行开始****** start times: {}ms", start);
+        // 获取系统中所有满足要求的订单(订单客户)
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("state", StateEnum.normal.getCode());
+        wrapper.eq("is_b2b", false);
+        wrapper.groupBy("customer_code");
+        wrapper.having("COUNT(1) > 0");
+        List<String> customerCodes = orderService.selectObjs(wrapper);
+
+        if (customerCodes != null && customerCodes.size() > 0) {
+            customerCodes.stream().forEach(customerCode -> generatorPickingBill(customerCode, 1, Constants.TIMING_GENERATOR_PICK_USER));
+        }
+
+        long end = System.currentTimeMillis();
+        log.info("定时任务执行结束****** end times: {}ms, 总耗时: {}ms", end, end - start);
+    }
+
+    /**
+     * 拣货单 -> 生成配货单
+     *
+     * @param operator  操作人
+     * @param allowSize 允许操作次数
+     * @param pickNos
+     * @return
+     */
+    @Override @Transactional @Synchronized
+    public List generatorInvoice(String operator, Integer allowSize, String... pickNos) {
+        // 拣货单初步判断
+        if (pickNos ==null && pickNos.length < 1) {
+            throw OperationException.customException(ResultEnum.invoice_pick_no);
+        }
+
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.ge("state", StateEnum.normal.getCode());
+        wrapper.le("state", allowSize);
+        wrapper.in("pick_no", pickNos);
+        // 获取多个拣货单
+        List<PickingBill> pickBills = this.selectList(wrapper);
+
+        if (pickBills == null || pickBills.isEmpty()) {
+            throw OperationException.customException(ResultEnum.invoice_pick_no, "拣货单不存在或拣货单已打印过");
+        }
+
+        // 生成多个配货单
+        List invoices = Lists.newLinkedList();
+        pickBills.forEach(pickBill-> {
+            invoices.add(mailPickingService.generatorInvoiceList(pickBill.getPickNo()));
+            //更新拣货单打印次数
+            pickBill.setState(pickBill.getState() + 1);
+            PoUtil.update(pickBill, operator);
+            updateById(pickBill);
+        });
+
+        return invoices;
+    }
+
+    /**
+     * 自动生成拣货单
+     * @param customerCode
+     * @param executeSize
+     * @param operator
+     */
+    @Synchronized // 添加同步锁
+    public void generatorPickingBill(String customerCode, Integer executeSize, String operator) {
         //触发规则生成拣货单 （满足20生成拣货单）
         //获取（满足要求）的订单数据
         List<Order> orders = orderService.obtainOrderList(customerCode, executeSize);
@@ -60,13 +262,13 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         pickingBill.setPickNo(pickNo.toString());
         pickingBill.setProcessStage("new_pick"); // 新的拣货单
         pickingBill.setBillState("save");// 设置拣货单状态 save
-        PoUtils.add(pickingBill, Constants.TRIGGER_GENERATOR_PICK_USER);
+        PoUtil.add(pickingBill, operator);
 
         if (this.baseMapper.insert(pickingBill) < 1) return;
 
         //生成快递拣货篮 20
         // TODO 生成快递拣货篮可优化多线程
-        for (int i = 1; i <= executeSize; i++) {
+        for (int i = 1; i <= orders.size(); i++) {
             Order order = orders.get(i-1);
             MailPicking mailPicking = new MailPicking();
             mailPicking.setOrderNo(order.getOrderNo());
@@ -77,22 +279,58 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
             //获取订单标准重量
             mailPicking.setPresetWeight(orderService.orderCommodityWeight(order.getOrderNo(), order.getCustomerCode()));
             mailPicking.setWeightUnit("kg");
-            mailPickingService.generatorMailPicking(mailPicking, Constants.TRIGGER_GENERATOR_PICK_USER);
+            mailPickingService.generatorMailPicking(mailPicking, operator);
             order.setState(StateEnum.order_pick.getCode());
             order.setUpdateTime(new Date());
-            order.setUpdateUser(Constants.TRIGGER_GENERATOR_PICK_USER);
+            order.setUpdateUser(operator);
             // 更新订单-拣货状态
             orderService.updateById(order);
         }
 
-        log.info("触发规则生成拣货单耗时统计： {}ms", System.currentTimeMillis()-flag);
     }
 
     /**
-     * 定时任务生成(每个整点半执行一次)
+     *  配货单检测异常处理
+     * @param pickNo 拣货单号/拣货单号&&订单号
+     * @param commodityCode 商品条形码/商品条形码&&数量
+     * @param type 拣货异常类型
+     * @param operator 操作人
      */
-    @Override
-    public void timingGenerator() {
-        log.info("定时任务执行中****** times: {}", System.currentTimeMillis() );
+    private void checkInvoiceException(String pickNo, String commodityCode, BillState type, String operator) {
+        ResultEnum invoicePickCommodity = ResultEnum.invoice_pick_commodity_overflow;
+        log.warn("配货单检测数据存在错拣、多拣情况-----拣货单号：{}，商品条形码：{}，操作人： {}", pickNo, commodityCode, operator);
+        switch (type) {
+            case pick_exception_error:
+                invoicePickCommodity = ResultEnum.invoice_pick_commodity_exit;
+                break;
+            case pick_exception_omit:
+                invoicePickCommodity = ResultEnum.invoice_pick_commodity_omit;
+                break;
+        }
+        //使用辅助线程处理拣货异常
+        new Thread(() ->
+                pickingBillExceptionService.handleException(pickNo, commodityCode, type, operator)
+                , "PICK-BILL-EXCEPTION-HANDLER." + System.currentTimeMillis()).start();
+        throw OperationException.customException(invoicePickCommodity);
+    }
+
+    /**
+     * 检出基本拣货单信息
+     * @param pickNo 拣货单编号
+     * @return
+     */
+    private PickingBill checkOutPickBill(String pickNo) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("pick_no", pickNo);
+        PickingBill pickingBill = selectOne(wrapper);
+
+        if (pickingBill == null) {
+            throw OperationException.customException(ResultEnum.invoice_pick_no, "拣货单不存在！");
+        }
+        // 复检是否关闭
+        if (StringUtils.equalsIgnoreCase(BillState.pick_process_check_close.getCode(), pickingBill.getProcessStage())) {
+            throw OperationException.customException(ResultEnum.invoice_pick_close);
+        }
+        return pickingBill;
     }
 }

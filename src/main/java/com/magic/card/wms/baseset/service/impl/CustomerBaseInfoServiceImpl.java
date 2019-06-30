@@ -9,12 +9,11 @@ import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -76,7 +75,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         checkCustomer(customerBaseInfoDTO, false);
         CustomerBaseInfo customerBaseInfo = new CustomerBaseInfo();
         BeanUtils.copyProperties(customerBaseInfoDTO, customerBaseInfo);
-        PoUtils.add(customerBaseInfo, operator);
+        PoUtil.add(customerBaseInfo, operator);
 
         if (this.baseMapper.insert(customerBaseInfo) < 1)
             throw OperationException.DATA_OPERATION_ADD;
@@ -88,7 +87,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         checkCustomer(customerBaseInfoDTO, true);
         CustomerBaseInfo customerBaseInfo = new CustomerBaseInfo();
         BeanUtils.copyProperties(customerBaseInfoDTO, customerBaseInfo);
-        PoUtils.update(customerBaseInfo, operator);
+        PoUtil.update(customerBaseInfo, operator);
 
         if (this.baseMapper.updateById(customerBaseInfo) < 1) {
             throw OperationException.DATA_OPERATION_UPDATE;
@@ -97,6 +96,31 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     }
 
 
+    /**
+     * 检测客户是否存在，存在则返回客户信息
+     *
+     * @param wrapper
+     * @return
+     */
+    @Override
+    public CustomerBaseInfo checkCustomer(String customerCode) {
+        if (StringUtils.isNotBlank(customerCode)) {
+            EntityWrapper wrapper = new EntityWrapper();
+            wrapper.eq("state", Constants.ACTIVITY_STATE);
+            wrapper.eq("customer_code", customerCode);
+
+
+            CustomerBaseInfo customerBaseInfo = this.selectOne(wrapper);
+
+            if (customerBaseInfo == null) {
+                throw OperationException.addException("未知商家， 请提供明确的CODE");
+            }
+
+            return customerBaseInfo;
+        }
+
+        throw OperationException.addException("CustomerCode 不可为空");
+    }
 
     /**
      * 加载商家产品列表（可分页搜索查询）
@@ -165,7 +189,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         EntityWrapper wrapper = new EntityWrapper();
 
         if (updateOperation) {
-            PoUtils.checkId(customerBaseInfoDTO.getId());
+            PoUtil.checkId(customerBaseInfoDTO.getId());
             wrapper.ne("id", customerBaseInfoDTO.getId());
         }
 
@@ -174,7 +198,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
                 .eq("customer_code", customerBaseInfoDTO.getCustomerCode());
 
         if (this.selectCount(wrapper) > 0) {
-            throw new BusinessException(ResultEnum.data_check_exist.getCode(), "客户Code已存在");
+            throw OperationException.customException(ResultEnum.data_check_exist, "客户Code已存在");
         }
 
     }

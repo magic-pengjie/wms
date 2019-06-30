@@ -8,7 +8,7 @@ import com.magic.card.wms.baseset.model.po.OrderCommodity;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +35,13 @@ public class OrderCommodityServiceImpl extends ServiceImpl<OrderCommodityMapper,
     public void importOrderCommodity(OrderCommodityDTO orderCommodityDTO, String customerId, String operator) {
         checkOrderCommodity(orderCommodityDTO, customerId);
         OrderCommodity commodity = new OrderCommodity();
-        PoUtils.add(orderCommodityDTO, commodity, operator);
+        PoUtil.add(orderCommodityDTO, commodity, operator);
 
         if (this.baseMapper.insert(commodity) < 1) {
             throw OperationException.addException("订单商品导入失败");
         }
+
+        // TODO 执行库存占用 customerCode commodityCode occupyNum
 
     }
 

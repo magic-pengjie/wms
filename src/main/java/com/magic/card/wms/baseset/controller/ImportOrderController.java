@@ -43,4 +43,22 @@ public class ImportOrderController {
     public void generationPicking(@RequestParam String customerCode, @RequestParam(required = false, defaultValue = "20")Integer executeSize) {
         pickingBillService.triggerGenerator(customerCode, executeSize);
     }
+
+    @ApiOperation("测试触发生配货单")
+    @GetMapping("generationInvoices")
+    public ResponseData generationInvoices(@RequestParam String[] pickNos) {
+        return ResponseData.ok(pickingBillService.generatorInvoice(Constants.DEFAULT_USER, 1, pickNos));
+    }
+
+    @ApiOperation("配货复检")
+    @GetMapping("invoiceCheck")
+    public ResponseData invoiceCheck(@RequestParam String pickNo, @RequestParam String commodityCode) {
+        return ResponseData.ok(pickingBillService.checkInvoice(pickNo, commodityCode, Constants.DEFAULT_USER));
+    }
+
+    @ApiOperation("配货复检手动关闭")
+    @GetMapping("invoiceCheckClose")
+    public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
+        return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo, Constants.DEFAULT_USER));
+    }
 }

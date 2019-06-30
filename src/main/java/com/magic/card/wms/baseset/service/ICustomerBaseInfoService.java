@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.service;
 
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
@@ -66,4 +67,11 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
      * @return
      */
     LoadGrid loadCustomerCommodities(LoadGrid loadGrid, String customerId);
+
+    /**
+     * 检测客户是否存在，存在则返回客户信息
+     * @param wrapper
+     * @return
+     */
+    CustomerBaseInfo checkCustomer(String customerCode);
 }

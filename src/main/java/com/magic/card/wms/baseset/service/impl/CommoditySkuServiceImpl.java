@@ -1,6 +1,5 @@
 package com.magic.card.wms.baseset.service.impl;
 
-import com.baomidou.mybatisplus.enums.SqlLike;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -9,15 +8,13 @@ import com.magic.card.wms.baseset.mapper.CommoditySkuMapper;
 import com.magic.card.wms.baseset.model.dto.CommoditySkuDTO;
 import com.magic.card.wms.baseset.model.po.CommoditySku;
 import com.magic.card.wms.baseset.service.ICommoditySkuService;
-import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,7 +89,7 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
     public void add(CommoditySkuDTO commoditySkuDTO, String operation) {
         checkCommoditySKU(commoditySkuDTO, false);
         CommoditySku sku = new CommoditySku();
-        PoUtils.add(commoditySkuDTO, sku, Constants.DEFAULT_USER);
+        PoUtil.add(commoditySkuDTO, sku, Constants.DEFAULT_USER);
 
         if (this.baseMapper.insert(sku) < 1)
             throw OperationException.DATA_OPERATION_ADD;
@@ -110,7 +107,7 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
     public void update(CommoditySkuDTO commoditySkuDTO, String operation) {
         checkCommoditySKU(commoditySkuDTO, true);
         CommoditySku sku = new CommoditySku();
-        PoUtils.update(commoditySkuDTO, sku, Constants.DEFAULT_USER);
+        PoUtil.update(commoditySkuDTO, sku, Constants.DEFAULT_USER);
 
         if (this.baseMapper.updateById(sku) < 1)
             throw OperationException.DATA_OPERATION_UPDATE;
@@ -138,16 +135,19 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
     private void checkCommoditySKU(CommoditySkuDTO commoditySkuDTO, Boolean updateOperation) {
 
         if (updateOperation)
-            PoUtils.checkId(commoditySkuDTO.getId());
+            PoUtil.checkId(commoditySkuDTO.getId());
 
         // 检测 商品二维码是否已存在数据库
         EntityWrapper<CommoditySku> skuEntityWrapper = new EntityWrapper<>();
         skuEntityWrapper.eq("bar_code", commoditySkuDTO.getBarCode());
 
-        if (updateOperation)
+        if (updateOperation) {
             skuEntityWrapper.ne("id", commoditySkuDTO.getId());
+        }
 
-        if (this.selectCount(skuEntityWrapper) > 0)
-            throw new BusinessException(ResultEnum.data_check_exist.getCode(), "当前商品的二维码已存在");
+        if (this.selectCount(skuEntityWrapper) > 0) {
+            throw OperationException.customException(ResultEnum.data_check_exist, "当前商品的二维码已存在");
+        }
+
     }
 }

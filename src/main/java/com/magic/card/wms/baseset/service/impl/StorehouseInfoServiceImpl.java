@@ -12,7 +12,7 @@ import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +58,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     public void add(StorehouseInfoDTO storehouseInfoDTO, String operator) {
         checkStorehouse(storehouseInfoDTO, false);
         StorehouseInfo storehouseInfo = new StorehouseInfo();
-        PoUtils.add(storehouseInfoDTO, storehouseInfo, operator);
+        PoUtil.add(storehouseInfoDTO, storehouseInfo, operator);
 
         if (this.baseMapper.insert(storehouseInfo) < 1)
             throw OperationException.DATA_OPERATION_ADD;
@@ -69,7 +69,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     public void update(StorehouseInfoDTO storehouseInfoDTO, String operator) {
         checkStorehouse(storehouseInfoDTO, true);
         StorehouseInfo storehouseInfo = new StorehouseInfo();
-        PoUtils.update(storehouseInfoDTO, storehouseInfo, operator);
+        PoUtil.update(storehouseInfoDTO, storehouseInfo, operator);
 
         if (this.baseMapper.updateById(storehouseInfo) < 1)
             throw OperationException.DATA_OPERATION_UPDATE;
@@ -98,7 +98,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     private void checkStorehouse(StorehouseInfoDTO storehouseInfoDTO, Boolean updateOperation) {
 
         if (updateOperation) {
-            PoUtils.checkId(storehouseInfoDTO.getId());
+            PoUtil.checkId(storehouseInfoDTO.getId());
         }
 
 
@@ -114,7 +114,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         wrapper.eq("state", 1);
 
         if (this.selectCount(wrapper) > 0) {
-            throw new BusinessException(ResultEnum.store_house_error.getCode(), "区域编号已被其他功能区占用");
+            throw OperationException.customException(ResultEnum.store_house_error, "区域编号已被其他功能区占用");
         }
 
         // 判断库位编号是否
@@ -129,8 +129,8 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         wrapper.eq("state", 1);
 
         if (this.selectCount(wrapper) > 0) {
-            throw new BusinessException(ResultEnum.store_house_error.getCode(), "库位编号已被占用");
-        }
+            throw OperationException.customException(ResultEnum.store_house_error, "库位编号已被占用");
+         }
 
     }
 }

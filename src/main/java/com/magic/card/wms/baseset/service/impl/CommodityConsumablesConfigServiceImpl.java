@@ -10,7 +10,7 @@ import com.magic.card.wms.baseset.model.po.CommodityConsumablesConfig;
 import com.magic.card.wms.baseset.service.ICommodityConsumablesConfigService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
@@ -87,9 +87,9 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
      */
     @Override @Transactional
     public void update(CommodityConsumablesConfigDTO commodityConsumablesConfigDTO, String operator) {
-        PoUtils.checkId(commodityConsumablesConfigDTO.getId());
+        PoUtil.checkId(commodityConsumablesConfigDTO.getId());
         CommodityConsumablesConfig commodityConsumablesConfig = new CommodityConsumablesConfig();
-        PoUtils.update(commodityConsumablesConfigDTO, commodityConsumablesConfig, operator);
+        PoUtil.update(commodityConsumablesConfigDTO, commodityConsumablesConfig, operator);
 
         if (this.baseMapper.updateById(commodityConsumablesConfig) < 1)
             throw OperationException.DATA_OPERATION_ADD;

@@ -81,4 +81,25 @@ public class OperationException extends RuntimeException {
         exception.setErrMsg(errMsg);
         return exception;
     }
+
+    /**
+     * 自定义异常处理
+     * @param resultEnum
+     * @param errMsg
+     * @return
+     */
+     public static OperationException customException(ResultEnum resultEnum, String errMsg) {
+         OperationException exception = customException(resultEnum);
+         exception.setErrMsg(errMsg);
+         return exception;
+     }
+
+    /**
+     * 自定义异常处理
+     * @param resultEnum
+     * @return
+     */
+     public static OperationException customException(ResultEnum resultEnum) {
+         return new OperationException(resultEnum);
+     }
 }

@@ -1,6 +1,7 @@
-package com.magic.card.wms.common.model.po;
+package com.magic.card.wms.common.utils;
 
 import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.po.BasePo;
 import org.springframework.beans.BeanUtils;
 import java.util.Date;
 
@@ -12,7 +13,7 @@ import java.util.Date;
  * @date : 2019/6/18/018 12:33
  * @since : 1.0.0
  */
-public class PoUtils {
+public class PoUtil {
     /**
      * PO类添加时操作 ：
      *  1.设置数据创建时间
@@ -25,7 +26,7 @@ public class PoUtils {
      * @param <Po>
      * @param <DTO>
      */
-    public static <Po extends BasePo, DTO> void add(DTO dto,Po po, String operator) {
+    public static <Po extends BasePo, DTO> void add(DTO dto, Po po, String operator) {
         po.setCreateTime(new Date());
         po.setCreateUser(operator);
         update(dto, po, operator);

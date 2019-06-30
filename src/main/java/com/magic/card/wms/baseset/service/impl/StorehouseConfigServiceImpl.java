@@ -5,13 +5,16 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
+import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
-import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.baseset.service.IStorehouseInfoService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
-import com.sun.org.apache.bcel.internal.generic.I2F;
+import com.magic.card.wms.common.utils.PoUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMapper, StorehouseConfig> implements IStorehouseConfigService {
-
+    @Autowired
+    private IStorehouseInfoService storehouseInfoService;
     /**
      * 查询仓库配置信息
      *
@@ -50,7 +54,7 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     public void add(StorehouseConfigDTO storehouseConfigDTO, String operator) {
         checkStorehouseConfig(storehouseConfigDTO, false);
         StorehouseConfig config = new StorehouseConfig();
-        PoUtils.add(storehouseConfigDTO, config, operator);
+        PoUtil.add(storehouseConfigDTO, config, operator);
 
         if (this.baseMapper.insert(config) < 1) {
             throw OperationException.DATA_OPERATION_ADD;
@@ -69,7 +73,7 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     public void update(StorehouseConfigDTO storehouseConfigDTO, String operator) {
         checkStorehouseConfig(storehouseConfigDTO, true);
         StorehouseConfig config = new StorehouseConfig();
-        PoUtils.update(storehouseConfigDTO, config, operator);
+        PoUtil.update(storehouseConfigDTO, config, operator);
 
         if (this.baseMapper.updateById(config) < 1) {
             throw OperationException.DATA_OPERATION_UPDATE;
@@ -99,7 +103,7 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     private void checkStorehouseConfig(StorehouseConfigDTO storehouseConfigDTO, Boolean updateOperation) {
 
         if (updateOperation) {
-            PoUtils.checkId(storehouseConfigDTO.getId());
+            PoUtil.checkId(storehouseConfigDTO.getId());
         }
 
         // 检查当前库位是否已经使用
@@ -112,7 +116,23 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         }
 
         if (this.selectCount(wrapper) > 0) {
-            throw new BusinessException(ResultEnum.data_check_exist.getCode(), "库区已经被配置");
+            throw OperationException.customException(ResultEnum.data_check_exist, "库区已经被配置");
         }
+
+        if (StringUtils.isBlank(storehouseConfigDTO.getCommodityId())) return;
+
+        // TODO 判断当前库位是否为拣货区且已近存放该商品
+        StorehouseInfo storehouseInfo = this.storehouseInfoService.selectById(storehouseConfigDTO.getStorehouseId());
+
+        if (storehouseInfo != null && StringUtils.equalsAnyIgnoreCase(Constants.PICKING_AREA_CODE, storehouseInfo.getHouseCode())) {
+            wrapper.eq("commodity_id", storehouseConfigDTO.getCommodityId());
+
+            if (this.selectCount(wrapper) > 0) {
+                throw OperationException.customException(ResultEnum.data_check_exist, "该商品在拣货区已经有库位了！");
+            }
+
+        }
+
+
     }
 }
