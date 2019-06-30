@@ -50,6 +50,8 @@ public enum ResultEnum {
 	user_state_error(200007,"用户状态不正确，请确认！"),
 	dist_exist(20008, "常量的code已经存在，请重新填写"),
 	store_house_error(20009, "仓库信息异常"),
+	query_role_failed(200010,"查询角色列表失败"),
+	add_role_failed(200011,"新增角色失败"),
 	
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),
 	delete_purchase_not_exsit(400002,"采购单不存在删除失败"),
