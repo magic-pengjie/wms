@@ -49,4 +49,17 @@ public class OrderCommodity extends BasePo implements Serializable {
      */
     private Integer numbers;
 
+    /**
+     * 已拣数量
+     */
+    private Integer pickNumbers;
+
+    /**
+     * 增加拣货量
+     * @param plusNum
+     */
+    public void pickNumberPlus(Integer plusNum) {
+        this.pickNumbers += plusNum;
+    }
+
 }

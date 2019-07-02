@@ -15,8 +15,9 @@ import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.CommodityUtil;
+import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +68,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      */
     @Override @Transactional
     public void importOrder(OrderInfoDTO orderInfoDTO, String operator) {
+
+        if (StringUtils.equalsIgnoreCase("cancel", orderInfoDTO.getBillState())) {
+            cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
+        }
+
         CustomerBaseInfo customerBaseInfo = checkOrder(orderInfoDTO);
         Order order = new Order();
-        PoUtils.add(orderInfoDTO, order, operator);
+        PoUtil.add(orderInfoDTO, order, operator);
 
         // 保存单号
         if (this.baseMapper.insert(order) < 1) {
@@ -88,18 +95,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         });
 
         // 触发生成拣货单
-        new Thread(() -> {
-            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode());
-        }).start();
+        new Thread(() ->
+            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 20)
+        ).start();
     }
 
     /**
      * 获取满足要求的所有订单
-     *
+     * 添加同步锁 预防触发、定时并发请求
      * @param customerCode
      * @return
      */
-    @Override
+    @Override @Synchronized
     public List<Order> obtainOrderList(String customerCode, Integer executeSize) {
 
         if (StringUtils.isBlank(customerCode)) return null;
@@ -165,21 +172,36 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     }
 
     /**
-     * 检测订单
+     * 取消订单操作
+     * @param customerCode
+     * @param orderNo
+     * @param operator
+     */
+    public void cancelOrder(String customerCode, String orderNo, String operator) {
+        // 判断系统中是否存在订单
+        Order order = this.checkOrder(customerCode, orderNo);
+        // TODO 取消订单是否需要判断当前订单是否已近打包
+
+        // 取消订单
+        order.setBillState("cancel");
+        PoUtil.update(order, operator);
+
+        if (this.baseMapper.updateById(order) < 1) throw OperationException.addException("订单导入失败");
+
+        // TODO 订单成功取消 操作库存
+    }
+
+    /**
+     * 导入确认订单检测
      * @param orderInfoDTO
      */
     private CustomerBaseInfo checkOrder(OrderInfoDTO orderInfoDTO) {
         // 检测客户是否存在系统
+        CustomerBaseInfo customerBaseInfo = this.customerService.checkCustomer(orderInfoDTO.getCustomerCode());
+
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("state", Constants.ACTIVITY_STATE);
         wrapper.eq("customer_code", orderInfoDTO.getCustomerCode());
-
-        CustomerBaseInfo customerBaseInfo = this.customerService.selectOne(wrapper);
-
-        if (customerBaseInfo == null) {
-            throw OperationException.addException("未知商家， 请提供明确的CODE");
-        }
-
         wrapper.eq("order_no", orderInfoDTO.getOrderNo());
 
         if (this.selectCount(wrapper) > 0) {
@@ -187,5 +209,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         return customerBaseInfo;
+    }
+
+    /**
+     * 导入取消订单时检测
+     * @param customerCode
+     * @param orderNo
+     */
+    private Order checkOrder(String customerCode, String orderNo) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.ne("state", StateEnum.delete.getCode()).
+                eq("order_no", orderNo).
+                eq("customer_code", customerCode);
+
+        Order order = this.selectOne(wrapper);
+
+        if (order == null) {
+            throw OperationException.addException("您客户的订单（取消），并不存在请核实后再重新导入");
+        }
+
+        if (StringUtils.equalsAnyIgnoreCase("cancel", order.getBillState())) {
+            throw OperationException.addException("您客户的订单已近被取消请勿重复导入，如有疑问请核实后再重新导入");
+        }
+
+        return order;
     }
 }

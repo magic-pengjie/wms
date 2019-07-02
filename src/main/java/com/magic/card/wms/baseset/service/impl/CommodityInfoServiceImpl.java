@@ -7,10 +7,12 @@ import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.mapper.CommodityInfoMapper;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.baseset.service.ICommodityStockService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
+import org.apache.commons.lang3.ThreadUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,8 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
     static {
 
     }
+    @Autowired
+    private ICommodityStockService commodityStockService;
 
     /**
      * 添加商品关联信息
@@ -47,11 +51,20 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
     public void add(CommodityInfoDTO commodityInfoDTO, String operator) {
         checkCommodityInfo(commodityInfoDTO, false);
         Commodity commodity = new Commodity();
-        PoUtils.add(commodityInfoDTO, commodity, operator);
+        PoUtil.add(commodityInfoDTO, commodity, operator);
 
-        if (this.baseMapper.insert(commodity) < 1)
+        if (this.baseMapper.insert(commodity) < 1) {
             throw OperationException.DATA_OPERATION_ADD;
+        }
 
+        // 初始化商品库存
+        new Thread(()->
+                commodityStockService.initSetting(
+                        commodityInfoDTO.getCustomerId(),
+                        commodityInfoDTO.getCommodityCode()
+                ),
+                "Commodity-Stock-Init-Setting." + System.currentTimeMillis()
+        ).start();
     }
 
     /**
@@ -65,7 +78,7 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
     public void update(CommodityInfoDTO commodityInfoDTO, String operator) {
         checkCommodityInfo(commodityInfoDTO, true);
         Commodity commodity = new Commodity();
-        PoUtils.update(commodityInfoDTO, commodity, operator);
+        PoUtil.update(commodityInfoDTO, commodity, operator);
 
         if (this.baseMapper.updateById(commodity) < 1)
             throw OperationException.DATA_OPERATION_UPDATE;
@@ -96,7 +109,8 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
 
         if (updateOperator) wrapper.ne("id", commodityInfoDTO.getId());
 
-        if (this.selectCount(wrapper) > 0)
-            throw new BusinessException(ResultEnum.data_check_exist.getCode(), "当前商品已关联客户");
+        if (this.selectCount(wrapper) > 0) {
+            throw OperationException.customException(ResultEnum.data_check_exist, "当前商品已关联客户");
+        }
     }
 }

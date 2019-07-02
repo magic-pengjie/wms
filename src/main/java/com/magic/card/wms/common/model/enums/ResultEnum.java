@@ -38,7 +38,9 @@ public enum ResultEnum {
 	data_add_failed(10010, "数据添加失败"),
 	data_update_failed(10011, "数据更新失败"),
 	data_delete_failed(10012, "数据删除失败"),
-	
+
+	commodity_stock_setting_deficiency(10013, "当前商品库存不存在！"),
+
 	query_user_failed(200000,"查询用户失败"),
 	add_user_failed(200001,"新增用户失败"),
 	add_user_exist(200002,"查询用户已存在，请重新新增"),
@@ -56,7 +58,14 @@ public enum ResultEnum {
 	delete_purchase_state_error(400003,"采购单已确认删除失败"),
 	purchase_file_size_zero(400004,"上传文件为空"),
 	purchase_file_is_null(400005,"上传数据为空"),
-	
+
+	invoice_pick_no(500000, "拣货单号不可为空"),
+	invoice_pick_commodity_exit(50001, "该清单不需要此类商品，检错了呦！"),
+	invoice_pick_commodity_overflow(50002, "该清单商品需求已满，拣多喽！"),
+	invoice_pick_commodity_omit(50004, "商品漏检"),
+	invoice_pick_finish(50003, "拣货单已完成"),
+	invoice_pick_close(50005, "复检已经结束，请勿重复操作"),
+
 	
 	unkown_error(999999, "系统异常");
 	private static Map<Integer,ResultEnum> enumMap = new HashMap();

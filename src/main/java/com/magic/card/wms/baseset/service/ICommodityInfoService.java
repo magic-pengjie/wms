@@ -1,8 +1,10 @@
 package com.magic.card.wms.baseset.service;
 
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.magic.card.wms.baseset.model.dto.CommodityInfoDTO;
 import com.magic.card.wms.baseset.model.po.Commodity;
 import com.baomidou.mybatisplus.service.IService;
+import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 
 /**
  * <p>
@@ -35,7 +37,6 @@ public interface ICommodityInfoService extends IService<Commodity> {
      * @param id
      */
     void delete(Long id);
-
 
 
 }

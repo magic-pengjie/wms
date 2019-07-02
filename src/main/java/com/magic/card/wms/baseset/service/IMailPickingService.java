@@ -3,6 +3,9 @@ package com.magic.card.wms.baseset.service;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * com.magic.card.wms.baseset.service
  * 快递篮拣货服务接口
@@ -19,4 +22,48 @@ public interface IMailPickingService extends IService<MailPicking> {
      * @param operator
      */
     void generatorMailPicking(MailPicking mailPicking, String operator);
+
+    /**
+     * 自动生成配货单清单
+     * @return
+     */
+    List<Map> generatorInvoiceList(String pickNo);
+
+    /**
+     * 配货单清单检查数据
+     * @param pickNo
+     * @param commodityCode
+     * @return
+     */
+    List<Map> invoiceCheckList(String pickNo, String commodityCode);
+
+    /**
+     * 自动更新拣货篮所有订单完成状态
+     * @param pickNo
+     */
+    void autoUpdatePickingFinishState(String pickNo, String operator);
+
+    /**
+     * 更新拣货篮指定订单 -> 完成状态
+     * @param pickNo
+     * @param orderNo
+     */
+    void updatePickingFinishState(String pickNo, String orderNo, String operator);
+
+    /**
+     * 获取拣货单各个拣货篮的完成状态
+     * @param pickNo
+     * @return
+     */
+    List<Map> obtainPickingFinishState(String pickNo);
+
+    /**
+     * 获取拣货单所有漏检商品数据信息
+     * @param pickNo
+     * @param state
+     * @return
+     */
+    List<Map> omitOrderCommodityList(String pickNo, Integer state);
+
+
 }

@@ -10,7 +10,7 @@ import com.magic.card.wms.baseset.service.IBrandInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
-import com.magic.card.wms.common.model.po.PoUtils;
+import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -68,7 +68,7 @@ public class BrandInfoServiceImpl extends ServiceImpl<BrandInfoMapper, Brand> im
     public void addBrandInfo(BrandInfoDTO brandInfoDTO, String operator) {
         Brand brand = new Brand();
         BeanUtils.copyProperties(brandInfoDTO, brand);
-        PoUtils.add(brand, operator);
+        PoUtil.add(brand, operator);
 
         if (this.baseMapper.insert(brand) < 1)
             throw OperationException.DATA_OPERATION_ADD;
@@ -84,7 +84,7 @@ public class BrandInfoServiceImpl extends ServiceImpl<BrandInfoMapper, Brand> im
 
         Brand brand = new Brand();
         BeanUtils.copyProperties(brandInfoDTO, brand);
-        PoUtils.update(brand, operator);
+        PoUtil.update(brand, operator);
 
         if (this.baseMapper.updateById(brand) <1 )
             throw OperationException.DATA_OPERATION_UPDATE;
