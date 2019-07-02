@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 盘点记录表
+ *	 盘点记录表
  * </p>
  *
  * @author zhouhao

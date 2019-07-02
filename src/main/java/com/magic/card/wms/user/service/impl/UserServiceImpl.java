@@ -20,7 +20,9 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.SessionKeyConstants;
 import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.service.RedisService;
 import com.magic.card.wms.user.mapper.MenuInfoMapper;
 import com.magic.card.wms.user.mapper.RoleInfoMapper;
 import com.magic.card.wms.user.mapper.UserMapper;
@@ -39,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  *  用户管理服务实现类
- * @author pengjie
+ * @author Zhouhao
  * @since 2019-06-13
  */
 @Slf4j
@@ -54,6 +56,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	
 	@Autowired
 	private MenuInfoMapper menuInfoMapper;
+	
+	@Autowired
+	private RedisService redisService;
 	
 	@Override
 	public List<User> getUserList() {
@@ -146,6 +151,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				log.info("===>> login 用户名密码错误！UserDto:{}", dto);
 				throw new BusinessException(ResultEnum.user_pwd_error.getCode(), ResultEnum.user_pwd_error.getMsg());
 			}
+			//将用户信息放入redis
+			redisService.set(SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
+			log.info("===>> userSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
 		}else {
 			log.info("===>> login 用户不存在！userNo:{}", dto.getUserNo());
 			throw new BusinessException(ResultEnum.user_name_not_exist.getCode(), ResultEnum.user_name_not_exist.getMsg());
@@ -177,6 +185,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			throw new BusinessException(00, "用户角色未配置菜单信息，请联系管理员配置角色菜单！");
 		}
 		userRoleMenuList.setMenuList(menuList);
+		//将用户角色及菜单 放入redis
+		redisService.set(SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
+		log.info("===>> userRoleMenuSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
 		return userRoleMenuList;
 	}
 
