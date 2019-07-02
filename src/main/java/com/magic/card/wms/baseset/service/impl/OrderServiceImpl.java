@@ -88,9 +88,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         });
 
         // 触发生成拣货单
-//        new Thread(() -> {
-//            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode());
-//        }).start();
+        new Thread(() -> {
+            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode());
+        }).start();
     }
 
     /**
