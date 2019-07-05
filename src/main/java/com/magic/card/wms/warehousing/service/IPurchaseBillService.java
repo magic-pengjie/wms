@@ -8,8 +8,9 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.PageInfo;
+import com.magic.card.wms.warehousing.model.dto.ComfirmReqDTO;
 import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
-import com.magic.card.wms.warehousing.model.dto.PurchaseBillQueryDTO;
+import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
 import com.magic.card.wms.warehousing.model.po.PurchaseBill;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
 
@@ -29,7 +30,7 @@ public interface IPurchaseBillService extends IService<PurchaseBill> {
 	 * @param page 分页对象
 	 * @return
 	 */
-	Page<PurchaseBillVO> selectPurchaseBillList(PurchaseBillQueryDTO dto,PageInfo page);
+	Page<PurchaseBillVO> selectPurchaseBillList(BillQueryDTO dto,PageInfo page);
 	
 	/**
 	 * 新增
@@ -58,4 +59,11 @@ public interface IPurchaseBillService extends IService<PurchaseBill> {
 	 * @return
 	 */
 	void importPurchase(MultipartFile file) throws BusinessException, IOException;
+	
+	/***
+	 * 确认操作
+	 * @param dto
+	 */
+	void confirm(ComfirmReqDTO dto);
+	
 }

@@ -96,6 +96,30 @@ public class PurchaseBillDetail extends BasePo implements Serializable {
      */
     @ApiModelProperty("保质期值")
     private Double shilfLife;
+    
+    /**
+     * 收货数量
+     */
+    @ApiModelProperty("收货数量")
+    private Integer receivNums;
+    
+    /**
+     * 收货说明
+     */
+    @ApiModelProperty("收货说明")
+    private Integer receivRemark;
+    
+    /**
+     * 入库数量
+     */
+    @ApiModelProperty("入库数量")
+    private Integer warehousingNums;
+    
+    /**
+     * 入库说明
+     */
+    @ApiModelProperty("入库说明")
+    private Integer warehousingRemark;
 
 
 }

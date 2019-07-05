@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
-import com.magic.card.wms.warehousing.model.dto.PurchaseBillQueryDTO;
+import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
 import com.magic.card.wms.warehousing.model.po.PurchaseBill;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
 
@@ -24,13 +24,13 @@ public interface PurchaseBillMapper extends BaseMapper<PurchaseBill> {
 	 * @param page 分页对象
 	 * @return
 	 */
-	List<PurchaseBillVO> selectPurchaseBillList(Pagination page ,PurchaseBillQueryDTO dto);
+	List<PurchaseBillVO> selectPurchaseBillList(Pagination page ,BillQueryDTO dto);
 	/**
 	 * 查询采购单总条数
 	 * @param dto 请求参数
 	 * @return
 	 */
-	Long selectPurchaseBillListCount(PurchaseBillQueryDTO dto);
+	Long selectPurchaseBillListCount(BillQueryDTO dto);
 	/**
 	 * 采购单验重
 	 * @return 大于0表示重复

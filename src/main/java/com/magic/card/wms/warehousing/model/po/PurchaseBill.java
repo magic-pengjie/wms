@@ -1,6 +1,7 @@
 package com.magic.card.wms.warehousing.model.po;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.magic.card.wms.common.model.po.BasePo;
@@ -30,11 +31,23 @@ public class PurchaseBill extends BasePo implements Serializable {
      */
 	@ApiModelProperty("采购单号")
     private String purchaseNo;
+	
 	/**
      * 采购单名称
      */
 	@ApiModelProperty("采购单名称")
 	private String name;
+	 /**
+     * 收货单号
+     */
+	@ApiModelProperty("收货单号")
+    private String receivNo;
+	 /**
+     * 入库单号
+     */
+	@ApiModelProperty("入库单号")
+    private String warehousingNo;
+	
     /**
      * 商家编码
      */
@@ -80,10 +93,41 @@ public class PurchaseBill extends BasePo implements Serializable {
      */
 	@ApiModelProperty("制单时间")
     private String makeDate;
-    /**
-     * 单据状态(保存:save确认:confirm 作废:cancel )
+	
+	 /**
+     * 收货人
      */
-	@ApiModelProperty("单据状态(保存:save确认:confirm 作废:cancel )")
+	@ApiModelProperty("收货人")
+    private String receivUser;
+    /**
+     * 收货时间
+     */
+	@ApiModelProperty("收货时间")
+    private String receivDate;
+	/**
+     * 入库日期
+     */
+	@ApiModelProperty("入库日期")
+    private Date warehousingDate;
+    /**
+     * 存储库位编码
+     */
+	@ApiModelProperty("存储库位编码")
+    private String storehouseCode;
+    /**
+     * 审核人
+     */
+	@ApiModelProperty("审核人")
+    private String approver;
+    /**
+     * 审核时间
+     */
+	@ApiModelProperty("审核时间")
+    private Date approveTime;
+    /**
+     * 单据状态(保存:save 待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )
+     */
+	@ApiModelProperty("单据状态(保存:save 待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
     private String billState;
 
 
