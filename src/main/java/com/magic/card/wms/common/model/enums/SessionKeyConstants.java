@@ -11,5 +11,8 @@ public class SessionKeyConstants {
 	 * 用户角色及菜单缓存Key前缀，+用户主键ID
 	 */
 	public final static String USER_ROLE_MENU_KEY = "user_role_menu_key_"; 
+	
+	
+	public final static String USER_INFO = "USER_INFO";
 
 }

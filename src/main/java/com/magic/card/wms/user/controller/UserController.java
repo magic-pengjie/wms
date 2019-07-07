@@ -17,6 +17,7 @@ import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.UserDTO;
 import com.magic.card.wms.user.model.dto.UserLoginDTO;
+import com.magic.card.wms.user.model.dto.UserResponseDTO;
 import com.magic.card.wms.user.model.dto.UserRoleMenuQueryDTO;
 import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.service.IUserService;
@@ -49,8 +50,9 @@ public class UserController {
 	@ApiOperation(value = "用户登录", notes = "用户密码登录")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseData userLogin(@RequestBody @Valid UserLoginDTO dto, BindingResult bindingResult) {
+		UserResponseDTO loginDto =  null;
 		try {
-			userService.login(dto);
+			loginDto = userService.login(dto);
 		}catch (BusinessException e) {
 			log.error("===用户登录失败:{}",e);
 			return ResponseData.error(e.getErrCode(),e.getErrMsg());
@@ -58,7 +60,7 @@ public class UserController {
 			log.error("===用户登录失败:{}",e);
 			return ResponseData.error(ResultEnum.user_login_failed.getMsg());
 		}
-		return ResponseData.ok();
+		return ResponseData.ok(loginDto);
 	}
 
 	/***
