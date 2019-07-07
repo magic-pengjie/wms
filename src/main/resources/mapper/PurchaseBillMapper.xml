@@ -3,10 +3,12 @@
 <mapper namespace="com.magic.card.wms.warehousing.mapper.PurchaseBillMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.magic.card.wms.warehousing.model.po.PurchaseBill">
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.warehousing.model.vo.PurchaseBillVO">
         <id column="id" property="id" />
         <result column="purchase_no" property="purchaseNo" />
         <result column="name" property="name" />
+        <result column="receiv_no" property="receivNo" />
+        <result column="warehousing_no" property="warehousingNo" />
         <result column="customer_code" property="customerCode" />
         <result column="customer_name" property="customerName" />
         <result column="is_food" property="isFood" />
@@ -16,6 +18,13 @@
         <result column="address" property="address" />
         <result column="maker" property="maker" />
         <result column="make_date" property="makeDate" />
+        <result column="receiv_date" property="receivDate" />
+        <result column="receiv_user" property="receivUser" />
+        <result column="warehousing_date" property="warehousingdate" />
+        <result column="storehouse_code" property="storehouseCode" />
+        <result column="approver" property="approver" />
+        <result column="approve_time" property="approveTime" />
+        <result column="approve_desc" property="approveDesc" />
         <result column="bill_state" property="billState" />
         <result column="state" property="state" />
         <result column="create_time" property="createTime" />
@@ -23,22 +32,6 @@
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
         <result column="remark" property="remark" />
-    </resultMap>
-    
-     <resultMap id="BillResultMap" type="com.magic.card.wms.warehousing.model.vo.PurchaseBillVO">
-        <id column="id" property="id" />
-        <result column="purchase_no" property="purchaseNo" />
-        <result column="name" property="name" />
-        <result column="customer_code" property="customerCode" />
-        <result column="customer_name" property="customerName" />
-        <result column="is_food" property="isFood" />
-        <result column="purchase_date" property="purchaseDate" />
-        <result column="contacts" property="contacts" />
-        <result column="contacts_tel" property="contactsTel" />
-        <result column="address" property="address" />
-        <result column="maker" property="maker" />
-        <result column="make_date" property="makeDate" />
-        <result column="bill_state" property="billState" />
         <collection property="detailList" ofType="com.magic.card.wms.warehousing.model.po.PurchaseBillDetail" column="id">
         	<id column="bd.id" property="id" />
         	<result column="purchase_id" property="purchaseId" />
@@ -50,27 +43,29 @@
 	        <result column="weight" property="weight" />
 	        <result column="volume" property="volume" />
 	        <result column="purchase_nums" property="purchaseNums" />
+	        <result column="receiv_nums" property="receivNums" />
+	        <result column="warehousing_nums" property="warehousingNums" />
 	        <result column="arrival_date" property="arrivalDate" />
 	        <result column="production_date" property="productionDate" />
 	        <result column="shilf_life" property="shilfLife" />
 	        <result column="bd.remark" property="remark" />
         </collection>
     </resultMap>
-
-    <!-- 通用查询结果列 -->
-    <sql id="Base_Column_List">
-        id, purchase_no,name, customer_code, customer_name,is_food, purchase_date, contacts, contacts_tel, address, maker, make_date, bill_state, state, create_time, create_user, update_time, update_user, remark
-    </sql>
+    
     
     <sql id="bill_Column_List">
-        wb.id as id, purchase_no,name, customer_code, customer_name, is_food,purchase_date, contacts, contacts_tel, address, maker, make_date, bill_state
+         wb.id as id, purchase_no,name,receiv_no,warehousing_no, 
+         customer_code，customer_name, is_food,purchase_date, contacts, contacts_tel, address, maker, make_date,
+         receiv_date,receiv_user,warehousing_date,storehouse_code,approver,approve_time
+         bill_state,create_time,create_user,update_time,update_user,remark
     </sql>
     
      <sql id="detail_Column_List">
-        bd.id, purchase_id, commodity_name, model_no, spec, unit, bar_code, weight, volume, purchase_nums, arrival_date, production_date, shilf_life,  bd.remark
+        bd.id, purchase_id, commodity_name, model_no, spec, unit, bar_code, weight, volume, 
+        purchase_nums, arrival_date, production_date, shilf_life,receiv_nums,warehousing_nums,  bd.remark
     </sql>
 
-	<select id="selectPurchaseBillList" resultMap="BillResultMap" parameterType="com.magic.card.wms.warehousing.model.dto.PurchaseBillQueryDTO">
+	<select id="selectPurchaseBillList" resultMap="BaseResultMap" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
 		select   <include refid="bill_Column_List"/>,<include refid="detail_Column_List"/>
 		from wms_purchase_bill wb left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id
 		<where>
@@ -78,13 +73,25 @@
 					wb.id = #{id}
 			</if>
 			<if test="purchaseNo != null and purchaseNo != '' ">
-				and wb.purchase_no = #{purchaseNo}
+				wb.purchase_no = #{purchaseNo}
+			</if>
+			<if test="receivNo != null and receivNo != '' ">
+				wb.receiv_no = #{receivNo}
+			</if>
+			<if test="warehousingNo != null and warehousingNo != '' ">
+				wb.warehousing_no = #{warehousingNo}
 			</if>
 			<if test="customerName != null and customerName != '' ">
 				and wb.customer_name like concat(concat("%",#{customerName}),"%")
 			</if>
 			<if test="purchaseDate != null and purchaseDate != '' ">
 				and	wb.purchase_date = #{purchaseDate}
+			</if>
+			<if test="receivDate != null and receivDate != '' ">
+				and	wb.receiv_date = #{receivDate}
+			</if>
+			<if test="warehousingDate != null and warehousingDate != '' ">
+				and	wb.warehousing_date = #{warehousingDate}
 			</if>
 			<if test="commodityName != null and commodityName != '' ">
 				and bd.commodity_name like concat(concat("%",#{commodityName}),"%")
@@ -97,18 +104,33 @@
 		</where>
 	</select>
 	
-	<select id="selectPurchaseBillListCount" resultType="java.lang.Long" parameterType="com.magic.card.wms.warehousing.model.dto.PurchaseBillQueryDTO">
+	<select id="selectPurchaseBillListCount" resultType="java.lang.Long" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
 		select  count(distinct wb.purchase_no)
 		from wms_purchase_bill wb left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id
 		<where>
+			<if test="id != null and id != '' ">
+					wb.id = #{id}
+			</if>
 			<if test="purchaseNo != null and purchaseNo != '' ">
 				wb.purchase_no = #{purchaseNo}
+			</if>
+			<if test="receivNo != null and receivNo != '' ">
+				wb.receiv_no = #{receivNo}
+			</if>
+			<if test="warehousingNo != null and warehousingNo != '' ">
+				wb.warehousing_no = #{warehousingNo}
 			</if>
 			<if test="customerName != null and customerName != '' ">
 				and wb.customer_name like concat(concat("%",#{customerName}),"%")
 			</if>
 			<if test="purchaseDate != null and purchaseDate != '' ">
 				and	wb.purchase_date = #{purchaseDate}
+			</if>
+			<if test="receivDate != null and receivDate != '' ">
+				and	wb.receiv_date = #{receivDate}
+			</if>
+			<if test="warehousingDate != null and warehousingDate != '' ">
+				and	wb.warehousing_date = #{warehousingDate}
 			</if>
 			<if test="commodityName != null and commodityName != '' ">
 				and bd.commodity_name like concat(concat("%",#{commodityName}),"%")

@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
@@ -25,8 +26,10 @@ import com.magic.card.wms.common.service.ICodeProductService;
 import com.magic.card.wms.common.utils.DateUtil;
 import com.magic.card.wms.common.utils.EasyExcelUtil;
 import com.magic.card.wms.warehousing.mapper.PurchaseBillMapper;
+import com.magic.card.wms.warehousing.model.BillStateEnum;
+import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
+import com.magic.card.wms.warehousing.model.dto.ComfirmReqDTO;
 import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
-import com.magic.card.wms.warehousing.model.dto.PurchaseBillQueryDTO;
 import com.magic.card.wms.warehousing.model.po.PurchaseBill;
 import com.magic.card.wms.warehousing.model.po.PurchaseBillDetail;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillExcelVO;
@@ -57,7 +60,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	private ICodeProductService codeProductService;
 
 	@Override
-	public Page<PurchaseBillVO> selectPurchaseBillList(PurchaseBillQueryDTO dto, PageInfo pageInfo) {
+	public Page<PurchaseBillVO> selectPurchaseBillList(BillQueryDTO dto, PageInfo pageInfo) {
 		long total = purchaseBillMapper.selectPurchaseBillListCount(dto);
 		log.info("PurchaseBillServiceImpl selectPurchaseBillList counts={}", total);
 		Page<PurchaseBillVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
@@ -175,6 +178,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	}
 
 	@Override
+	@Transactional
 	public void importPurchase(MultipartFile file) throws BusinessException, IOException {
 		List<PurchaseBillExcelVO> dataList = EasyExcelUtil.readExcel(file.getInputStream(), PurchaseBillExcelVO.class, 0, 1);
 		if(StringUtils.isEmpty(dataList)) {
@@ -189,6 +193,60 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			detailList.add(detail);
 		});
 		add(bill, detailList);
+	}
+
+
+	@Override
+	@Transactional
+	public void confirm(ComfirmReqDTO dto) {
+		PurchaseBill bill = this.selectById(dto.getId());
+		Date now = new Date();
+		if(StringUtils.isEmpty(bill)) {
+			throw new OperationException(-1,"查询单据失败");
+		}
+		if(BillStateEnum.submit.getCode().equals(dto.getBillState())) {
+			if(!bill.getBillState().equals(dto.getBillState())) {
+				throw new OperationException(-1,"状态为已提交才允许开始收货");
+			}
+			bill.setBillState(BillStateEnum.recevieing.getCode());
+		}else if(BillStateEnum.recevieing.getCode().equals(dto.getBillState())) {
+			if(!bill.getBillState().equals(dto.getBillState())) {
+				throw new OperationException(-1,"状态为待收货才允许确认收货");
+			}
+			bill.setBillState(BillStateEnum.recevied.getCode());
+			bill.setReceivUser(Constants.DEFAULT_USER);
+			bill.setReceivDate(DateUtil.getStringDateShort());
+			//修改收货商品数量
+			List<PurchaseBillDetail> detailList = dto.getDetailList();
+			purchaseBillDetailService.updateBatchById(detailList);
+		}else if(BillStateEnum.recevied.getCode().equals(dto.getBillState())) {
+			if(!bill.getBillState().equals(dto.getBillState())) {
+				throw new OperationException(-1,"状态已收货才允许确认入库");
+			}
+			bill.setBillState(BillStateEnum.stored.getCode());
+			bill.setPurchaseDate(DateUtil.getStringDateShort());
+			//修改入库商品数量
+			List<PurchaseBillDetail> detailList = dto.getDetailList();
+			purchaseBillDetailService.updateBatchById(detailList);
+		}else if(BillStateEnum.stored.getCode().equals(dto.getBillState())) {
+			if(!bill.getBillState().equals(dto.getBillState())) {
+				throw new OperationException(-1,"状态已入库才允许审核");
+			}
+			bill.setBillState(BillStateEnum.stored.getCode());
+			if(!"1".equals(dto.getApproveResult())) {
+				bill.setBillState(BillStateEnum.approve_fail.getCode());
+			}
+			bill.setApprover(Constants.DEFAULT_USER);
+			bill.setApproveTime(now);
+		}else {
+			throw new OperationException(-1,"操作类型有误"); 
+		}
+		
+		//修改单据状态为已收货
+		bill.setUpdateUser(Constants.DEFAULT_USER);
+		bill.setUpdateTime(now);
+		this.updateById(bill);
+		log.info("recevied confirm PurchaseBill  success id:{}",dto.getId());
 	}
 
 }
