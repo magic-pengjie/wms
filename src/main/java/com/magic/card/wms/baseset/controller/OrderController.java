@@ -3,6 +3,7 @@ package com.magic.card.wms.baseset.controller;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
 import io.swagger.annotations.Api;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -25,11 +27,21 @@ import javax.validation.Valid;
 @Api("订单导入系统控制器")
 @RestController
 @RequestMapping(value = "order", headers = "accept=application/json")
-public class ImportOrderController {
+public class OrderController {
     @Autowired
     private IOrderService orderService;
     @Autowired
     private IPickingBillService pickingBillService;
+
+    @PostMapping("loadGrid")
+    public ResponseData loadGrid(@RequestBody LoadGrid loadGrid) {
+       return ResponseData.ok(orderService.loadGrid(loadGrid));
+    }
+
+    @GetMapping("loadOrderCommodityGrid")
+    public ResponseData loadOrderCommodityGrid(@RequestParam String orderNo) {
+       return ResponseData.ok(orderService.loadOrderCommodityGrid(orderNo));
+    }
 
     @ApiOperation("订单导入")
     @PostMapping("import")
@@ -60,5 +72,20 @@ public class ImportOrderController {
     @GetMapping("invoiceCheckClose")
     public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
         return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo, Constants.DEFAULT_USER));
+    }
+
+    @ApiOperation("订单物品称重")
+    @GetMapping("weigh")
+    public ResponseData orderWeigh(
+            @ApiParam("订单号")@RequestParam String orderNo,
+            @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
+        orderService.orderWeighContrast(orderNo, realWeight, Constants.DEFAULT_USER);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("订单打包材料提醒")
+    @GetMapping("package")
+    public ResponseData orderPackage(@ApiParam("订单号") @RequestParam String orderNo) {
+        return ResponseData.ok(orderService.orderPackage(orderNo));
     }
 }

@@ -30,11 +30,28 @@ public interface ICommodityStockService extends IService<CommodityStock> {
 
     /**
      * 占用库存操作
+     * @param customerCode 客户code
+     * @param commodityCode 商品条形码
+     * @param occupyNum 占用值
+     * @param operator 操作人
      */
-    void occupyCommodityStock();
+    void occupyCommodityStock(String customerCode, String commodityCode, Long occupyNum, String operator);
+
+    /**
+     * 撤销库存占用量操作
+     * @param customerCode 客户code
+     * @param commodityCode 商品条形码
+     * @param occupyNum 撤销占用值
+     * @param operator 操作人
+     */
+    void repealOccupyCommodityStock(String customerCode, String commodityCode, Long occupyNum, String operator);
 
     /**
      * 释放库存操作
+     * @param customerCode 客户code
+     * @param commodityCode 商品条形码
+     * @param releaseNum 释放值
+     * @param operator 操作人
      */
-    void releaseCommodityStock();
+    void releaseCommodityStock(String customerCode, String commodityCode, Long releaseNum, String operator);
 }

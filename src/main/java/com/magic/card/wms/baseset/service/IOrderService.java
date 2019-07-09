@@ -7,6 +7,7 @@ import com.magic.card.wms.common.model.LoadGrid;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * com.magic.card.wms.baseset.service
@@ -23,6 +24,12 @@ public interface IOrderService extends IService<Order> {
      * @return
      */
     LoadGrid loadGrid(LoadGrid loadGrid);
+
+    /**
+     * 获取订单商品
+     * @param orderNo
+     */
+    List<Map> loadOrderCommodityGrid(String orderNo);
 
     /**
      * 导入其他系统订单
@@ -45,4 +52,19 @@ public interface IOrderService extends IService<Order> {
      * @return
      */
     BigDecimal orderCommodityWeight(String orderNo, String customerCode);
+
+    /**
+     * 订单称重对比
+     * @param orderNo
+     * @param realWight
+     * @param operator
+     * @return
+     */
+    void orderWeighContrast(String orderNo, BigDecimal realWight, String operator);
+
+    /**
+     * 订单打包推荐耗材
+     * @param orderNO
+     */
+    List<Map> orderPackage(String orderNO);
 }

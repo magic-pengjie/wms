@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.po.OrderCommodity;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * com.magic.card.wms.baseset.service
  * 订单商品明细服务接口
@@ -20,4 +23,18 @@ public interface IOrderCommodityService extends IService<OrderCommodity> {
      * @param operator
      */
     void importOrderCommodity(OrderCommodityDTO orderCommodityDTO, String customerId, String operator);
+
+    /**
+     * 获取订单所有商品
+     * @param orderNo
+     * @return
+     */
+    List<Map> loadOrderCommodityGrid(String orderNo);
+
+    /**
+     * 获取批量订单商品
+     * @param orderNos
+     * @return
+     */
+    Map<String, List> loadBatchOrderCommodityGrid(List<String> orderNos);
 }

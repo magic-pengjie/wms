@@ -1,7 +1,8 @@
 package com.magic.card.wms.check.mapper;
 
-import com.magic.card.wms.check.model.po.CheckRecord;
+
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.magic.card.wms.check.model.po.CheckRecord;
 
 /**
  * <p>

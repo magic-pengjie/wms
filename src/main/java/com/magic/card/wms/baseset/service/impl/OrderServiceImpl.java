@@ -3,20 +3,22 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.OrderInfoMapper;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
-import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
-import com.magic.card.wms.baseset.model.po.Order;
-import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
-import com.magic.card.wms.baseset.service.IOrderCommodityService;
-import com.magic.card.wms.baseset.service.IOrderService;
-import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.baseset.model.po.*;
+import com.magic.card.wms.baseset.service.*;
+import com.magic.card.wms.baseset.service.order.OrderExceptionService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.CommodityUtil;
+import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -25,11 +27,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -47,7 +52,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private IOrderCommodityService orderCommodityService;
     @Autowired
     private IPickingBillService pickingBillService;
+    @Autowired
+    private IMailPickingService mailPickingService;
+    @Autowired
+    private OrderExceptionService orderExceptionService;
+    @Autowired
+    private ICommodityStockService commodityStockService;
+    /**
+     *
+     */
+    private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
 
+    static {
+        defaultColumns.put("id", "woi.id");
+        defaultColumns.put("orderNo", "woi.order_no");
+        defaultColumns.put("customerCode", "customerCode");
+        defaultColumns.put("customerName", "wcbi.customer_name");
+        defaultColumns.put("reciptName", "woi.recipt_name");
+        defaultColumns.put("reciptPhone", "woi.recipt_phone");
+        defaultColumns.put("reciptAddr", "woi.recipt_addr");
+        defaultColumns.put("expressKey", "woi.express_key");
+        defaultColumns.put("isB2b", "woi.is_b2b");
+        defaultColumns.put("billState", "woi.bill_state");
+        defaultColumns.put("createTime", "woi.create_time");
+    }
 
     /**
      * 系统订单查询
@@ -57,7 +85,51 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        return null;
+        Page page = loadGrid.page();
+        EntityWrapper wrapper = new EntityWrapper();
+        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
+
+        if (loadGrid.getOrder() == null || loadGrid.getOrder().isEmpty()) {
+            wrapper.orderBy("woi.create_time", false);
+        } else {
+            WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
+        }
+        List<Map> grid = baseMapper.loadGrid(page, wrapper);
+        Map<String, List> orderCommodities = Maps.newLinkedHashMap();
+        // TODO 优化待完善
+        if (CollectionUtils.isNotEmpty(grid)) {
+            List<String> orderNos = Lists.newLinkedList();
+            grid.stream().filter(map -> {
+                orderNos.add(map.get("orderNo").toString());
+                return true;
+            }).collect(Collectors.toList()).stream().forEach(map -> {
+
+                if (CollectionUtils.sizeIsEmpty(orderCommodities)) {
+                    orderCommodities.putAll(orderCommodityService.loadBatchOrderCommodityGrid(orderNos));
+                }
+
+                if (!CollectionUtils.sizeIsEmpty(orderCommodities)) {
+                    map.put(
+                            "orderCommodities",
+                            orderCommodities.get(map.get("orderNo").toString())
+                    );
+                }
+
+            });
+        }
+
+        loadGrid.finallyResult(page, grid);
+        return loadGrid;
+    }
+
+    /**
+     * 获取订单商品
+     *
+     * @param orderNo
+     */
+    @Override
+    public List<Map> loadOrderCommodityGrid(String orderNo) {
+        return orderCommodityService.loadOrderCommodityGrid(orderNo);
     }
 
     /**
@@ -68,8 +140,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      */
     @Override @Transactional
     public void importOrder(OrderInfoDTO orderInfoDTO, String operator) {
-
-        if (StringUtils.equalsIgnoreCase("cancel", orderInfoDTO.getBillState())) {
+        // 订单取消
+        if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
             cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
         }
 
@@ -118,7 +190,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         wrapper.orderBy("create_time");
 
         if (this.selectCount(wrapper) >= executeSize) {
-            return this.selectPage(new Page<>(1, 20), wrapper).getRecords();
+            return this.selectPage(new Page<>(1, executeSize), wrapper).getRecords();
         }
 
         return null;
@@ -140,8 +212,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         maps.stream().forEach( map -> {
             // 购买数量
             int bayNums = MapUtils.getIntValue(map, "bayNums");
-            int leftVale = MapUtils.getIntValue(map, "leftVale");
-            int rightVale = MapUtils.getIntValue(map, "rightVale");
+            int leftVale = MapUtils.getIntValue(map, "leftValue");
+            int rightVale = MapUtils.getIntValue(map, "rightValue");
             // 范围消耗品数量
             int useNums = MapUtils.getIntValue(map, "useNums");
 
@@ -172,6 +244,64 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     }
 
     /**
+     * 订单称重对比
+     *
+     * @param orderNo
+     * @param realWight
+     * @param operator
+     * @return
+     */
+    @Override
+    public void orderWeighContrast(String orderNo, BigDecimal realWight, String operator) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("order_no", orderNo).
+                eq("state", StateEnum.normal.getCode());
+        Order order = selectOne(wrapper);
+
+        if (order == null) {
+            throw OperationException.customException(ResultEnum.order_not_exit);
+        }
+
+        if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
+            throw OperationException.customException(ResultEnum.order_cancel);
+        }
+
+        MailPicking mailPicking = mailPickingService.selectOne(wrapper);
+
+        // 千克单位比较重量
+        BigDecimal differenceValue = realWight.subtract(mailPicking.getPresetWeight()).abs();
+        BigDecimal maxDifferenceValue = mailPicking.getPresetWeight().multiply(new BigDecimal("0.10"));
+        mailPicking.setRealWeight(realWight);
+
+        if (maxDifferenceValue.compareTo(differenceValue) < 0) {
+            throw OperationException.customException(ResultEnum.order_weight_warning);
+        }
+
+        PoUtil.update(mailPicking, operator);
+        mailPickingService.updateById(mailPicking);
+        // 释放库存
+        releaseStock(order, operator);
+        // TODO 推送订单信息到邮政
+    }
+
+    /**
+     * 订单打包推荐耗材
+     *
+     * @param orderNO
+     */
+    @Override
+    public List<Map> orderPackage(String orderNO) {
+        checkOrder(orderNO);
+        List<Map> orderPackage = baseMapper.orderPackage(orderNO);
+
+        if (CollectionUtils.isEmpty(orderPackage)) {
+            throw OperationException.customException(ResultEnum.order_package_no_hc);
+        }
+
+        return orderPackage;
+    }
+
+    /**
      * 取消订单操作
      * @param customerCode
      * @param orderNo
@@ -180,15 +310,51 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     public void cancelOrder(String customerCode, String orderNo, String operator) {
         // 判断系统中是否存在订单
         Order order = this.checkOrder(customerCode, orderNo);
-        // TODO 取消订单是否需要判断当前订单是否已近打包
-
         // 取消订单
-        order.setBillState("cancel");
+        order.setBillState(BillState.order_cancel.getCode());
         PoUtil.update(order, operator);
 
-        if (this.baseMapper.updateById(order) < 1) throw OperationException.addException("订单导入失败");
+        if (this.baseMapper.updateById(order) < 1){
+            throw OperationException.addException("订单导入失败");
+        }
 
-        // TODO 订单成功取消 操作库存
+        // 取消订单是否需要判断当前订单是否已经称重完毕
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("preset_weight", null).
+                eq("state", StateEnum.normal.getCode());
+        MailPicking mailPicking = mailPickingService.selectOne(wrapper);
+        if (selectCount(wrapper) > 0) {
+            // 记录订单异常
+            OrderException orderException = new OrderException();
+            orderException.setOrderNo(orderNo);
+            PoUtil.add(orderException, operator);
+            orderExceptionService.insert(orderException);
+        } else {
+            processCancelOrder(orderNo, operator);
+        }
+
+    }
+
+    /**
+     * 处理取消订单 操作库存
+     * @param orderNo
+     * @param operator
+     */
+    private void processCancelOrder(String orderNo, String operator) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("order_no", orderNo).
+                eq("state", StateEnum.normal.getCode());
+        List<OrderCommodity> list = orderCommodityService.selectList(wrapper);
+
+        if (CollectionUtils.isNotEmpty(list)){
+            list.stream().forEach(orderCommodity ->
+                    commodityStockService.repealOccupyCommodityStock(
+                            orderCommodity.getCustomerCode(),
+                            orderCommodity.getBarCode(),
+                            orderCommodity.getNumbers().longValue(),
+                            operator)
+            );
+        }
     }
 
     /**
@@ -228,10 +394,52 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             throw OperationException.addException("您客户的订单（取消），并不存在请核实后再重新导入");
         }
 
-        if (StringUtils.equalsAnyIgnoreCase("cancel", order.getBillState())) {
+        if (StringUtils.equalsAnyIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
             throw OperationException.addException("您客户的订单已近被取消请勿重复导入，如有疑问请核实后再重新导入");
         }
 
         return order;
+    }
+
+    /**
+     * 订单是否存在或是已取消
+     * @param orderNo
+     */
+    private void checkOrder(String orderNo) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.ne("state", StateEnum.delete.getCode()).eq("order_no", orderNo);
+        Order order = selectOne(wrapper);
+
+        if (order == null) {
+            throw OperationException.customException(ResultEnum.order_not_exit);
+        }
+
+        if (StringUtils.equalsIgnoreCase(order.getBillState(), BillState.order_cancel.getCode())) {
+            throw OperationException.customException(ResultEnum.order_cancel);
+        }
+    }
+
+    /**
+     * 称重完成释放库存
+     * @param order
+     * @param operator
+     */
+    private void releaseStock(Order order, String operator){
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("order_no", order.getOrderNo()).
+                eq("customer_no", order.getCustomerCode()).
+                eq("state", StateEnum.normal.getCode());
+        List<OrderCommodity> list = orderCommodityService.selectList(wrapper);
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            list.stream().forEach(orderCommodity ->
+                    commodityStockService.releaseCommodityStock(
+                            orderCommodity.getCustomerCode(),
+                            orderCommodity.getBarCode(),
+                            orderCommodity.getNumbers().longValue(),
+                            operator)
+            );
+        }
+
     }
 }

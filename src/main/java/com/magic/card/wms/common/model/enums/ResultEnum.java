@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.magic.card.wms.common.mapper.CodeProductMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -38,6 +39,7 @@ public enum ResultEnum {
 	data_add_failed(10010, "数据添加失败"),
 	data_update_failed(10011, "数据更新失败"),
 	data_delete_failed(10012, "数据删除失败"),
+	system_busy(11111, "系统繁忙请稍后再试"),
 
 	commodity_stock_setting_deficiency(10013, "当前商品库存不存在！"),
 
@@ -65,10 +67,14 @@ public enum ResultEnum {
 	invoice_pick_commodity_omit(50004, "商品漏检"),
 	invoice_pick_finish(50003, "拣货单已完成"),
 	invoice_pick_close(50005, "复检已经结束，请勿重复操作"),
+	order_not_exit(50006, "当前订单不存在，请确认后在提交"),
+	order_cancel(50007, "当前订单已取消，请将商品放回库位"),
+	order_weight_warning(50008, "称重不在预定范围值内"),
+	order_package_no_hc(50009, "当前订单商品没有设置耗材"),
 
 	
 	unkown_error(999999, "系统异常");
-	private static Map<Integer,ResultEnum> enumMap = new HashMap();
+    private static Map<Integer,ResultEnum> enumMap = new HashMap();
 	static {
 		for (ResultEnum e : EnumSet.allOf(ResultEnum.class)) {
 			enumMap.put(e.code, e);

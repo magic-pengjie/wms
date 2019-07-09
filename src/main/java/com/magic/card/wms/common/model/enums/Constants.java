@@ -1,7 +1,10 @@
 package com.magic.card.wms.common.model.enums;
 
 public class Constants {
-	
+	/**
+	 * 系统默认数据连接符
+	 */
+	public static final String DEFAULT_JOINT_MARK = "&&";
 
 	public static final String DEFAULT_USER="system";
 

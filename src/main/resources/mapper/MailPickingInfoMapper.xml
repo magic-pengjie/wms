@@ -40,7 +40,11 @@
             SUM( numbers ) bayNums,
             store_code storeCode,
             available_nums availableNums,
-            single_unit single
+            single_unit single,
+            sku_name skuName,
+            spec,
+            model_no modelNo
+
         FROM
             v_wms_invoice
         WHERE
@@ -50,7 +54,12 @@
             customer_code,
             bar_code,
             store_code,
-            available_nums
+            available_nums,
+            single_unit,
+            sku_name,
+            spec,
+            model_no
+
     </select>
 
     <!--  配货单  -->

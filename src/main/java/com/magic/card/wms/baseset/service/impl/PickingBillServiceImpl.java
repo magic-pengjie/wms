@@ -1,17 +1,21 @@
 package com.magic.card.wms.baseset.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.PickingBillMapper;
 import com.magic.card.wms.baseset.model.po.*;
 import com.magic.card.wms.baseset.service.*;
 import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WrapperUtil;
 import com.magic.card.wms.config.express.ExpressProviderManager;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +42,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, PickingBill> implements IPickingBillService {
+    private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
+
     @Autowired
     private IOrderService orderService;
     @Autowired
@@ -48,6 +54,16 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     private ExpressProviderManager expressProviderManager;
     @Autowired
     private IPickingBillExceptionService pickingBillExceptionService;
+
+    static {
+        defaultColumns.put("id", "id");
+        defaultColumns.put("pickNo", "pick_no");
+        defaultColumns.put("isB2b", "is_B2B");
+        defaultColumns.put("processStage", "process_stage");
+        defaultColumns.put("billState", "bill_state");
+        defaultColumns.put("printTimes", "state");
+        defaultColumns.put("createTime", "create_time");
+    }
 
     /**
      * 触发生成
@@ -123,6 +139,41 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         PoUtil.update(pickingBill, operator);
         updateById(pickingBill);
         return exceptionFlag;
+    }
+
+    /**
+     * 拣货单列表
+     *
+     * @param loadGrid
+     * @return
+     */
+    @Override
+    public LoadGrid loadGrid(LoadGrid loadGrid) {
+        Page<Object> page = loadGrid.page();
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.ne("state", StateEnum.delete.getCode());
+        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
+
+        if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
+            WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
+        } else {
+            wrapper.orderBy("create_time", false);
+        }
+
+        loadGrid.finallyResult(page, baseMapper.loadGrid(page, wrapper));
+        return loadGrid;
+    }
+
+    /**
+     * 加载拣货单复检数据
+     *
+     * @param pickNo
+     * @return
+     */
+    @Override
+    public List<Map> pickBillLoadGrid(String pickNo) {
+        checkOutPickBill(pickNo);
+        return mailPickingService.loadMailPickings(pickNo);
     }
 
     /**
@@ -267,7 +318,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         if (this.baseMapper.insert(pickingBill) < 1) return;
 
         //生成快递拣货篮 20
-        // TODO 生成快递拣货篮可优化多线程
+        // TODO 生成快递拣货篮可优化
         for (int i = 1; i <= orders.size(); i++) {
             Order order = orders.get(i-1);
             MailPicking mailPicking = new MailPicking();

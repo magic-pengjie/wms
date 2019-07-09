@@ -27,5 +27,44 @@
     <sql id="Base_Column_List">
         id, order_no, customer_code, bar_code, model_no, spec, numbers, pick_numbers, state, create_time, create_user, update_time, update_user, remark
     </sql>
+    <select id="loadOrderCommodityGrid" resultType="java.util.Map">
+        SELECT
+            woc.id,
+            woc.order_no orderNo,
+            woc.bar_code barCode,
+            wcs.sku_name skuName,
+            wcs.model_no modelNo,
+            wcs.spec,
+            woc.numbers,
+            woc.pick_numbers pickNumbers,
+            wcs.single_unit unit
+
+        FROM
+            wms_order_commodity woc
+            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = woc.bar_code
+        WHERE woc.order_no = #{orderNo}
+	    ORDER BY wcs.sku_name
+    </select>
+    <select id="loadBatchOrderCommodityGrid" resultType="java.util.Map">
+        SELECT
+            woc.id,
+            woc.order_no orderNo,
+            woc.bar_code barCode,
+            wcs.sku_name skuName,
+            wcs.model_no modelNo,
+            wcs.spec,
+            woc.numbers,
+            woc.pick_numbers pickNumbers,
+            wcs.single_unit unit
+
+        FROM
+            wms_order_commodity woc
+            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = woc.bar_code
+        WHERE woc.order_no IN
+        <foreach collection="orderNos" item="orderNo" open="(" close=")" separator=",">
+            #{orderNo}
+        </foreach>
+	    ORDER BY wcs.sku_name
+    </select>
 
 </mapper>

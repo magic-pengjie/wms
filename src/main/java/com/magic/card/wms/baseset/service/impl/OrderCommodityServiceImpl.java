@@ -2,16 +2,27 @@ package com.magic.card.wms.baseset.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.OrderCommodityMapper;
 import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.po.OrderCommodity;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
+import com.magic.card.wms.baseset.service.ICommodityStockService;
 import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.utils.PoUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -25,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderCommodityServiceImpl extends ServiceImpl<OrderCommodityMapper, OrderCommodity> implements IOrderCommodityService {
     @Autowired
     private ICommodityInfoService commodityInfoService;
+    @Autowired
+    private ICommodityStockService commodityStockService;
 
     /**
      * 导入订单商品
@@ -41,8 +54,51 @@ public class OrderCommodityServiceImpl extends ServiceImpl<OrderCommodityMapper,
             throw OperationException.addException("订单商品导入失败");
         }
 
-        // TODO 执行库存占用 customerCode commodityCode occupyNum
+        // 执行库存占用 customerCode commodityCode occupyNum
+        commodityStockService.occupyCommodityStock(commodity.getCustomerCode(), commodity.getBarCode(), commodity.getNumbers().longValue(), operator);
 
+    }
+
+    /**
+     * 获取订单所有商品
+     *
+     * @param orderNo
+     * @return
+     */
+    @Override
+    public List<Map> loadOrderCommodityGrid(String orderNo) {
+        return baseMapper.loadOrderCommodityGrid(orderNo);
+    }
+
+    /**
+     * 获取批量订单商品
+     *
+     * @param orderNos
+     * @return
+     */
+    @Override
+    public Map<String, List> loadBatchOrderCommodityGrid(List<String> orderNos) {
+        Map<String, List> batchOrderCommodity = Maps.newHashMap();
+        List<Map> orderCommodities = baseMapper.loadBatchOrderCommodityGrid(orderNos);
+
+        if (CollectionUtils.isNotEmpty(orderCommodities)) {
+            orderCommodities.stream().forEach(orderCommodity -> {
+                String orderNo = MapUtils.getString(orderCommodity, "orderNo");
+
+                if (StringUtils.isNotBlank(orderNo)) {
+                    List commodities = batchOrderCommodity.get(orderNo);
+
+                    if (CollectionUtils.isEmpty(commodities)) {
+                        commodities = Lists.newLinkedList();
+                        batchOrderCommodity.put(orderNo, commodities);
+                    }
+
+                    commodities.add(orderCommodity);
+                }
+            });
+        }
+
+        return batchOrderCommodity;
     }
 
     /**

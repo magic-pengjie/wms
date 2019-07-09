@@ -66,4 +66,10 @@ public interface IMailPickingService extends IService<MailPicking> {
     List<Map> omitOrderCommodityList(String pickNo, Integer state);
 
 
+    /**
+     * 加载拣货单所有拣货篮数据
+     * @param pickNo
+     * @return
+     */
+    List<Map> loadMailPickings(String pickNo);
 }

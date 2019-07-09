@@ -3,20 +3,26 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.MailPickingMapper;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 import com.magic.card.wms.baseset.service.IMailPickingService;
+import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -29,6 +35,9 @@ import java.util.Map;
 @Slf4j
 @Service
 public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailPicking> implements IMailPickingService {
+    @Autowired
+    private IOrderCommodityService orderCommodityService;
+
     /**
      * 获取拣货单所有漏检商品数据信息
      *
@@ -39,6 +48,43 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     @Override
     public List<Map> omitOrderCommodityList(String pickNo, Integer state) {
         return baseMapper.omitOrderCommodityList(pickNo, state);
+    }
+
+    /**
+     * 加载拣货单所有拣货篮数据
+     *
+     * @param pickNo
+     * @return
+     */
+    @Override
+    public List<Map> loadMailPickings(String pickNo) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("pick_no", pickNo).
+                eq("state", StateEnum.normal.getCode()).
+                orderBy("basket_num");
+        List<Map> mailPickings = baseMapper.selectMaps(wrapper);
+
+        if (CollectionUtils.isNotEmpty(mailPickings)){
+            List<String> orderNos = mailPickings.stream().map(
+                    map -> map.get("orderNo").toString()
+                ).collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(orderNos)) {
+                Map<String, List> orderCommodities = orderCommodityService.loadBatchOrderCommodityGrid(orderNos);
+                mailPickings.stream().forEach(mailPicking ->
+                        mailPicking.put(
+                                "orderCommodities",
+                                orderCommodities.get(
+                                    MapUtils.getString(mailPicking, "orderNo")
+                                )
+                        )
+                );
+            }
+
+
+        }
+
+        return mailPickings;
     }
 
     /**
@@ -78,17 +124,14 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
             }
         });
 
-        Thread noticeThread = new Thread(() -> {
+        new Thread(() -> {
             //TODO 拣货区库存不足 补货提醒功能待实现
             if (CollectionUtils.isNotEmpty(replenishmentNotices)) {
                 replenishmentNotices.forEach(map -> {
                     log.warn("拣货区库存不足请及时补货： 商品条形码：{}", map.get("barCode"));
                 });
             }
-        });
-
-        noticeThread.setName("JHQ-Notice-Thread-NO." + System.currentTimeMillis());
-        noticeThread.start();
+        }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
 
         return invoiceList;
     }
