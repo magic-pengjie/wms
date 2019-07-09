@@ -20,6 +20,11 @@ import lombok.Data;
 @ApiModel("采购单修改模型")
 public class PurchaseBillDTO {
 	 /**
+     * 操作类型暂存save;提交submit
+     */
+	@ApiModelProperty("操作类型暂存save;提交submit")
+	private String billState;
+	 /**
      * 主键id
      */
 	@ApiModelProperty("主键id")

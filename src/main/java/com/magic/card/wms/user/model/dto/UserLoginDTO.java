@@ -31,4 +31,16 @@ public class UserLoginDTO implements Serializable{
 	@ApiModelProperty("密码")
 	@NotBlank(message="密码不能为空")
     private String password;
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("UserLoginDTO [");
+		if (userNo != null)
+			builder.append("userNo=").append(userNo).append(", ");
+		if (password != null)
+			builder.append("password=").append(password);
+		builder.append("]");
+		return builder.toString();
+	}
+	
 }

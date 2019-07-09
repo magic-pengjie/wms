@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.BeanUtils;
@@ -20,13 +22,18 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.SessionKeyConstants;
 import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.model.po.UserSessionUo;
+import com.magic.card.wms.common.service.RedisService;
+import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.user.mapper.MenuInfoMapper;
 import com.magic.card.wms.user.mapper.RoleInfoMapper;
 import com.magic.card.wms.user.mapper.UserMapper;
 import com.magic.card.wms.user.mapper.UserRoleMappingMapper;
 import com.magic.card.wms.user.model.dto.UserDTO;
 import com.magic.card.wms.user.model.dto.UserLoginDTO;
+import com.magic.card.wms.user.model.dto.UserResponseDTO;
 import com.magic.card.wms.user.model.dto.UserRoleMenuQueryDTO;
 import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.model.po.MenuInfo;
@@ -39,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  *  用户管理服务实现类
- * @author pengjie
+ * @author Zhouhao
  * @since 2019-06-13
  */
 @Slf4j
@@ -54,6 +61,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	
 	@Autowired
 	private MenuInfoMapper menuInfoMapper;
+	
+	@Autowired
+	private RedisService redisService;
+	
+	@Autowired
+	private HttpServletRequest httpServletRequest;
+	
+	@Autowired
+	private WebUtil webUtil;
 	
 	@Override
 	public List<User> getUserList() {
@@ -133,7 +149,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 	//登录
 	@Override
-	public void login(UserLoginDTO dto) throws BusinessException {
+	public UserResponseDTO login(UserLoginDTO dto) throws BusinessException {
+		UserResponseDTO userRes = new UserResponseDTO();
 		Wrapper<User> wrapper = new EntityWrapper<User>();
 		wrapper.eq("user_no", dto.getUserNo());
 		User user = this.selectOne(wrapper);
@@ -146,6 +163,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				log.info("===>> login 用户名密码错误！UserDto:{}", dto);
 				throw new BusinessException(ResultEnum.user_pwd_error.getCode(), ResultEnum.user_pwd_error.getMsg());
 			}
+			//将用户信息放入session，前端放入cookie字段：Wms-Token,
+			HttpSession session = setUserSessionUo(user);
+			//返回前端Dto
+			BeanUtils.copyProperties(user, userRes);
+			userRes.setToken(session.getId());
+			return userRes;
 		}else {
 			log.info("===>> login 用户不存在！userNo:{}", dto.getUserNo());
 			throw new BusinessException(ResultEnum.user_name_not_exist.getCode(), ResultEnum.user_name_not_exist.getMsg());
@@ -155,6 +178,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	//查询用户角色及菜单信息
 	@Override
 	public UserRoleMenuQueryDTO queryUserRoleMenuInfoList(Integer userKey) throws BusinessException {
+
+		UserSessionUo userSession = webUtil.getUserSession();
+		log.info("===>> getUserSession:{}", userSession);
 		UserRoleMenuQueryDTO userRoleMenuList = new UserRoleMenuQueryDTO();
 		//查询用户信息
 		User userInfo = this.selectById(userKey);
@@ -177,7 +203,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			throw new BusinessException(00, "用户角色未配置菜单信息，请联系管理员配置角色菜单！");
 		}
 		userRoleMenuList.setMenuList(menuList);
+		//将用户角色及菜单 放入redis
+		redisService.set(SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
+		log.info("===>> userRoleMenuSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
 		return userRoleMenuList;
 	}
 
+	/**
+	 * 设置用户登录Session及redis
+	 * @param user
+	 * @return
+	 */
+	private HttpSession setUserSessionUo(User user) {
+		UserSessionUo userSession = new UserSessionUo();
+		HttpSession session = httpServletRequest.getSession();
+		BeanUtils.copyProperties(user, userSession);
+		session.setAttribute(SessionKeyConstants.USER_INFO, userSession);
+		log.info("===>> setUserSession:{} ",userSession);
+		//将用户信息放入redis
+		redisService.set(SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
+		log.info("===>> userSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
+		return session;
+	}
 }

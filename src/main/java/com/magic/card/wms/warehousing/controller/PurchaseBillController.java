@@ -29,8 +29,9 @@ import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.utils.EasyExcelUtil;
+import com.magic.card.wms.warehousing.model.dto.ComfirmReqDTO;
 import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
-import com.magic.card.wms.warehousing.model.dto.PurchaseBillQueryDTO;
+import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
 import com.magic.card.wms.warehousing.service.IPurchaseBillService;
 
@@ -59,7 +60,7 @@ public class PurchaseBillController {
 	
 	@ApiOperation(value = "采购单据列表查询", notes = "采购单据列表查询")
 	@RequestMapping(value = "/selectList", method = RequestMethod.POST)
-	public ResponseData selectPurchaseBillList(@RequestBody PurchaseBillQueryDTO dto,PageInfo pageInfo) {
+	public ResponseData selectPurchaseBillList(@RequestBody BillQueryDTO dto,PageInfo pageInfo) {
 		try {
 			Page<PurchaseBillVO> page = purchaseBillService.selectPurchaseBillList(dto, pageInfo);
 			return ResponseData.ok(page);
@@ -166,6 +167,18 @@ public class PurchaseBillController {
 		}catch (Exception e) {
 			log.error("采购单据导入失败:{}",e);
 			return ResponseData.error(ResultEnum.upload_error);
+		}
+		
+	}
+	
+	@ApiOperation(value = "开始收货操作", notes = "开始收货操作")
+	@RequestMapping(value = "/recevieing", method = RequestMethod.POST)
+	public ResponseData recevieing(@RequestBody @Valid ComfirmReqDTO dto,BindingResult bindingResult) {
+		try {
+			return ResponseData.ok();
+		} catch (Exception e) {
+			log.error("修改采购单据失败:{}",e);
+			return ResponseData.error(ResultEnum.update_error);
 		}
 		
 	}

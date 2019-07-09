@@ -3,6 +3,7 @@ package com.magic.card.wms.user.service;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.user.model.dto.UserDTO;
 import com.magic.card.wms.user.model.dto.UserLoginDTO;
+import com.magic.card.wms.user.model.dto.UserResponseDTO;
 import com.magic.card.wms.user.model.dto.UserRoleMenuQueryDTO;
 import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.model.po.User;
@@ -38,7 +39,7 @@ public interface IUserService extends IService<User> {
 	 * 用户登录
 	 * @param dto
 	 */
-	void login(UserLoginDTO dto) throws BusinessException;
+	UserResponseDTO login(UserLoginDTO dto) throws BusinessException;
 	
 	/**
 	 * 修改用户信息

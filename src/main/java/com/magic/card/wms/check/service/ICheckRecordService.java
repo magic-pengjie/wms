@@ -3,10 +3,11 @@ package com.magic.card.wms.check.service;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.check.model.po.CheckRecord;
 import com.magic.card.wms.check.model.po.dto.CheckCountDto;
+import com.magic.card.wms.common.exception.BusinessException;
 
 /**
  * <p>
- * 盘点记录表 服务类
+ * 	盘点记录表 服务类
  * </p>
  *
  * @author zhouhao
@@ -14,6 +15,6 @@ import com.magic.card.wms.check.model.po.dto.CheckCountDto;
  */
 public interface ICheckRecordService extends IService<CheckRecord> {
 
-	CheckRecord countCheckRecord(CheckCountDto dto);
+	CheckRecord countCheckRecord(CheckCountDto dto) throws BusinessException;
 
 }
