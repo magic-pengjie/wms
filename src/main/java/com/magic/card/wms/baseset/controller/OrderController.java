@@ -88,4 +88,12 @@ public class OrderController {
     public ResponseData orderPackage(@ApiParam("订单号") @RequestParam String orderNo) {
         return ResponseData.ok(orderService.orderPackage(orderNo));
     }
+
+    @ApiOperation("订单称重数据加载")
+    @PostMapping("/weigh/loadGrid")
+    public ResponseData orderWeighLoadGrid(
+            @RequestBody LoadGrid loadGrid
+    ) {
+        return ResponseData.ok(orderService.orderWeighLoadGrid(loadGrid));
+    }
 }

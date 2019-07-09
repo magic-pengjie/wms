@@ -67,4 +67,11 @@ public interface IOrderService extends IService<Order> {
      * @param orderNO
      */
     List<Map> orderPackage(String orderNO);
+
+    /**
+     * 称重订单数据加载
+     * @param orderNo
+     * @return
+     */
+    LoadGrid orderWeighLoadGrid(LoadGrid loadGrid);
 }

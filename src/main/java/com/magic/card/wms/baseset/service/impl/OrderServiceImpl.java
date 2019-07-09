@@ -302,6 +302,22 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     }
 
     /**
+     * 称重订单数据加载
+     *
+     * @param loadGrid
+     * @return
+     */
+    @Override
+    public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("state", StateEnum.normal.getCode()).isNotNull("real_weight");
+        Page page = loadGrid.page();
+        loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
+
+        return loadGrid;
+    }
+
+    /**
      * 取消订单操作
      * @param customerCode
      * @param orderNo
