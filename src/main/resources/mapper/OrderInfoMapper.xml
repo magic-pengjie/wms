@@ -1,6 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.magic.card.wms.baseset.mapper.OrderInfoMapper">
+	 <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.OrderInfoDTO">
+        <id column="id" property="id" />
+        <result column="mail_no" property="mailNo" />
+        <result column="order_no" property="orderNo" />
+        <result column="customer_code" property="customerCode" />
+        <result column="customer_name" property="customerName" />
+        <result column="recipt_name" property="reciptName" />
+        <result column="post_code" property="postCode" />
+        <result column="prov" property="prov" />
+        <result column="city" property="city" />
+        <result column="recipt_addr" property="reciptAddr" />
+        <result column="recipt_phone" property="reciptPhone" />
+        <result column="express_key" property="expressKey" />
+        <result column="is_b2b" property="isB2b" />
+        <result column="goods_value" property="goodsValue" />
+        <result column="bill_state" property="billState" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+        <result column="preset_weight" property="presetWeight" />
+        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.OrderCommodityDTO" column="order_no">
+        	<result column="order_no" property="orderNo" />
+	        <result column="customer_code" property="customerCode" />
+	        <result column="bar_code" property="barCode" />
+	        <result column="model_no" property="modelNo" />
+	        <result column="spec" property="spec" />
+	        <result column="sku_name" property="commodityName" />
+	        <result column="numbers" property="numbers" />
+        </collection>
+    </resultMap>
     <sql id="orderCommodityInfoSQL">
         SELECT
             woc.order_no orderNo,
@@ -56,4 +89,25 @@
         <include refid="orderCommodityInfoSQL"/>
         WHERE woc.order_no = #{orderNo}
     </select>
+    
+    <!-- 根据拣货单查询订单及商品信息 -->
+     <select id="selectOrderByNo" resultMap="BaseResultMap" >
+       	select pi.mail_no,pi.pick_no,pi.preset_weight, oi.order_no, oi.customer_code, oi.customer_name, oi.recipt_name, oi.post_code, 
+       	oi.prov, oi.city, oi.recipt_addr, oi.recipt_phone, oi.express_key, oi.is_b2b, oi.goods_value, oi.bill_state, oi.remark,
+       	oc.customer_code, oc.bar_code, oc.model_no, oc.spec, oc.numbers, oc.pick_numbers, 
+       	sku.sku_name
+       	from wms_order_info oi 
+       		left join wms_mail_picking_info pi on oi.order_no=pi.order_no
+ 			left join wms_order_commodity oc on pi.order_no=oc.order_no
+ 			left join wms_commodity_sku sku on oc.bar_code=sku.bar_code
+ 		<where>
+ 			<if test="pickNo != null and pickNo != '' ">
+ 				pi.pick_no=#{pickNo}
+ 			</if>
+ 			<if test="orderNo != null and orderNo != '' ">
+ 				pi.order_no=#{orderNo}
+ 			</if>
+ 		</where>
+    </select>
+    
 </mapper>

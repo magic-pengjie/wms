@@ -19,7 +19,7 @@ public class Digest {
 	 * @param str
 	 * @return
 	 */
-	public String Md5Base64(String str) {
+	public static String Md5Base64(String str) {
 		if(StringUtils.isEmpty(str)) {
 			return null;
 		}
@@ -34,8 +34,14 @@ public class Digest {
 		}
 		return null;
 	}
-	public static void main(String[] args) {
-		
+	/**
+	 * utf-8 url编码
+	 * @param str
+	 * @return
+	 * @throws UnsupportedEncodingException 
+	 */
+	public static String urlEncode(String str) throws UnsupportedEncodingException {
+		return URLEncoder.encode(str, "UTF-8" );
 	}
 
 }

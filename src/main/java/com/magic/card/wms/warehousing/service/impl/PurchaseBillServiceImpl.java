@@ -253,8 +253,9 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			purchaseBillDetailService.updateBatchById(detailList);
 			//入库后修改商品库存
 			detailList.forEach(detail->{
-				commodityStockService.occupyCommodityStock(bill.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getPurchaseNums()),Constants.DEFAULT_USER);
+				commodityStockService.addCommodityStock(bill.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getPurchaseNums()),Constants.DEFAULT_USER);
 			});
+			//修改
 			
 		}else if(BillStateEnum.stored.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {

@@ -23,7 +23,11 @@ import java.util.List;
 @ApiModel(value = "订单信息", description = "订单信息")
 public class OrderInfoDTO implements Serializable {
     private static final long serialVersionUID = -5050831342653951057L;
-
+    /**
+     * 快递单号
+     */
+    private String mailNo;
+    
     /**
      * 订单号
      */
@@ -48,6 +52,24 @@ public class OrderInfoDTO implements Serializable {
     @ApiModelProperty("收件人姓名不可为空，否则验证不通过")
     private String reciptName;
     /**
+     * 收货人邮编
+     */
+    @ApiModelProperty("收货人邮编")
+    @NotNull(message = "收货人邮编")
+    private String postCode;
+    /**
+     * 用户所在省
+     */
+    @ApiModelProperty("用户所在省")
+    @NotNull(message = "用户所在省")
+    private String prov;
+    /**
+     * 户所在市县（区）
+     */
+    @ApiModelProperty("户所在市县（区）")
+    @NotNull(message = "户所在市县（区）")
+    private String city;
+    /**
      * 地址
      */
     @NotNull(message = "收件人地址不可为空")
@@ -71,11 +93,26 @@ public class OrderInfoDTO implements Serializable {
     @ApiModelProperty("收件人电话不可为空，否则验证不通过")
     private Boolean isB2b;
     /**
+     * 商品金额
+     */
+    @ApiModelProperty("商品金额")
+    private Boolean goodsValue;
+    /**
      * 单据状态(保存:save确认:confirm 作废及退单:cancel )
      */
     @ApiModelProperty("单据状态，默认：save / 确认:confirm 作废及退单:cancel ")
     private String billState;
 
+    /**
+     * 商品重量
+     */
+    private Double presetWeight;
+    
+    /**
+     * 订单备注
+     */
+    private String remark;
+    
     @Valid
     @NotNull(message = "订单商品不可为空")
     @Size(message = "至少有一个商品", min = 1)

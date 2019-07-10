@@ -1,12 +1,17 @@
 package com.magic.card.wms.baseset.model.po;
 
 import java.util.Date;
+
+import javax.validation.constraints.NotNull;
+
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.annotations.Version;
 
 import com.magic.card.wms.common.model.po.BasePo;
+
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -43,6 +48,18 @@ public class Order extends BasePo implements Serializable {
      */
     private String reciptName;
     /**
+     * 收货人邮编
+     */
+    private String postCode;
+    /**
+     * 用户所在省
+     */
+    private String prov;
+    /**
+     * 户所在市县（区）
+     */
+    private String city;
+    /**
      * 地址
      */
     private String reciptAddr;
@@ -58,6 +75,10 @@ public class Order extends BasePo implements Serializable {
      * 是否B2B
      */
     private Boolean isB2b;
+    /**
+     * 商品金额
+     */
+    private Boolean goodsValue;
     /**
      * 单据状态(保存:save确认:confirm 作废及退单:cancel )
      */

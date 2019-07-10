@@ -3,6 +3,7 @@ package com.magic.card.wms.baseset.service;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
@@ -72,4 +73,10 @@ public interface IMailPickingService extends IService<MailPicking> {
      * @return
      */
     List<Map> loadMailPickings(String pickNo);
+   /**
+    * 快递单发送邮政
+    * @param pickNo 拣货单号
+    * @param orderNo 订单号
+    */
+    void sendOrder(String pickNo,String orderNo) throws UnsupportedEncodingException;
 }

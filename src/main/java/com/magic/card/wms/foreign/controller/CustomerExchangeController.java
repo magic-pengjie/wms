@@ -12,9 +12,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
-import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.service.IOrderService;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.ResponseData;
+import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.utils.Digest;
 import com.magic.card.wms.foreign.model.OutRequestData;
 import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
 import com.magic.card.wms.warehousing.service.IPurchaseBillService;
@@ -39,6 +43,8 @@ public class CustomerExchangeController {
 
 	@Autowired
 	private IPurchaseBillService purchaseBillService;
+	@Autowired
+	private IOrderService orderService;
 	@javax.annotation.Resource
 	private ResourceLoader resourceLoader;
 
@@ -55,9 +61,9 @@ public class CustomerExchangeController {
 			dto.setCustomerName(request.getCustomerName());
 			purchaseBillService.add(dto);
 			return ResponseData.ok();
-		} catch (BusinessException b) {
-			log.error("新增采购单据失败:{}", b);
-			return ResponseData.error(b.getErrCode(), b.getErrMsg());
+		} catch (OperationException o) {
+			log.error("新增采购单据失败:{}", o);
+			return ResponseData.error(o.getErrCode(), o.getErrMsg());
 		} catch (Exception e) {
 			log.error("新增采购单据失败:{}", e);
 			return ResponseData.error(ResultEnum.data_error);
@@ -67,20 +73,32 @@ public class CustomerExchangeController {
 
 	@ApiOperation(value = "订单新增", notes = "订单新增")
 	@RequestMapping(value = "/order/add", method = RequestMethod.POST)
-	public ResponseData orderaAdd(@RequestBody @Valid PurchaseBillDTO dto, BindingResult bindingResult) {
+	public ResponseData orderaAdd(@RequestBody @Valid OutRequestData request, BindingResult bindingResult) {
 		try {
-			purchaseBillService.add(dto);
+			// 数据验签
+			if(checkSignature(request)) {
+				ResponseData.error(ResultEnum.check_signature_error);
+			}
+			OrderInfoDTO dto = (OrderInfoDTO) request.getData();
+			dto.setCustomerCode(request.getCustomerCode());
+			dto.setCustomerName(request.getCustomerName());
+			
+			orderService.importOrder(dto, Constants.DEFAULT_USER);
 			return ResponseData.ok();
-		} catch (BusinessException b) {
-			log.error("新增采购单据失败:{}", b);
-			return ResponseData.error(b.getErrCode(), b.getErrMsg());
+		} catch (OperationException o) {
+			log.error("保存订单失败:{}", o);
+			return ResponseData.error(o.getErrCode(), o.getErrMsg());
 		} catch (Exception e) {
-			log.error("新增采购单据失败:{}", e);
+			log.error("保存订单失败:{}", e);
 			return ResponseData.error(ResultEnum.data_error);
 		}
-
 	}
 
+	/**
+	 * 验签
+	 * @param request
+	 * @return
+	 */
 	boolean checkSignature(OutRequestData request) {
 		String signature = request.getSignature();
 		StringBuffer checkStr = new StringBuffer();
@@ -88,7 +106,7 @@ public class CustomerExchangeController {
 				.append(request.getCustomerName())
 				.append(request.getReqTime())
 				.append(JSONObject.toJSONString(request.getData()));
-		if(ObjectUtils.equals(signature, checkStr)) {
+		if(ObjectUtils.equals(signature, Digest.Md5Base64(checkStr.toString()))) {
 			return true;
 		}
 		return false;

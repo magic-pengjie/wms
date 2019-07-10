@@ -1,6 +1,4 @@
-package com.magic.card.wms.foreign.model.dto;
-
-import java.util.List;
+package com.magic.card.wms.baseset.model.xml;
 
 import javax.xml.bind.annotation.XmlType;
 
@@ -13,10 +11,8 @@ import lombok.Data;
  * @author PENGJIE
  * @date 2019年7月5日
  */
-@XStreamAlias("orderXml")
-@XmlType(propOrder ="logistics_interface,data_digest,msg_type,ecCompanyId")
 @Data
-public class OrderXml {
+public class OrderDTO {
 
 	/**
 	 * 消息内容
@@ -35,5 +31,5 @@ public class OrderXml {
 	 */
 	private String ecCompanyId ;
 	
-	private RequestOrder order;
+	private RequestOrderXml order;
 }

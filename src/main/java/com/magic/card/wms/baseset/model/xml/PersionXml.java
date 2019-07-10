@@ -1,4 +1,4 @@
-package com.magic.card.wms.foreign.model.dto;
+package com.magic.card.wms.baseset.model.xml;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import lombok.Data;
  * @date 2019年7月5日
  */
 @Data
-public class Persion {
+public class PersionXml {
 	/**
 	 * 用户姓名 not null
 	 */

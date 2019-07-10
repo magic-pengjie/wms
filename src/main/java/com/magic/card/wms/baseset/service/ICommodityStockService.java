@@ -54,4 +54,13 @@ public interface ICommodityStockService extends IService<CommodityStock> {
      * @param operator 操作人
      */
     void releaseCommodityStock(String customerCode, String commodityCode, Long releaseNum, String operator);
+    
+    /**
+     * 释放库存操作
+     * @param customerCode 客户code
+     * @param commodityCode 商品条形码
+     * @param addNum 增加值
+     * @param operator 操作人
+     */
+    void addCommodityStock(String customerCode, String commodityCode, Long addNum, String operator);
 }
