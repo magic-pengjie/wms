@@ -37,7 +37,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestController
 @RequestMapping("/customer/data")
-@Api("对接客户系统")
+@Api(value = "对接客户系统" ,description = "对接客户系统")
+
 @Slf4j
 public class CustomerExchangeController {
 

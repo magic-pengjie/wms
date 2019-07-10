@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestController
 @RequestMapping("/warehousing/purchaseBill")
-@Api("采购单据")
+@Api(value = "采购单据", description = "采购单据")
 @Slf4j
 public class PurchaseBillController {
 
