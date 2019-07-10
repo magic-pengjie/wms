@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
@@ -16,7 +17,7 @@ import lombok.Data;
  * @date 2019年6月13日
  */
 @Data
-@ApiModel(description = "用户dto")
+@ApiModel(description = "用户dto",value="新增用户dto")
 public class UserDTO implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
@@ -30,19 +31,19 @@ public class UserDTO implements Serializable{
     /**
      * 密码
      */
-	@ApiModelProperty("密码")
+	@ApiModelProperty(value="密码")
     private String password;
     /**
      * 姓名
      */
-	@ApiModelProperty("姓名")
+	@ApiModelProperty(value="姓名")
     @NotBlank(message="姓名不能为空")
     private String name;
 	/**
 	 * 角色ID
 	 */
 	@ApiModelProperty(value="角色主键List")
-	@NotNull(message="角色不能为空")
+	@NotEmpty(message="角色不能为空")
 	private List<Long> roleKeyList;
 	
 	

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
@@ -16,7 +17,7 @@ import lombok.Data;
  * @date 2019年6月20日18:41:39
  */
 @Data
-@ApiModel(description = "用户修改dto")
+@ApiModel(description = "用户修改dto", value="用户修改dto")
 public class UserUpdateDTO implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -25,36 +26,36 @@ public class UserUpdateDTO implements Serializable{
 	/**
 	 * 用户名
 	 */
-	@ApiModelProperty("用户ID")
+	@ApiModelProperty(value="用户ID")
 	@NotNull(message="用户ID不能为空")
 	private Long userKey;
 	/**
      	* 用户名
      */
-	@ApiModelProperty("用户名")
+	@ApiModelProperty(value="用户名")
     private String userNo;
     /**
      	* 密码
      */
-	@ApiModelProperty("密码")
+	@ApiModelProperty(value="密码")
     private String password;
     /**
      	* 姓名
      */
-	@ApiModelProperty("姓名")
+	@ApiModelProperty(value="姓名")
     private String name;
 	
 	/**
-	 * 姓名
+	 * 数据状态(1:正常，0:删除)
 	 */
-	@ApiModelProperty("数据状态(1:正常，0:删除)")
+	@ApiModelProperty(value="数据状态(1:正常，0:删除)")
 	private Integer state;
 	
 	/**
 	 * 角色ID
 	 */
 	@ApiModelProperty(value="角色主键List")
-	@NotNull(message="角色不能为空")
+	@NotEmpty(message="角色不能为空")
 	private  List<Long> roleKeyList;
 
 	@Override

@@ -15,7 +15,7 @@ import lombok.Data;
  * @since 2019-06-18
  */
 @Data
-@ApiModel(description = "新增权限 请求实体")
+@ApiModel(description = "新增权限 请求实体", value="新增权限 请求实体")
 public class RoleAddDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -23,30 +23,30 @@ public class RoleAddDto implements Serializable {
     /**
      *	 权限类型
      */
-	@ApiModelProperty("权限类型")
+	@ApiModelProperty(value="权限类型")
     private String roleType;
     /**
      * 	限编码
      */
-	@ApiModelProperty("权限编码")
+	@ApiModelProperty(value="权限编码")
 	@NotBlank(message="权限编码不能为空")
     private String roleCode;
     /**
      * 	权限名称
      */
-	@ApiModelProperty("权限名称")
+	@ApiModelProperty(value="权限名称")
 	@NotBlank(message="权限名称不能为空")
     private String roleName;
     /**
      *	 权限描述
      */
-	@ApiModelProperty("权限描述")
+	@ApiModelProperty(value="权限描述")
     private String roleDesc;
 	
 	/**
 	 *	 菜单主键list
 	 */
-	@ApiModelProperty("菜单ID列表list")
+	@ApiModelProperty(value="菜单ID列表list")
 	private List<Long> menuKeyList;
 
 	@Override

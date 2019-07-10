@@ -23,22 +23,22 @@ public class UserResponseDTO implements Serializable{
 	/**
      * 	用户名
      */
-	@ApiModelProperty("用户账号")
+	@ApiModelProperty(value="用户账号")
     private String userNo;
     /**
      * 	密码
      */
-	@ApiModelProperty("密码")
+	@ApiModelProperty(value="密码")
     private String password;
     /**
      * 	姓名
      */
-	@ApiModelProperty("姓名")
+	@ApiModelProperty(value="姓名")
     private String name;
     /**
      * 	登录态Token
      */
-    @ApiModelProperty("登录态Token")
+    @ApiModelProperty(value="登录态Token")
     private String token;
     
 	@Override

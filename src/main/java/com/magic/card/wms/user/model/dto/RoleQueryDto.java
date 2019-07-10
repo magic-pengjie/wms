@@ -14,7 +14,7 @@ import lombok.Data;
  * @since 2019-06-18
  */
 @Data
-@ApiModel(description = "新增权限 请求实体")
+@ApiModel(description = "新增权限 请求实体",value="新增权限 请求实体")
 public class RoleQueryDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -22,27 +22,27 @@ public class RoleQueryDto implements Serializable {
     /**
      * 权限类型
      */
-	@ApiModelProperty("权限类型")
+	@ApiModelProperty(value="权限类型")
     private String roleType;
     /**
      * 权限编码
      */
-	@ApiModelProperty("权限编码")
+	@ApiModelProperty(value="权限编码")
     private String roleCode;
     /**
      * 权限名称
      */
-	@ApiModelProperty("权限名称")
+	@ApiModelProperty(value="权限名称")
     private String roleName;
     /**
      * 权限描述
      */
-	@ApiModelProperty("权限描述")
+	@ApiModelProperty(value="权限描述")
     private String roleDesc;
 	/**
 	 * 数据状态
 	 */
-	@ApiModelProperty("数据状态(1:正常，0:删除)")
+	@ApiModelProperty(value="数据状态(1:正常，0:删除)")
 	private String state;
 	
 	@Override

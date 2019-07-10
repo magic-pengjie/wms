@@ -22,33 +22,33 @@ public class RoleUpdateDto implements Serializable {
     /**
      * 权限ID
      */
-    @ApiModelProperty("权限ID")
+    @ApiModelProperty(value="权限ID")
 	@NotNull(message="权限ID不能为空")
     private Long roleKey;
     /**
      * 权限类型
      */
-	@ApiModelProperty("权限类型")
+	@ApiModelProperty(value="权限类型")
     private String roleType;
     /**
      * 权限编码
      */
-	@ApiModelProperty("权限编码")
+	@ApiModelProperty(value="权限编码")
     private String roleCode;
     /**
      * 权限名称
      */
-	@ApiModelProperty("权限名称")
+	@ApiModelProperty(value="权限名称")
     private String roleName;
     /**
      * 权限描述
      */
-	@ApiModelProperty("权限描述")
+	@ApiModelProperty(value="权限描述")
     private String roleDesc;
 	/**
 	 * 权限描述
 	 */
-	@ApiModelProperty("数据状态(1:正常，0:删除)")
+	@ApiModelProperty(value="数据状态(1:正常，0:删除)")
 	private Integer state;
 	
 	@Override

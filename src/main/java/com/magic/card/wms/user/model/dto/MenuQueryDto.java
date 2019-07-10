@@ -14,7 +14,7 @@ import lombok.Data;
  * @since 2019-06-22
  */
 @Data
-@ApiModel(description = "菜单 List查詢請求实体类")
+@ApiModel(description = "菜单 List查詢請求实体类", value="菜单 List查詢請求实体类")
 public class MenuQueryDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -22,47 +22,47 @@ public class MenuQueryDto implements Serializable {
     /**
      * 	父级菜单ID
      */
-    @ApiModelProperty("父级菜单ID")
+    @ApiModelProperty(value="父级菜单ID")
     private Integer parentKey;
     /**
      * 	菜单编码
      */
-    @ApiModelProperty("菜单编码")
+    @ApiModelProperty(value="菜单编码")
     private String menuCode;
     /**
      * 	菜单名称
      */
-    @ApiModelProperty("菜单名称")
+    @ApiModelProperty(value="菜单名称")
     private String menuName;
     /**
      * 	菜单描述
      */
-    @ApiModelProperty("菜单描述")
+    @ApiModelProperty(value="菜单描述")
     private String menuDesc;
     /**
      * 	根目录
      */
-    @ApiModelProperty("根目录")
+    @ApiModelProperty(value="根目录")
     private String rootMenuCode;
     /**
      * 	菜单级别1~5
      */
-    @ApiModelProperty("菜单级别1~5")
+    @ApiModelProperty(value="菜单级别1~5")
     private String menuGrade;
     /**
      * 	路由URL
      */
-    @ApiModelProperty("路由URL")
+    @ApiModelProperty(value="路由URL")
     private String routeUrl;
     /**
      * 	目录或按钮；0:页面，1:按钮
      */
-    @ApiModelProperty("目录或按钮标志：0:页面，1:按钮")
+    @ApiModelProperty(value="目录或按钮标志：0:页面，1:按钮")
     private String pageBtnFlag;
     /**
      * 	接口URL
      */
-    @ApiModelProperty("接口URL")
+    @ApiModelProperty(value="接口URL")
     private String apiUrl;
     
 	@Override

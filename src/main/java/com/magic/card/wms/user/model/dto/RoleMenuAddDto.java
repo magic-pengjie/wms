@@ -3,7 +3,6 @@ package com.magic.card.wms.user.model.dto;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -17,7 +16,7 @@ import lombok.Data;
  * @since 2019-06-18
  */
 @Data
-@ApiModel(description = "新增权限菜單关系请求实体")
+@ApiModel(description = "新增权限菜單关系请求实体",value="新增权限菜單关系请求实体")
 public class RoleMenuAddDto implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -25,14 +24,14 @@ public class RoleMenuAddDto implements Serializable{
     /**
      * 	权限主鍵ID
      */
-	@ApiModelProperty("权限ID")
+	@ApiModelProperty(value="权限ID")
 	@NotNull(message="权限不能为空")
 	private Long roleKey;
 	
     /**
      * 	菜單主鍵ID
      */
-	@ApiModelProperty("菜單主鍵ID")
+	@ApiModelProperty(value="菜單主鍵IDList")
 	@NotEmpty(message="菜單不能为空")
 	private List<Long> menuKeyList;
 

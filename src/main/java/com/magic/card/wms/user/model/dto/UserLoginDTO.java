@@ -22,13 +22,13 @@ public class UserLoginDTO implements Serializable{
 	/**
 	 * 用户名
      */
-	@ApiModelProperty("用户名")
+	@ApiModelProperty(value="用户名")
 	@NotBlank(message="用户名不能为空")
     private String userNo;
     /**
                  * 密码
      */
-	@ApiModelProperty("密码")
+	@ApiModelProperty(value="密码")
 	@NotBlank(message="密码不能为空")
     private String password;
 	@Override

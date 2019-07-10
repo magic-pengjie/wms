@@ -16,7 +16,7 @@ import lombok.Data;
  * @since 2019-06-18
  */
 @Data
-@ApiModel(description = "修改权限菜單关系请求实体")
+@ApiModel(description = "修改权限菜單关系请求实体",value="修改权限菜單关系请求实")
 public class RoleMenuUpdateDto implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -24,20 +24,20 @@ public class RoleMenuUpdateDto implements Serializable{
     /**
      * 	权限主鍵ID
      */
-	@ApiModelProperty("权限ID")
+	@ApiModelProperty(value="权限ID")
 	@NotNull(message="权限不能为空")
 	private Long roleKey;
 	
     /**
      * 	新增菜單主鍵ID
      */
-	@ApiModelProperty("新增菜單主鍵ID")
+	@ApiModelProperty(value="新增菜單主鍵ID")
 	private List<Long> addMenuKeyList;
 	
 	/**
 	 * 	删除菜單主鍵ID
 	 */
-	@ApiModelProperty("删除菜單主鍵ID")
+	@ApiModelProperty(value="删除菜單主鍵ID")
 	private List<Long> delMenuKeyList;
 
 	@Override
