@@ -94,15 +94,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			boolean insertFlag = this.insert(user);
 			log.info("===inserUser.params:{},isSuccess:{}", user, insertFlag);
 			if(insertFlag) {
-				UserRoleMapping entity = new UserRoleMapping();
-				entity.setUserKey(user.getId().longValue());
-				entity.setRoleKey(dto.getRoleKey());
-				entity.setCreateTime(new Date());
-				entity.setCreateUser(user.getName());
-				entity.setState(StateEnum.normal.getCode());
-				//新增用户角色信息
-				Integer insertMappingFlag = userRoleMappingMapper.insert(entity);
-				log.info("===insertUserRoleMapping.params:{},change {} rows", entity,insertMappingFlag);
+				for (Long roleId : dto.getRoleKeyList()) {
+					UserRoleMapping entity = new UserRoleMapping();
+					entity.setUserKey(user.getId().longValue());
+					entity.setRoleKey(roleId);
+					entity.setCreateTime(new Date());
+					entity.setCreateUser(user.getName());
+					entity.setState(StateEnum.normal.getCode());
+					//新增用户角色信息
+					Integer insertMappingFlag = userRoleMappingMapper.insert(entity);
+					log.info("===insertUserRoleMapping.params:{},change {} rows", entity,insertMappingFlag);
+				}
 			}
 		}else {
 			throw new BusinessException(ResultEnum.add_user_exist.getCode(), ResultEnum.add_user_exist.getMsg());
@@ -114,6 +116,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public void updateUserInfo(@Valid UserUpdateDTO dto) throws BusinessException {
 		log.info("=== updateUserInfo params:{}", dto);
+		UserSessionUo userSession = webUtil.getUserSession();
 		User user = this.selectById(dto.getUserKey());
 		if(!StringUtils.isEmpty(user)) {
 			user = new User(); 
@@ -125,19 +128,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			boolean updateUserFlag = this.updateById(user);
 			if(updateUserFlag) {
 				UserRoleMapping entity = new UserRoleMapping();
-				entity.setUserKey(user.getId().longValue());
-				if(StringUtils.isEmpty(dto.getState())) {
-					entity.setState(dto.getState());
-				}
-				entity.setRoleKey(dto.getRoleKey());
+				entity.setState(StateEnum.delete.getCode());
 				entity.setUpdateTime(new Date());
-				entity.setUpdateUser(user.getName());
-				Wrapper<UserRoleMapping> userRoleMapping = new EntityWrapper<UserRoleMapping>();
-				userRoleMapping.eq("user_key", dto.getUserKey());
-				userRoleMapping.eq("role_key", dto.getRoleKey());
-				//修改用户角色信息
-				Integer updMappingFlag = userRoleMappingMapper.update(entity, userRoleMapping);
-				log.info("===insertUserRoleMapping.params:{},change {} rows", entity,updMappingFlag);
+				entity.setUpdateUser(userSession.getName());
+				Wrapper<UserRoleMapping> userRoleWrapper = new EntityWrapper<UserRoleMapping>();
+				userRoleWrapper.eq("user_key", dto.getUserKey());
+				Integer update = userRoleMappingMapper.update(entity,userRoleWrapper);
+				log.info("===>>deleted  UserRole {} rows ",update);
+				for (Long roleId : dto.getRoleKeyList()) {
+					UserRoleMapping userRole = new UserRoleMapping();
+					userRole.setUserKey(user.getId().longValue());
+					if(StringUtils.isEmpty(dto.getState())) {
+						userRole.setState(dto.getState());
+					}
+					userRole.setRoleKey(roleId);
+					userRole.setUpdateTime(new Date());
+					userRole.setUpdateUser(user.getName());
+					Wrapper<UserRoleMapping> userRoleMapping = new EntityWrapper<UserRoleMapping>();
+					userRoleMapping.eq("user_key", dto.getUserKey());
+					userRoleMapping.eq("role_key", roleId);
+					//修改用户角色信息
+					Integer updMappingFlag = userRoleMappingMapper.update(userRole, userRoleMapping);
+					log.info("===insertUserRoleMapping.params:{},change {} rows", userRole,updMappingFlag);
+				}
 			}
 		}else {
 			log.info("===>> update 用户不存在！userNo:{}", dto.getUserNo());

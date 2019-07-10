@@ -27,5 +27,49 @@
     <sql id="Base_Column_List">
         id, storehouse_id, customer_id, commodity_id, store_nums, availabe_nums, lock_nums, priority_value, opr_type, state, create_time, create_user, update_time, update_user, remark
     </sql>
+    
+    <select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.po.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.check.model.po.dto.QueryCheckRecordDto">
+    	SELECT cbi.customer_name as customerName,
+    			cbi.customer_code as customerCode,
+    			sc.storehouse_id as storehouseId,
+    			sc.customer_id as customerId,
+    			sc.commodity_id as commodityId,
+    			sc.store_nums as storeNums,
+			 	ci.commodity_name as commodityName,
+			 	cs.id as skuId,
+			 	cs.sku_code as skuCode,
+			 	cs.model_no as modelNo,
+			 	di.dict_name as storeType,
+			 	si.house_code as houseCode,
+			 	si.store_code as storeCode,
+			 	si.area_code as areaCode,
+			 	si.is_frozen as isFrozen,  
+    			sc.state,
+			 	cs.spec 
+		FROM wms_storehouse_config sc 
+		LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
+		LEFT JOIN wms_customer_base_info cbi on ci.customer_id = cbi.id and cbi.state =1
+		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
+		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
+		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
+		where  sc.state = 1 
+		<if test="cr.customerId != null">
+			and sc.customer_id = #{cr.customerId}
+		</if>
+		<if test="cr.storeIdList != null">
+			and sc.storehouse_id in 
+			<foreach collection="cr.storeIdList" item="cr.storeIdList" index="index" open="(" close=")" separator=",">
+			  #{cr.storeIdList}
+			</foreach>
+		</if>
+		<if test="cr.commodityIdList != null">
+			and sc.commodity_id in 
+			<foreach collection="cr.commodityIdList" item="cr.commodityIdList" index="index" open="(" close=")" separator=",">
+			  #{cr.commodityIdList}
+			</foreach>
+		</if>
+		ORDER BY sc.commodity_id
+    </select>
+    
 
 </mapper>

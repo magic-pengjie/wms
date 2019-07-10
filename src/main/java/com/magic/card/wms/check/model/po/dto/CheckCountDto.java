@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,13 +45,6 @@ public class CheckCountDto implements Serializable{
     @ApiModelProperty("商品id列表")
     private List<Integer> commodityId;
     
-    /**
-     * 	当前登录用户id
-     */
-    @ApiModelProperty("当前登录用户ID")
-    @NotNull(message = "当前登录用户不能为空")
-    private Long userId;
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -63,8 +55,6 @@ public class CheckCountDto implements Serializable{
 			builder.append("areaCode=").append(areaCode).append(", ");
 		if (customerId != null)
 			builder.append("customerId=").append(customerId).append(", ");
-		if (userId != null)
-			builder.append("userId=").append(userId).append(", ");
 		if (commodityId != null)
 			builder.append("commodityId=").append(commodityId);
 		builder.append("]");

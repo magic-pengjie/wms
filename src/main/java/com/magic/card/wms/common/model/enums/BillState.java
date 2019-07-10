@@ -24,6 +24,13 @@ public enum BillState {
     order_save("save", "订单导入创建"),
     order_confirm("confirm", "订单确认"),
     order_cancel("cancel", "订单取消或退订"),
+    
+    //盘点单据状态
+    checker_save("save", "初始化"),
+    checker_approving("confirm", "审批中"),
+    checker_approved("cancel", "审批完成"),
+    checker_approve_fail("cancel", "审批失败"),
+    checker_cancel("cancel", "作废"),
     ;
     @Getter
     private String code;

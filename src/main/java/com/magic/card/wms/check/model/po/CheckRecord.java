@@ -57,7 +57,7 @@ public class CheckRecord extends BasePo implements Serializable {
     /**
      * 盘点日期
      */
-    private String checkDate;
+    private Date checkDate;
     /**
      * 差异
      */

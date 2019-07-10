@@ -1,6 +1,7 @@
 package com.magic.card.wms.user.model.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -52,9 +53,9 @@ public class UserUpdateDTO implements Serializable{
 	/**
 	 * 角色ID
 	 */
-	@ApiModelProperty("角色ID")
-	@NotNull(message="角色ID不能为空")
-	private Long roleKey;
+	@ApiModelProperty(value="角色主键List")
+	@NotNull(message="角色不能为空")
+	private  List<Long> roleKeyList;
 
 	@Override
 	public String toString() {
@@ -70,8 +71,8 @@ public class UserUpdateDTO implements Serializable{
 			builder.append("name=").append(name).append(", ");
 		if (state != null)
 			builder.append("state=").append(state).append(", ");
-		if (roleKey != null)
-			builder.append("roleKey=").append(roleKey);
+		if (roleKeyList != null)
+			builder.append("roleKeyList=").append(roleKeyList);
 		builder.append("]");
 		return builder.toString();
 	}

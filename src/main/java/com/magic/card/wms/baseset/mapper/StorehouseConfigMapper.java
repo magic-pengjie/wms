@@ -1,7 +1,14 @@
 package com.magic.card.wms.baseset.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
+import com.magic.card.wms.check.model.po.dto.CheckRecordInfoDto;
+import com.magic.card.wms.check.model.po.dto.QueryCheckRecordDto;
 
 /**
  * com.magic.card.wms.baseset.mapper
@@ -12,4 +19,10 @@ import com.magic.card.wms.baseset.model.po.StorehouseConfig;
  * @since : 1.0.0
  */
 public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
+	
+	/**
+	 * 按商家或商品查询库存
+	 */
+	public List<CheckRecordInfoDto> queryCommoidtyStoreList(@Param("cr") QueryCheckRecordDto params);
+	
 }
