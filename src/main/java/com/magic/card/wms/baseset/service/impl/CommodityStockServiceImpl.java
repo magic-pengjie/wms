@@ -163,4 +163,17 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
 
         return selectOne(wrapper);
     }
+
+	@Override
+	public void addCommodityStock(String customerCode, String commodityCode, Long addNum, String operator) {
+		CommodityStock stock = checkOutSetting(customerCode, commodityCode);
+        String token = stockSecurity.accessLazyToken(customerCode, commodityCode);
+        // 加库存
+        Long stockNum = stock.getStockNum() + addNum;
+        stock.setStockNum(stockNum);
+        PoUtil.update(stock, operator);
+        updateById(stock);
+        stockSecurity.destroyToken(token);
+
+	}
 }

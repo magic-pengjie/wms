@@ -55,11 +55,17 @@ public enum ResultEnum {
 	query_role_failed(200010,"查询角色列表失败"),
 	add_role_failed(200011,"新增角色失败"),
 	
+	select_purchase_failed(400000,"查询单据失败"),
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),
 	delete_purchase_not_exsit(400002,"采购单不存在删除失败"),
 	delete_purchase_state_error(400003,"采购单已确认删除失败"),
 	purchase_file_size_zero(400004,"上传文件为空"),
 	purchase_file_is_null(400005,"上传数据为空"),
+	opr_type_error(400006,"操作类型有误"),
+	purchase_recevie_failed(400007,"状态为保存才允许开始收货"),
+	purchase_comfirm_failed(400008,"状态为待收货才允许确认收货"),
+	purchase_in_failed(400009,"状态为待收货才允许确认收货"),
+	purchase_approve_failed(400010,"状态已入库才允许审核"),
 
 	invoice_pick_no(500000, "拣货单号不可为空"),
 	invoice_pick_commodity_exit(50001, "该清单不需要此类商品，检错了呦！"),
@@ -72,6 +78,9 @@ public enum ResultEnum {
 	order_weight_warning(50008, "称重不在预定范围值内"),
 	order_package_no_hc(50009, "当前订单商品没有设置耗材"),
 
+	check_signature_error(900000, "验签不通过"),
+	data_repeat(900001, "数据重复"),
+	data_error(900099, "数据处理失败"),
 	
 	unkown_error(999999, "系统异常");
     private static Map<Integer,ResultEnum> enumMap = new HashMap();

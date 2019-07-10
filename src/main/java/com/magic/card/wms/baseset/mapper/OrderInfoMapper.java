@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.Order;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +25,11 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
     List<Map> loadGrid(Page page, @Param("ew")Wrapper entityWrapper);
 
     List<Map> orderPackage(@Param("orderNo") String orderNO);
+    /***
+     * 根据拣货单or订单查询订单及商品信息
+     * @param pickNo
+     * @param orderNo
+     * @return
+     */
+    List<OrderInfoDTO> selectOrderByNo(@Param("pickNo") String pickNo, @Param("orderNo") String orderNo);
 }

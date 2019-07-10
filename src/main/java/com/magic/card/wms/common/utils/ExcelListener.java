@@ -5,22 +5,20 @@ import java.util.List;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.excel.metadata.BaseRowModel;
 
-public class ExcelListener<T extends BaseRowModel> extends AnalysisEventListener<T> {
+public class ExcelListener extends AnalysisEventListener{
 
 	  /**
      * 自定义用于暂时存储data。
      * 可以通过实例获取该值
      */
-    private final List<T> data = new ArrayList<>();
+    private List<Object> data = new ArrayList<>();
 
 	
 	@Override
-	public void invoke(T object, AnalysisContext context) {
+	public void invoke(Object object, AnalysisContext context) {
 		 //数据存储
         data.add(object);
-		
 	}
 
 	@Override
@@ -29,7 +27,10 @@ public class ExcelListener<T extends BaseRowModel> extends AnalysisEventListener
 		
 	}
 	
-	public List<T> getData() {
+	public List<Object> getData() {
         return data;
     }
+	 public void setData(List<Object> data) {
+	        this.data = data;
+	    }
 }

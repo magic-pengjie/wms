@@ -8,7 +8,6 @@ import lombok.Setter;
 public enum BillStateEnum {
 
 	save("save","保存"),
-	submit("submit","已提交"),
 	recevieing("recevieing","待收货"),
 	recevied("recevied","已收货"),
 	warehousing("warehousing","待入库"),
