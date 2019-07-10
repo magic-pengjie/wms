@@ -16,4 +16,7 @@
                 ${ew.sqlSegment}
             </where>
     </select>
+    <select id="customerCodes" resultType="java.lang.String">
+        SELECT customer_code FROM wms_order_info <where> ${ew.sqlSegment}</where>
+    </select>
 </mapper>

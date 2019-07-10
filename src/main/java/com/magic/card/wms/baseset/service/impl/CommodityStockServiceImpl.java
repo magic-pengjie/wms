@@ -92,8 +92,8 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
      */
     @Override @Transactional
     public void occupyCommodityStock(String customerCode, String commodityCode, Long occupyNum, String operator) {
-        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
         String token = stockSecurity.accessLazyToken(customerCode, commodityCode);
+        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
         stock.setStockOccupyNum( stock.getStockOccupyNum() + occupyNum);
         PoUtil.update(stock, operator);
         updateById(stock);
@@ -110,8 +110,8 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
      */
     @Override @Transactional
     public void repealOccupyCommodityStock(String customerCode, String commodityCode, Long occupyNum, String operator) {
-        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
         String token = stockSecurity.accessLazyToken(customerCode, commodityCode);
+        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
         stock.setStockOccupyNum(stock.getStockOccupyNum() - occupyNum);
         PoUtil.update(stock, operator);
         updateById(stock);
@@ -128,8 +128,8 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
      */
     @Override @Transactional
     public void releaseCommodityStock(String customerCode, String commodityCode, Long releaseNum, String operator) {
-        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
         String token = stockSecurity.accessLazyToken(customerCode, commodityCode);
+        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
         // 减库存
         Long stockNum = stock.getStockNum() - releaseNum;
         // 释放库存占位

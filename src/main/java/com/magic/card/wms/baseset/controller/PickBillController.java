@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
@@ -33,5 +34,12 @@ public class PickBillController {
     @GetMapping("lockPickBillData")
     public ResponseData lockPickBillData(@RequestParam String pickNo) {
         return ResponseData.ok(pickingBillService.pickBillLoadGrid(pickNo));
+    }
+
+    @ApiOperation("手动触发拣货单生成")
+    @GetMapping("executeGenerator")
+    public ResponseData executeGenerator() {
+        pickingBillService.timingGenerator();
+        return ResponseData.ok();
     }
 }

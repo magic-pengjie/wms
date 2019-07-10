@@ -26,4 +26,11 @@ public interface PickingBillMapper extends BaseMapper<PickingBill> {
      * @return
      */
     List<Map> loadGrid(Page page, @Param("ew") EntityWrapper entityWrapper);
+
+    /**
+     * 加载订单 客户code
+     * @param wrapper
+     * @return
+     */
+    List<String> customerCodes(@Param("ew") EntityWrapper wrapper);
 }

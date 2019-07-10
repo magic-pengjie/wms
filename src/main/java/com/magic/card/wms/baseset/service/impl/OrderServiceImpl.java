@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.service.impl;
 
+import com.alibaba.excel.util.ObjectUtils;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -190,7 +191,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         wrapper.orderBy("create_time");
 
         if (this.selectCount(wrapper) >= executeSize) {
-            return this.selectPage(new Page<>(1, executeSize), wrapper).getRecords();
+            return this.selectPage(new Page<>(1, 20), wrapper).getRecords();
         }
 
         return null;
@@ -208,39 +209,72 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         //统计订单商品重量（包括耗材重量）
         List<Map> maps = this.baseMapper.orderCommodityWeightMap(orderNo, customerCode);
         //商品对应所有的耗材 (已g计算重量)
-        AtomicReference<BigDecimal> weightTotal = new AtomicReference<>(BigDecimal.valueOf(0.00));
-        maps.stream().forEach( map -> {
+        BigDecimal weightTotal = BigDecimal.valueOf(0.00);
+
+        for (Map map : maps) {
             // 购买数量
             int bayNums = MapUtils.getIntValue(map, "bayNums");
-            int leftVale = MapUtils.getIntValue(map, "leftValue");
-            int rightVale = MapUtils.getIntValue(map, "rightValue");
+            BigDecimal singleWeigh = (BigDecimal) map.get("singleWeight");
+            singleWeigh = CommodityUtil.unitConversion_G(singleWeigh, MapUtils.getString(map, "singleWeightUnit"));
+            weightTotal = weightTotal.add(singleWeigh.multiply(BigDecimal.valueOf(bayNums)));
+
+            // 判断当前商品是否存在 消耗品
+            if (ObjectUtils.isEmpty(map.get("useBarCode"))) continue;
+
+            int leftValue = MapUtils.getIntValue(map, "leftValue");
+            int rightValue = MapUtils.getIntValue(map, "rightValue");
             // 范围消耗品数量
             int useNums = MapUtils.getIntValue(map, "useNums");
 
-            if (rightVale >= leftVale) {
-                int allUseNums = bayNums/rightVale*useNums;
+            if (rightValue >= leftValue) {
+                int allUseNums = bayNums/rightValue*useNums;
 
-                if (bayNums%rightVale >= leftVale) {
+                if (bayNums%rightValue >= leftValue) {
                     allUseNums += useNums;
                 }
 
 
-                BigDecimal singleWeigh = (BigDecimal) map.get("singleWeigh");
-                singleWeigh = CommodityUtil.unitConversion_G(singleWeigh, MapUtils.getString(map, "singleWeighUnit"));
-                BigDecimal useSingleWeigh = (BigDecimal) map.get("useSingleWeigh");
-                useSingleWeigh = CommodityUtil.unitConversion_G(useSingleWeigh, MapUtils.getString(map, "useSingleWeighUnit"));
-                weightTotal.set(
-                        weightTotal.get().add(
-                                singleWeigh.multiply(BigDecimal.valueOf(bayNums))
-                                .add(
-                                    useSingleWeigh.multiply(BigDecimal.valueOf(allUseNums))
-                                )
-                        )
-                );
-            }
+                BigDecimal useSingleWeigh = (BigDecimal) map.get("useSingleWeight");
+                useSingleWeigh = CommodityUtil.unitConversion_G(useSingleWeigh, MapUtils.getString(map, "useSingleWeightUnit"));
 
-        });
-        return weightTotal.get().divide(new BigDecimal("1000"));
+                weightTotal = weightTotal.add( useSingleWeigh.multiply(BigDecimal.valueOf(allUseNums)));
+            }
+        }
+//        maps.forEach( map -> {
+//
+//
+//
+//            // 购买数量
+//            int bayNums = MapUtils.getIntValue(map, "bayNums");
+//            int leftValue = MapUtils.getIntValue(map, "leftValue");
+//            int rightValue = MapUtils.getIntValue(map, "rightValue");
+//            // 范围消耗品数量
+//            int useNums = MapUtils.getIntValue(map, "useNums");
+//
+//            if (rightValue >= leftValue) {
+//                int allUseNums = bayNums/rightValue*useNums;
+//
+//                if (bayNums%rightValue >= leftValue) {
+//                    allUseNums += useNums;
+//                }
+//
+//
+//                BigDecimal singleWeigh = (BigDecimal) map.get("singleWeight");
+//                singleWeigh = CommodityUtil.unitConversion_G(singleWeigh, MapUtils.getString(map, "singleWeightUnit"));
+//                BigDecimal useSingleWeigh = (BigDecimal) map.get("useSingleWeight");
+//                useSingleWeigh = CommodityUtil.unitConversion_G(useSingleWeigh, MapUtils.getString(map, "useSingleWeightUnit"));
+//                weightTotal.set(
+//                        weightTotal.get().add(
+//                                singleWeigh.multiply(BigDecimal.valueOf(bayNums))
+//                                .add(
+//                                    useSingleWeigh.multiply(BigDecimal.valueOf(allUseNums))
+//                                )
+//                        )
+//                );
+//            }
+//
+//        });
+        return weightTotal.divide(new BigDecimal("1000"));
     }
 
     /**

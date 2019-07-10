@@ -234,7 +234,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     /**
      * 定时任务生成(每个整点半执行一次)
      */
-    @Override @Transactional
+    @Override @Transactional @Synchronized
     public void timingGenerator() {
         long start = System.currentTimeMillis();
         log.info("定时任务执行开始****** start times: {}ms", start);
@@ -243,9 +243,8 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         wrapper.eq("state", StateEnum.normal.getCode());
         wrapper.eq("is_b2b", false);
         wrapper.groupBy("customer_code");
-        wrapper.having("COUNT(1) > 0");
-        List<String> customerCodes = orderService.selectObjs(wrapper);
-
+        wrapper.having("COUNT(*) > 0");
+        List<String> customerCodes = baseMapper.customerCodes(wrapper);
         if (customerCodes != null && customerCodes.size() > 0) {
             customerCodes.stream().forEach(customerCode -> generatorPickingBill(customerCode, 1, Constants.TIMING_GENERATOR_PICK_USER));
         }
