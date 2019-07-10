@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/user")
-@Api("用户 维护Controlller")
+@Api(value="用户 维护Controlller")
 public class UserController {
 
 	@Autowired
@@ -136,6 +136,9 @@ public class UserController {
 		UserRoleMenuQueryDTO userRoleMenuList = null;
 		try {
 			userRoleMenuList = userService.queryUserRoleMenuInfoList(userKey);
+		} catch (BusinessException e) {
+			log.error("===查询用户角色菜单信息失败，bize:{}", e);
+			return ResponseData.error(e.getErrCode(),e.getErrMsg());
 		} catch (Exception e) {
 			log.error("===查询用户角色菜单信息失败，e:{}", e);
 			return ResponseData.error(00, "查询用户角色菜单信息失败！请稍后再试！");

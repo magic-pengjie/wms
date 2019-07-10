@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/menu")
-@Api("菜单信息维护 Controller")
+@Api(value="菜单信息维护 Controller")
 public class MenuInfoController {
 
 	@Autowired
@@ -49,7 +49,7 @@ public class MenuInfoController {
 		try {
 			menuList = menuInfoService.queryMenuList(dto);
 		} catch (BusinessException e) {
-			log.error("===查询菜单异常：{}", e);
+			log.error("===查询菜单失败：{}", e);
 			return ResponseData.error(e.getErrCode(), e.getErrMsg());
 		} catch (Exception e) {
 			log.error("===查询菜单异常：{}", e);

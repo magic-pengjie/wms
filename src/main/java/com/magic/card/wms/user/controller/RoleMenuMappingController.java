@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/roleMenu")
-@Api("权限及菜单关系维护Controller")
+@Api(value="权限及菜单关系维护Controller")
 public class RoleMenuMappingController {
 	
 	@Autowired

@@ -20,6 +20,7 @@ import com.magic.card.wms.check.service.ICheckRecordService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/check")
+@Api(value="盘点记录维护Controller")
 public class CheckRecordController {
 	
 	@Autowired
@@ -44,7 +46,7 @@ public class CheckRecordController {
 	 *	 盘点要素：时间(月盘，季盘，半年盘，年盘)，维度(商品，商家，库区，全盘)
 	 * @throws BusinessException 
 	 */
-	@ApiOperation("根据盘点规则查询统计当前库存信息")
+	@ApiOperation(value="根据盘点规则查询统计当前库存信息")
 	@RequestMapping(value = "/countCheck", method = RequestMethod.POST)
 	public ResponseData countCheckRecordInfo(@RequestBody @Valid CheckCountDto dto, BindingResult bindingResult) throws BusinessException {
 		List<CheckRecordInfoDto> countCheckRecord = null;
@@ -64,7 +66,7 @@ public class CheckRecordController {
 	 * 	盘点开始，冻结库位，登记盘点记录
 	 * @throws BusinessException 
 	 */
-	@ApiOperation("开始盘点,冻结库位,登记盘点记录")
+	@ApiOperation(value="开始盘点,冻结库位,登记盘点记录")
 	@RequestMapping(value = "/checkRecordStart", method = RequestMethod.POST)
 	public ResponseData checkRecordStart(@RequestBody @Valid CheckRecordStartDto dto, BindingResult bindingResult ) throws BusinessException {
 		try {
@@ -86,7 +88,7 @@ public class CheckRecordController {
 	 * 	盘点结束，更新库存信息，及盘点信息
 	 * @throws BusinessException 
 	 */
-	@ApiOperation("开始盘点,冻结库位,登记盘点记录")
+	@ApiOperation(value="盘点结束，更新库存信息，及盘点信息")
 	@RequestMapping(value = "/updCheckRecord", method = RequestMethod.POST)
 	public ResponseData updateCheckRecordInfo(@RequestBody @Valid CheckRecordStartDto dto, BindingResult bindingResult) {
 		return null;

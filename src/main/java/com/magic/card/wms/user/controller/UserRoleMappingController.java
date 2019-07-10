@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/userRoleMapping")
-@Api("用户权限关系维护Controller")
+@Api(value="用户权限关系维护Controller")
 public class UserRoleMappingController {
 
 	

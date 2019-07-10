@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.RoleAddDto;
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/roleInfo")
-@Api("用户权限维护Controller")
+@Api(value="用户权限维护Controller")
 public class RoleInfoController {
 
 	
@@ -65,8 +66,11 @@ public class RoleInfoController {
 		
 		try {
 			roleInfoService.addRoleInfo(dto);
-		} catch (Exception e) {
-			log.error("===新增角色信息失败:{}",e);
+		} catch (BusinessException e) {
+			log.error("===新增角色失败:{}",e);
+			return ResponseData.error(e.getErrCode(),e.getErrMsg());
+		}catch (Exception e) {
+			log.error("===新增角色信息异常:{}",e);
 			return ResponseData.error(ResultEnum.add_role_failed.getCode(), ResultEnum.add_role_failed.getMsg());
 		}
 		return ResponseData.ok();
@@ -82,8 +86,11 @@ public class RoleInfoController {
 		
 		try {
 			roleInfoService.updateRoleInfo(dto);
+		}catch (BusinessException e) {
+			log.error("===修改角色失败:{}",e);
+			return ResponseData.error(e.getErrCode(),e.getErrMsg());
 		} catch (Exception e) {
-			log.error("===新增角色信息失败:{}",e);
+			log.error("===新增角色信息异常:{}",e);
 			return ResponseData.error(ResultEnum.add_role_failed.getCode(), ResultEnum.add_role_failed.getMsg());
 		}
 		return ResponseData.ok();
