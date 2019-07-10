@@ -175,7 +175,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			if(!dto.getPassword().equals(user.getPassword())) {
 				log.info("===>> login 用户名密码错误！UserDto:{}", dto);
 				throw new BusinessException(ResultEnum.user_pwd_error.getCode(), ResultEnum.user_pwd_error.getMsg());
-			}
+			}	
 			//将用户信息放入session，前端放入cookie字段：Wms-Token,
 			HttpSession session = setUserSessionUo(user);
 			//返回前端Dto
