@@ -20,6 +20,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.context.AnalysisContext;
@@ -28,6 +29,7 @@ import com.alibaba.excel.metadata.BaseRowModel;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.magic.card.wms.common.model.EasyExcelParams;
+import com.magic.card.wms.warehousing.model.vo.PurchaseBillExcelVO;
 
 /**
  * excel处理工具
@@ -47,17 +49,16 @@ public class EasyExcelUtil {
 	 * @param headRow     表头行数
 	 * @return
 	 */
-	public static <T extends BaseRowModel> List<T> readExcel2(final InputStream inputStream,
-			final Class<? extends BaseRowModel> clazz, int sheetNo, int headRow) {
+	public static  List<Object> readExcel2(final InputStream inputStream,
+			Class<? extends BaseRowModel> clazz, int sheetNo, int headRow) {
 		if (null == inputStream) {
 			throw new NullPointerException("the inputStream is null!");
 		}
-		AnalysisEventListener listener = new ExcelListener();
+		ExcelListener listener = new ExcelListener();
 		ExcelReader reader = new ExcelReader(inputStream, null, listener);
-
-		reader.read(new Sheet(sheetNo, headRow, clazz));
-
-		return ((ExcelListener) listener).getData();
+		reader.read(new Sheet(sheetNo, headRow, PurchaseBillExcelVO.class));
+		List<Object> data = listener.getData();
+		return data;
 	}
 
 	/**
@@ -70,17 +71,17 @@ public class EasyExcelUtil {
 	 * @param headRow     表头行数
 	 * @return
 	 */
-	public static <T extends BaseRowModel> List<T> readExcel(final InputStream inputStream,
+	public static List<Object> readExcel(final InputStream inputStream,
 			final Class<? extends BaseRowModel> clazz, int sheetNo, int headRow) {
 		if (null == inputStream) {
 			throw new NullPointerException("the inputStream is null!");
 		}
 		
-		List<T> data = new ArrayList<>();
-		AnalysisEventListener listener = new AnalysisEventListener<T>() {
+		List<Object> data = new ArrayList<>();
+		AnalysisEventListener listener = new AnalysisEventListener() {
 
 			@Override
-			public void invoke(T object, AnalysisContext context) {
+			public void invoke(Object object, AnalysisContext context) {
 				data.add(object);
 			}
 
@@ -93,7 +94,7 @@ public class EasyExcelUtil {
 
 		reader.read(new Sheet(sheetNo, headRow, clazz));
 
-		return ((ExcelListener) listener).getData();
+		return data;
 	}
 
 	public static void exportExcel2007Format(EasyExcelParams excelParams) throws IOException {

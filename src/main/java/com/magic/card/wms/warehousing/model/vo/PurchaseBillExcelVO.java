@@ -11,8 +11,6 @@ import lombok.EqualsAndHashCode;
  * @author PENGJIE
  * @date 2019年6月22日
  */
-@Data
-@EqualsAndHashCode(callSuper=false)
 public class PurchaseBillExcelVO extends BaseRowModel {
 	 /**
      * 采购单号
@@ -117,4 +115,126 @@ public class PurchaseBillExcelVO extends BaseRowModel {
      */
 	@ExcelProperty(value = "制单时间", index = 19)
     private String makeDate;
+	public String getPurchaseNo() {
+		return purchaseNo;
+	}
+	public void setPurchaseNo(String purchaseNo) {
+		this.purchaseNo = purchaseNo;
+	}
+	public String getCustomerName() {
+		return customerName;
+	}
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+	public String getCommodityName() {
+		return commodityName;
+	}
+	public void setCommodityName(String commodityName) {
+		this.commodityName = commodityName;
+	}
+	public String getModelNo() {
+		return modelNo;
+	}
+	public void setModelNo(String modelNo) {
+		this.modelNo = modelNo;
+	}
+	public String getSpec() {
+		return spec;
+	}
+	public void setSpec(String spec) {
+		this.spec = spec;
+	}
+	public String getUnit() {
+		return unit;
+	}
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+	public String getBarCode() {
+		return barCode;
+	}
+	public void setBarCode(String barCode) {
+		this.barCode = barCode;
+	}
+	public Double getVolume() {
+		return volume;
+	}
+	public void setVolume(Double volume) {
+		this.volume = volume;
+	}
+	public Double getWeight() {
+		return weight;
+	}
+	public void setWeight(Double weight) {
+		this.weight = weight;
+	}
+	public Integer getPurchaseNums() {
+		return purchaseNums;
+	}
+	public void setPurchaseNums(Integer purchaseNums) {
+		this.purchaseNums = purchaseNums;
+	}
+	public String getPurchaseDate() {
+		return purchaseDate;
+	}
+	public void setPurchaseDate(String purchaseDate) {
+		this.purchaseDate = purchaseDate;
+	}
+	public String getArrivalDate() {
+		return arrivalDate;
+	}
+	public void setArrivalDate(String arrivalDate) {
+		this.arrivalDate = arrivalDate;
+	}
+	public String getProductionDate() {
+		return productionDate;
+	}
+	public void setProductionDate(String productionDate) {
+		this.productionDate = productionDate;
+	}
+	public Double getShilfLife() {
+		return shilfLife;
+	}
+	public void setShilfLife(Double shilfLife) {
+		this.shilfLife = shilfLife;
+	}
+	public String getRemark() {
+		return remark;
+	}
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+	public String getContacts() {
+		return contacts;
+	}
+	public void setContacts(String contacts) {
+		this.contacts = contacts;
+	}
+	public String getContactsTel() {
+		return contactsTel;
+	}
+	public void setContactsTel(String contactsTel) {
+		this.contactsTel = contactsTel;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getMaker() {
+		return maker;
+	}
+	public void setMaker(String maker) {
+		this.maker = maker;
+	}
+	public String getMakeDate() {
+		return makeDate;
+	}
+	public void setMakeDate(String makeDate) {
+		this.makeDate = makeDate;
+	}
+	
+	
 }

@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.magic.card.wms.common.model.po.BasePo;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,6 +18,7 @@ import lombok.EqualsAndHashCode;
  * @author Mr.Zhang
  * @since 2019-06-24
  */
+@XStreamAlias("item")
 @Data
 @TableName("wms_order_commodity")
 @EqualsAndHashCode(callSuper = false)

@@ -226,7 +226,12 @@
 		    <artifactId>spring-session-data-redis</artifactId>
 		    <version>2.1.2.RELEASE</version>
 		</dependency>
-				
+		<!-- xstream -->
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.4.9</version>
+		</dependency>		
 				
 
 	</dependencies>
