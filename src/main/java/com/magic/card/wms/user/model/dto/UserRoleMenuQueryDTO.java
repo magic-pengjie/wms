@@ -22,6 +22,11 @@ public class UserRoleMenuQueryDTO implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	/**
+     * 用户主键
+     */
+	@ApiModelProperty(value="用户主键")
+    private Long userKey;
+	/**
      * 用户名
      */
 	@ApiModelProperty(value="用户名")
@@ -52,6 +57,8 @@ public class UserRoleMenuQueryDTO implements Serializable{
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("UserRoleMenuQueryDTO [");
+		if (userKey != null)
+			builder.append("userKey=").append(userKey).append(", ");
 		if (userNo != null)
 			builder.append("userNo=").append(userNo).append(", ");
 		if (password != null)
@@ -65,4 +72,5 @@ public class UserRoleMenuQueryDTO implements Serializable{
 		builder.append("]");
 		return builder.toString();
 	}
+
 }

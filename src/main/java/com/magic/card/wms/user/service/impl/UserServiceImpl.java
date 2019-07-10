@@ -202,6 +202,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			throw new BusinessException(ResultEnum.user_name_not_exist.getCode(), ResultEnum.user_name_not_exist.getMsg());
 		}
 		BeanUtils.copyProperties(userInfo, userRoleMenuList);
+		userRoleMenuList.setUserKey(userInfo.getId());
 		//根据userKey查询用户角色
 		List<RoleInfo> roleList = RoleInfoMapper.queryRoleByUserKey(userKey);
 		if(CollectionUtils.isEmpty(roleList)) {
