@@ -123,7 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			BeanUtils.copyProperties(dto, user);
 			user.setId(dto.getUserKey());
 			user.setUpdateTime(new Date());
-			user.setUpdateUser(user.getName()==null ?"SYSTEM" : user.getName());
+			user.setUpdateUser(userSession.getName());
 			//根据用户主键ID修改用户信息
 			boolean updateUserFlag = this.updateById(user);
 			if(updateUserFlag) {
@@ -135,21 +135,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				userRoleWrapper.eq("user_key", dto.getUserKey());
 				Integer update = userRoleMappingMapper.update(entity,userRoleWrapper);
 				log.info("===>>deleted  UserRole {} rows ",update);
-				for (Long roleId : dto.getRoleKeyList()) {
-					UserRoleMapping userRole = new UserRoleMapping();
-					userRole.setUserKey(user.getId().longValue());
-					if(StringUtils.isEmpty(dto.getState())) {
-						userRole.setState(dto.getState());
+				List<Long> roleKeyList = dto.getRoleKeyList();
+				if(StateEnum.delete.getCode() != dto.getState() && !CollectionUtils.isEmpty(roleKeyList)) {
+					for (Long roleId : roleKeyList) {
+						UserRoleMapping userRole = new UserRoleMapping();
+						userRole.setUserKey(user.getId().longValue());
+						if(StringUtils.isEmpty(dto.getState())) {
+							userRole.setState(dto.getState());
+						}
+						userRole.setRoleKey(roleId);
+						userRole.setUpdateTime(new Date());
+						userRole.setUpdateUser(user.getName());
+						Wrapper<UserRoleMapping> userRoleMapping = new EntityWrapper<UserRoleMapping>();
+						userRoleMapping.eq("user_key", dto.getUserKey());
+						userRoleMapping.eq("role_key", roleId);
+						//修改用户角色信息
+						Integer updMappingFlag = userRoleMappingMapper.update(userRole, userRoleMapping);
+						log.info("===insertUserRoleMapping.params:{},change {} rows", userRole,updMappingFlag);
 					}
-					userRole.setRoleKey(roleId);
-					userRole.setUpdateTime(new Date());
-					userRole.setUpdateUser(user.getName());
-					Wrapper<UserRoleMapping> userRoleMapping = new EntityWrapper<UserRoleMapping>();
-					userRoleMapping.eq("user_key", dto.getUserKey());
-					userRoleMapping.eq("role_key", roleId);
-					//修改用户角色信息
-					Integer updMappingFlag = userRoleMappingMapper.update(userRole, userRoleMapping);
-					log.info("===insertUserRoleMapping.params:{},change {} rows", userRole,updMappingFlag);
 				}
 			}
 		}else {

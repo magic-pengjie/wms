@@ -55,7 +55,6 @@ public class UserUpdateDTO implements Serializable{
 	 * 角色ID
 	 */
 	@ApiModelProperty(value="角色主键List")
-	@NotEmpty(message="角色不能为空")
 	private  List<Long> roleKeyList;
 
 	@Override
