@@ -172,12 +172,13 @@ public class PurchaseBillController {
 	}
 	
 	@ApiOperation(value = "开始收货操作", notes = "开始收货操作")
-	@RequestMapping(value = "/recevieing", method = RequestMethod.POST)
-	public ResponseData recevieing(@RequestBody @Valid ComfirmReqDTO dto,BindingResult bindingResult) {
+	@RequestMapping(value = "/confirm", method = RequestMethod.POST)
+	public ResponseData confirm(@RequestBody @Valid ComfirmReqDTO dto,BindingResult bindingResult) {
 		try {
+			purchaseBillService.confirm(dto);
 			return ResponseData.ok();
 		} catch (Exception e) {
-			log.error("修改采购单据失败:{}",e);
+			log.error("采购单据失败:{}",e);
 			return ResponseData.error(ResultEnum.update_error);
 		}
 		

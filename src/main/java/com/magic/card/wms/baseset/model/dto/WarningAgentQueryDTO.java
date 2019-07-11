@@ -1,8 +1,15 @@
 package com.magic.card.wms.baseset.model.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
+@Data
 public class WarningAgentQueryDTO {
+	/**
+     * 所属模块
+     */
+	@ApiModelProperty("所属模块")
+    private String model;
 	/**
      * 预警类型编码
      */

@@ -18,6 +18,11 @@ import lombok.Data;
 @ApiModel("采购单返回模型")
 public class PurchaseBillVO{
 	 /**
+     * 主键id
+     */
+	@ApiModelProperty("主键id")
+	private long id;
+	 /**
      * 采购单号
      */
 	@ApiModelProperty("采购单号")

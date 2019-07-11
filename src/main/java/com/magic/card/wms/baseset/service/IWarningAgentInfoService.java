@@ -1,11 +1,10 @@
 package com.magic.card.wms.baseset.service;
 
-import com.magic.card.wms.baseset.model.po.WarningAgentInfo;
-import com.magic.card.wms.common.model.PageInfo;
-import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
-import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.IService;
+import com.magic.card.wms.baseset.model.dto.WarningAgentQueryDTO;
+import com.magic.card.wms.baseset.model.po.WarningAgentInfo;
+import com.magic.card.wms.common.model.PageInfo;
 
 /**
  * <p>
@@ -23,5 +22,21 @@ public interface IWarningAgentInfoService extends IService<WarningAgentInfo> {
 	 * @param page 分页对象
 	 * @return
 	 */
-	Page<WarningAgentInfo> getList(BillQueryDTO dto,PageInfo page);
+	Page<WarningAgentInfo> getList(WarningAgentQueryDTO dto,PageInfo page);
+	/**
+	 * 关闭代办任务
+	 * @param id
+	 * @param fid
+	 */
+	void deal(String id,String fid);
+	/**
+	 * 作废代办任务
+	 * @param id
+	 */
+	void delete(String id);
+	/**
+	 * 预警任务新增
+	 * @param agentInfo
+	 */
+	void add(WarningAgentInfo agentInfo);
 }
