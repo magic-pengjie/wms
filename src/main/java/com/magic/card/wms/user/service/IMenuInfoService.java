@@ -5,6 +5,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.user.model.dto.MenuQueryDto;
+import com.magic.card.wms.user.model.dto.MenuQueryResponseDto;
 import com.magic.card.wms.user.model.po.MenuInfo;
 
 /**
@@ -17,6 +18,6 @@ import com.magic.card.wms.user.model.po.MenuInfo;
  */
 public interface IMenuInfoService extends IService<MenuInfo> {
 
-	public List<MenuInfo> queryMenuList(MenuQueryDto dto) throws BusinessException;
+	public List<MenuQueryResponseDto> queryMenuList(MenuQueryDto dto) throws BusinessException;
 
 }

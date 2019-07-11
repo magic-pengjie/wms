@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
-import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.RoleMenuAddDto;
+import com.magic.card.wms.user.model.dto.RoleMenuQueryDto;
+import com.magic.card.wms.user.model.dto.RoleMenuQueryResponseDto;
 import com.magic.card.wms.user.model.dto.RoleMenuUpdateDto;
-import com.magic.card.wms.user.service.IMenuInfoService;
 import com.magic.card.wms.user.service.IRoleMenuMappingService;
-import com.magic.card.wms.user.service.impl.RoleMenuMappingServiceImpl;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RoleMenuMappingController {
 	
 	@Autowired
-	private IRoleMenuMappingService RoleMenuMappingService;
+	private IRoleMenuMappingService roleMenuMappingService;
 
 	/***
 	 * 新增角色菜单信息
@@ -44,7 +43,7 @@ public class RoleMenuMappingController {
 	@RequestMapping(value="/addRoleMenu", method = RequestMethod.POST)
 	public ResponseData addRoleMenu(@RequestBody @Valid RoleMenuAddDto dto,BindingResult bindingResult) {
 		try {
-			RoleMenuMappingService.addRoleMenuMapping(dto);
+			roleMenuMappingService.addRoleMenuMapping(dto);
 		}catch (BusinessException e) {
 			log.error("===新增角色菜单异常:{}",e);
 			return ResponseData.error(e.getErrCode(),e.getErrMsg());
@@ -62,16 +61,35 @@ public class RoleMenuMappingController {
 	@RequestMapping(value="/updRoleMenu", method = RequestMethod.POST)
 	public ResponseData updateRoleMenu(@RequestBody @Valid RoleMenuUpdateDto dto,BindingResult bindingResult) {
 		try {
-			RoleMenuMappingService.updateRoleMenuMapping(dto);
+			roleMenuMappingService.updateRoleMenuMapping(dto);
 		}catch (BusinessException e) {
-			log.error("===新增角色菜单异常:{}",e);
+			log.error("===修改角色菜单异常:{}",e);
 			return ResponseData.error(e.getErrCode(),e.getErrMsg());
 		}catch (Exception e) {
-			log.error("===新增角色菜单异常，请联系技术人员:{}",e);
-			return ResponseData.error(0001, "新增角色菜单异常，请联系技术人员！");
+			log.error("===修改角色菜单异常，请联系技术人员:{}",e);
+			return ResponseData.error(0001, "修改角色菜单异常，请联系技术人员！");
 		}
 		return ResponseData.ok();
 	}
 	
+	/***
+	 * 查询角色目录菜单
+	 */
+	@ApiOperation(value = "查询角色菜单", notes = "查询角色菜单信息")
+	@RequestMapping(value="/getRoleMenuInfo", method = RequestMethod.POST)
+	public ResponseData getRoleMenuInfo(@RequestBody @Valid RoleMenuQueryDto dto,BindingResult bindingResult) {
+		RoleMenuQueryResponseDto roleMenuInfo = null;
+		try {
+			roleMenuInfo = roleMenuMappingService.getRoleMenuInfo(dto);
+		}catch (BusinessException e) {
+			log.error("===查询角色菜单失败:{}",e);
+			return ResponseData.error(e.getErrCode(),e.getErrMsg());
+		}
+		catch (Exception e) {
+			log.error("===查询角色菜单异常，请联系技术人员:{}",e);
+			return ResponseData.error(0001, "查询角色菜单异常，请联系技术人员！");
+		}
+		return ResponseData.ok(roleMenuInfo);
+	}
 }
 

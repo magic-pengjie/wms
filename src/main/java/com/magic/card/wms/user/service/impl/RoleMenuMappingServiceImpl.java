@@ -1,30 +1,33 @@
 package com.magic.card.wms.user.service.impl;
 
-import com.magic.card.wms.user.model.dto.RoleMenuAddDto;
-import com.magic.card.wms.user.model.dto.RoleMenuUpdateDto;
-import com.magic.card.wms.user.model.po.RoleMenuMapping;
-import com.magic.card.wms.common.exception.BusinessException;
-import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.user.mapper.RoleMenuMappingMapper;
-import com.magic.card.wms.user.service.IRoleMenuMappingService;
-
-import lombok.extern.slf4j.Slf4j;
-
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.user.mapper.MenuInfoMapper;
+import com.magic.card.wms.user.mapper.RoleMenuMappingMapper;
+import com.magic.card.wms.user.model.dto.RoleMenuAddDto;
+import com.magic.card.wms.user.model.dto.RoleMenuQueryDto;
+import com.magic.card.wms.user.model.dto.RoleMenuQueryResponseDto;
+import com.magic.card.wms.user.model.dto.RoleMenuUpdateDto;
+import com.magic.card.wms.user.model.po.MenuInfo;
+import com.magic.card.wms.user.model.po.RoleMenuMapping;
+import com.magic.card.wms.user.service.IRoleMenuMappingService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -38,6 +41,9 @@ import org.springframework.util.CollectionUtils;
 @Service
 public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMapper, RoleMenuMapping> implements IRoleMenuMappingService {
 
+	@Autowired
+	private MenuInfoMapper menuInfoMapper;
+	
 	//新增角色菜单
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
@@ -73,7 +79,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 	//修改/删除角色菜单
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
-	public void updateRoleMenuMapping(@Valid RoleMenuUpdateDto dto) throws BusinessException {
+	public void updateRoleMenuMapping(RoleMenuUpdateDto dto) throws BusinessException {
 		
 		List<RoleMenuMapping> roleMenuMappingList = new ArrayList<RoleMenuMapping>();
 		try {
@@ -112,6 +118,23 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 			throw new BusinessException(000, "新增角色菜单信息异常，请稍后再试！");
 		}
 		
+	}
+
+	//根据用户角色Key查询目录信息
+	@Override
+	public RoleMenuQueryResponseDto getRoleMenuInfo(RoleMenuQueryDto dto) throws BusinessException {
+		RoleMenuQueryResponseDto rmResDto = new RoleMenuQueryResponseDto();
+		Wrapper<RoleMenuMapping> rmWrapper = new EntityWrapper<RoleMenuMapping>();
+		rmWrapper.eq("role_key", dto.getRoleKey());
+		rmWrapper.eq("state", StateEnum.normal.getCode());
+		List<RoleMenuMapping> rmList = this.selectList(rmWrapper);
+		if(!CollectionUtils.isEmpty(rmList)) {
+			List<Long> menuKeyList = rmList.stream().map(RoleMenuMapping::getMenuKey).collect(Collectors.toList());
+			List<MenuInfo> menuInfoList = menuInfoMapper.selectBatchIds(menuKeyList);
+			rmResDto.setRoleKey(dto.getRoleKey());
+			rmResDto.setMenuInfoList(menuInfoList);
+		}
+		return rmResDto;
 	}
 
 }

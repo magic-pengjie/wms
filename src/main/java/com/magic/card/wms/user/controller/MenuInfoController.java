@@ -16,6 +16,7 @@ import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.user.model.dto.MenuQueryDto;
+import com.magic.card.wms.user.model.dto.MenuQueryResponseDto;
 import com.magic.card.wms.user.model.dto.RoleMenuAddDto;
 import com.magic.card.wms.user.model.po.MenuInfo;
 import com.magic.card.wms.user.service.IMenuInfoService;
@@ -45,7 +46,7 @@ public class MenuInfoController {
 	@ApiOperation(value = "获取菜单列表", notes = "获取菜单列表")
 	@RequestMapping(value = "/getMenuList", method = RequestMethod.POST)
 	public ResponseData queryMenuList(@RequestBody @Valid MenuQueryDto dto, BindingResult bindingResult) {
-		List<MenuInfo> menuList = null;
+		List<MenuQueryResponseDto> menuList = null;
 		try {
 			menuList = menuInfoService.queryMenuList(dto);
 		} catch (BusinessException e) {
