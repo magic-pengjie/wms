@@ -27,9 +27,9 @@ public enum BillState {
     
     //盘点单据状态
     checker_save("save", "初始化"),
-    checker_approving("confirm", "审批中"),
-    checker_approved("cancel", "审批完成"),
-    checker_approve_fail("cancel", "审批失败"),
+    checker_approving("approving", "审批中"),
+    checker_approved("approved", "审批完成"),
+    checker_approve_fail("approve_fail", "审批失败"),
     checker_cancel("cancel", "作废"),
     ;
     @Getter

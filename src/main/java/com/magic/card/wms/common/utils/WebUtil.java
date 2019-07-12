@@ -36,7 +36,7 @@ public class WebUtil {
 	public UserSessionUo getUserSession() throws BusinessException {
 		Object user = getSession(SessionKeyConstants.USER_INFO);
 		if(null == user) {
-			throw new BusinessException(400001, "用户未登录");
+			throw new BusinessException(400001, "用户未登录,或登录超时");
 		}
 		return (UserSessionUo)user;
 	}

@@ -1,4 +1,4 @@
-package com.magic.card.wms.check.model.po.dto;
+package com.magic.card.wms.check.model.dto;
 
 import java.io.Serializable;
 
@@ -59,7 +59,7 @@ public class CheckRecordInfoDto implements Serializable{
 	private Integer checkNums;//盘点数量
 	
 	@ApiModelProperty(value = "差异")
-	private String checkDiff;//差异
+	private Integer diffNums;//差异
 	
 	@ApiModelProperty(value = "操作人")
 	private String userName;//操作人

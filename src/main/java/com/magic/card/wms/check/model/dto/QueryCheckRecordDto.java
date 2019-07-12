@@ -1,4 +1,4 @@
-package com.magic.card.wms.check.model.po.dto;
+package com.magic.card.wms.check.model.dto;
 
 import java.io.Serializable;
 import java.util.List;

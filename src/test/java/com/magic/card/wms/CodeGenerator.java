@@ -16,9 +16,9 @@ public class CodeGenerator extends MagicWmsApplicationTests{
 
 	@Test
 	public void start() {
-		 String packageName = "com.magic.card.wms.baseset";
+		 String packageName = "com.magic.card.wms.check";
 		 String[] tableNames = {
-				 "WMS_USER"
+				 "wms_check_record"
 		 };
 		 generateByTables(packageName,tableNames);
 
@@ -43,8 +43,8 @@ public class CodeGenerator extends MagicWmsApplicationTests{
                 .setRestControllerStyle(true);
 //                .setInclude(tableNames);//修改替换成你需要的表名，多个表名传数组
         config.setActiveRecord(false)
-                .setAuthor("Mr.Zhang")
-                .setOutputDir("F:\\GeneratorCodeFile")
+                .setAuthor("Zhouhao")
+                .setOutputDir("D:\\wms")
                 .setBaseResultMap(true)
                 .setBaseColumnList(true)
                 //.setServiceName("%Service")

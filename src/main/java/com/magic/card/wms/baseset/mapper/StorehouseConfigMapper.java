@@ -8,8 +8,8 @@ import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
-import com.magic.card.wms.check.model.po.dto.CheckRecordInfoDto;
-import com.magic.card.wms.check.model.po.dto.QueryCheckRecordDto;
+import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
+import com.magic.card.wms.check.model.dto.QueryCheckRecordDto;
 
 /**
  * com.magic.card.wms.baseset.mapper
