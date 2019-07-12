@@ -129,7 +129,11 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     @Override
     public List<Map> generatorInvoiceList(String pickNo) {
         //拣货区拿去货物
-        List<Map> invoiceList = this.baseMapper.invoiceList(pickNo, Constants.BILL_STATE_CANCEL, Constants.PICKING_AREA_CODE);
+        List<Map> invoiceList = this.baseMapper.invoiceList(
+                pickNo,
+                Constants.BILL_STATE_CANCEL,
+                Constants.PICKING_AREA_CODE
+        );
 
         if (invoiceList == null && invoiceList.isEmpty()) {
             throw OperationException.addException("配货单生成异常，数据为空请核实数据！");
@@ -153,6 +157,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
                     log.warn("拣货区库存不足请及时补货： 商品条形码：{}", map.get("barCode"));
                 });
             }
+
         }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
 
         return invoiceList;

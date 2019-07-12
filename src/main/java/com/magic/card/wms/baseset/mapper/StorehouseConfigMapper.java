@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -23,6 +24,12 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
 	/**
 	 * 按商家或商品查询库存
 	 */
-	public List<CheckRecordInfoDto> queryCommoidtyStoreList(@Param("cr") QueryCheckRecordDto params);
-	
+	List<CheckRecordInfoDto> queryCommoidtyStoreList(@Param("cr") QueryCheckRecordDto params);
+
+	/**
+	 * 加载库位配置信息
+	 * @param wrapper
+	 * @return
+	 */
+	List<Map> storehouseConfig(@Param("ew")Wrapper wrapper);
 }

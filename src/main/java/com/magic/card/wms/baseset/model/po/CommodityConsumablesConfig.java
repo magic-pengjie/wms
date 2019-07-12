@@ -3,6 +3,7 @@ package com.magic.card.wms.baseset.model.po;
 import java.util.Date;
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.annotations.Version;
 
 import com.magic.card.wms.common.model.po.BasePo;
@@ -19,6 +20,7 @@ import lombok.experimental.Accessors;
  * @since 2019-06-21
  */
 @Data
+@TableName("wms_commodity_consumables_config")
 @EqualsAndHashCode(callSuper = false)
 public class CommodityConsumablesConfig extends BasePo implements Serializable {
 

@@ -79,7 +79,16 @@ public class OrderController {
     public ResponseData orderWeigh(
             @ApiParam("订单号")@RequestParam String orderNo,
             @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
-        orderService.orderWeighContrast(orderNo, realWeight, Constants.DEFAULT_USER);
+        orderService.orderWeighContrast(orderNo, realWeight, false,Constants.DEFAULT_USER);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("订单物品称重忽略重量差异")
+    @GetMapping("weighIgnore")
+    public ResponseData orderWeighIgnore(
+            @ApiParam("订单号")@RequestParam String orderNo,
+            @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
+        orderService.orderWeighContrast(orderNo, realWeight, true,Constants.DEFAULT_USER);
         return ResponseData.ok();
     }
 

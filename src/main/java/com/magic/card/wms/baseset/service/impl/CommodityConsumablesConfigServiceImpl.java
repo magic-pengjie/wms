@@ -53,7 +53,7 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        Page page = loadGrid.page();
+        Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("wccc.state", 1);
         WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());

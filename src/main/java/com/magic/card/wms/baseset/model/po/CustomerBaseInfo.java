@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotations.TableName;
 import com.magic.card.wms.common.model.po.BasePo;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * <p>
  * 客户信息表
@@ -47,5 +49,14 @@ public class CustomerBaseInfo extends BasePo implements Serializable {
      */
     private String phone;
 
+    /**
+     * 租用面积
+     */
+    private Double storeArea;
+
+    /**
+     * 单价 平方米/天
+     */
+    private Double unitPrice;
 
 }

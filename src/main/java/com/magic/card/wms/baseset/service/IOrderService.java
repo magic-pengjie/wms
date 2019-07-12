@@ -55,12 +55,12 @@ public interface IOrderService extends IService<Order> {
 
     /**
      * 订单称重对比
-     * @param orderNo
-     * @param realWight
-     * @param operator
-     * @return
+     * @param orderNo 订单号
+     * @param realWight 称重实际重量
+     * @param ignore 是否忽略重量差异比较
+     * @param operator 操作人
      */
-    void orderWeighContrast(String orderNo, BigDecimal realWight, String operator);
+    void orderWeighContrast(String orderNo, BigDecimal realWight, Boolean ignore, String operator);
 
     /**
      * 订单打包推荐耗材
@@ -74,4 +74,10 @@ public interface IOrderService extends IService<Order> {
      * @return
      */
     LoadGrid orderWeighLoadGrid(LoadGrid loadGrid);
+
+    /**
+     * 检出订单基本信息
+     * @param orderNo
+     */
+    Order checkOrder(String orderNo);
 }

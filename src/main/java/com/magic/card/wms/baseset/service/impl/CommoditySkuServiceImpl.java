@@ -60,7 +60,7 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        Page<CommoditySku> skuPage = loadGrid.page();
+        Page<CommoditySku> skuPage = loadGrid.generatorPage();
         EntityWrapper<CommoditySku> skuEntityWrapper = new EntityWrapper<>();
 
         skuEntityWrapper.eq("state", 1);

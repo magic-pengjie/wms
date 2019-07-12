@@ -70,6 +70,39 @@
 		</if>
 		ORDER BY sc.commodity_id
     </select>
-    
+
+    <!--	库位配置信息加载 -->
+	<select id="storehouseConfig" resultType="java.util.Map">
+		SELECT
+			wsc.id,
+			wsc.storehouse_id storehuoseId,
+			wsc.customer_id customerId,
+			wsc.commodity_id commodityId,
+			wcbi.customer_name customerName,
+			wcs.sku_name skuName,
+			wcs.spec spec,
+			wcs.model_no modelNo,
+			wcs.single_unit singleUnit,
+			wsi.store_code storeCode,
+			wsi.house_code houseCode,
+			wdi.dict_name houseName,
+			wci.packing_num packingNum,
+			wci.packing_unit packingUnit,
+			wsc.store_nums storeNums,
+			wsc.available_nums availableNums,
+			wsc.lock_nums lockNums
+		FROM
+			wms_storehouse_config wsc
+			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+			LEFT JOIN wms_dict_info wdi ON wdi.dict_code = wsi.house_code
+			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
+			LEFT JOIN wms_commodity_info wci ON wci.id = wsc.commodity_id
+			LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
+		<where>
+			${ew.sqlSegment}
+		</where>
+
+	</select>
+
 
 </mapper>

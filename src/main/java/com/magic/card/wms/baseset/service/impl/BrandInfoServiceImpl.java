@@ -46,7 +46,7 @@ public class BrandInfoServiceImpl extends ServiceImpl<BrandInfoMapper, Brand> im
     @Override
     @Transactional
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        Page page = loadGrid.page();
+        Page page = loadGrid.generatorPage();
         EntityWrapper<Brand> brandInfo = new EntityWrapper<>();
         // 获取状态正常数据
         brandInfo.eq("state", 1);

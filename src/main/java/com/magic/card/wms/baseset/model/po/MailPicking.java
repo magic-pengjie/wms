@@ -54,6 +54,10 @@ public class MailPicking extends BasePo implements Serializable {
      */
     private BigDecimal realWeight;
     /**
+     * 快递费
+     */
+    private BigDecimal expressFee;
+    /**
      * 重量单位
      */
     private String weightUnit;

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 	"com.magic.card.wms.baseset.mapper",
 	"com.magic.card.wms.warehousing.mapper",
 	"com.magic.card.wms.check.mapper",
+	"com.magic.card.wms.report.mapper",
 	"com.magic.card.wms.common.mapper"})
 @Slf4j
 public class MybatisPlusConfig {

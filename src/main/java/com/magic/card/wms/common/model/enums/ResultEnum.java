@@ -68,15 +68,18 @@ public enum ResultEnum {
 	purchase_approve_failed(400010,"状态已入库才允许审核"),
 
 	invoice_pick_no(500000, "拣货单号不可为空"),
-	invoice_pick_commodity_exit(50001, "该清单不需要此类商品，检错了呦！"),
+	invoice_pick_commodity_exist(50001, "该清单不需要此类商品，检错了呦！"),
 	invoice_pick_commodity_overflow(50002, "该清单商品需求已满，拣多喽！"),
 	invoice_pick_commodity_omit(50004, "商品漏检"),
 	invoice_pick_finish(50003, "拣货单已完成"),
 	invoice_pick_close(50005, "复检已经结束，请勿重复操作"),
-	order_not_exit(50006, "当前订单不存在，请确认后在提交"),
+	order_not_exist(50006, "当前订单不存在，请确认后在提交"),
 	order_cancel(50007, "当前订单已取消，请将商品放回库位"),
 	order_weight_warning(50008, "称重不在预定范围值内"),
 	order_package_no_hc(50009, "当前订单商品没有设置耗材"),
+
+
+	express_fee_config_exist(7000, "此快递费配置数据已存在"),
 
 	check_signature_error(900000, "验签不通过"),
 	data_repeat(900001, "数据重复"),

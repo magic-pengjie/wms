@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -72,4 +73,15 @@ public class CustomerBaseInfoDTO implements Serializable {
      */
     @Length(max = 50, message = "联系电话最多包含50个字符")
     private String phone;
+
+    /**
+     * 租用面积
+     */
+    @NotNull(message = "租用面积不可为空")
+    private Double storeArea;
+    /**
+     * 单价 平方米/天
+     */
+    @NotNull(message = "单价不可为空")
+    private Double unitPrice;
 }

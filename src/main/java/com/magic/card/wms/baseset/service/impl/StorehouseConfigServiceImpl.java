@@ -14,10 +14,12 @@ import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -193,4 +195,24 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
 		});
 		return result;
 	}
+
+    /**
+     * 客户商品补货推荐数据
+     *
+     * @param customerCode
+     * @param commodityCode
+     * @return
+     */
+    @Override
+    public List<Map> replenishmentDataList(String customerCode, String commodityCode) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("wsc.state", StateEnum.normal.getCode())
+                .eq("wcbi.customer_code", customerCode)
+                .eq("wcs.bar_code", commodityCode)
+                .gt("wsc.available_nums", 0)
+                .orderBy("wsc.entry_time")
+                .orderBy("wsc.end_time");
+
+        return baseMapper.storehouseConfig(wrapper);
+    }
 }

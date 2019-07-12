@@ -58,6 +58,13 @@ public class CommoditySkuDTO implements Serializable {
     private String modelNo;
 
     /**
+     * 是否是食品
+     */
+    @ApiModelProperty("是否是食品")
+    @NotNull
+    private Boolean isFoodstuff;
+
+    /**
      * 商品单位
      */
     @ApiModelProperty("商品单位：罐")
@@ -72,11 +79,13 @@ public class CommoditySkuDTO implements Serializable {
      */
     @ApiModelProperty("商品重量单位：kg")
     private String singleWeightUnit;
+
     /**
      * 单个体积
      */
     @ApiModelProperty("商品体积：0.586")
     private BigDecimal singleVolume;
+
     /**
      * 单体单位
      */
@@ -85,4 +94,12 @@ public class CommoditySkuDTO implements Serializable {
 
     @ApiModelProperty("备注")
     private String remark;
+
+    public Boolean getFoodstuff() {
+        return isFoodstuff;
+    }
+
+    public void setFoodstuff(Boolean foodstuff) {
+        isFoodstuff = foodstuff;
+    }
 }

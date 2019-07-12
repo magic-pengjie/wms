@@ -61,7 +61,7 @@ public class LoadGrid {
     @ApiModelProperty("查询获得数据，无需提供")
     private List rows = Collections.emptyList();
 
-    public <T> Page<T> page() {
+    public <T> Page<T> generatorPage() {
         return new Page<>(this.current, this.size);
     }
 

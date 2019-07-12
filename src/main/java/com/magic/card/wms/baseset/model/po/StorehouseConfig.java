@@ -40,6 +40,11 @@ public class StorehouseConfig extends BasePo implements Serializable {
      * 商品id
      */
     private String commodityId;
+
+    /**
+     * 入库时间
+     */
+    private Date entryTime;
     /**
      * 库存量
      */
@@ -52,6 +57,16 @@ public class StorehouseConfig extends BasePo implements Serializable {
      * 冻结数量
      */
     private Integer lockNums;
+
+    /**
+     * 生产日期
+     */
+    private Date startTime;
+
+    /**
+     * 过期时间
+     */
+    private Date endTime;
 
     /**
      * 操作类型(1:入库 2:出库)

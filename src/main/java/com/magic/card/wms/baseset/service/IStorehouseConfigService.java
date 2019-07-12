@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
@@ -61,5 +62,13 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      * @return
      */
     List<StorehouseConfigVO> recommendStore(String customerId,String  commodityId);
+
+    /**
+     * 客户商品补货推荐数据
+     * @param customerCode
+     * @param commodityCode
+     * @return
+     */
+    List<Map> replenishmentDataList(String customerCode, String commodityCode);
     
 }

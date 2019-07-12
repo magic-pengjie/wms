@@ -149,7 +149,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        Page<Object> page = loadGrid.page();
+        Page<Object> page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.ne("state", StateEnum.delete.getCode());
         WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
@@ -351,7 +351,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         log.warn("配货单检测数据存在错拣、多拣情况-----拣货单号：{}，商品条形码：{}，操作人： {}", pickNo, commodityCode, operator);
         switch (type) {
             case pick_exception_error:
-                invoicePickCommodity = ResultEnum.invoice_pick_commodity_exit;
+                invoicePickCommodity = ResultEnum.invoice_pick_commodity_exist;
                 break;
             case pick_exception_omit:
                 invoicePickCommodity = ResultEnum.invoice_pick_commodity_omit;

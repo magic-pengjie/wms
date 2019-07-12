@@ -36,7 +36,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        Page page = loadGrid.page();
+        Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper<>();
         wrapper.eq("wsi.state", Constants.ACTIVITY_STATE);
 

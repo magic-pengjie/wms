@@ -20,6 +20,7 @@ import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.CommodityUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
+import com.magic.card.wms.report.service.ExpressFeeConfigService;
 import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -30,11 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +57,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private OrderExceptionService orderExceptionService;
     @Autowired
     private ICommodityStockService commodityStockService;
+    @Autowired
+    private ExpressFeeConfigService expressFeeConfigService;
     /**
      *
      */
@@ -86,7 +86,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        Page page = loadGrid.page();
+        Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
 
@@ -167,7 +167,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             this.orderCommodityService.importOrderCommodity(orderCommodityDTO, "" + customerBaseInfo.getId(), operator);
         });
 
-        // 触发生成拣货单
+        // 触发生成拣货单 同检验拣货区商品是否充足
         new Thread(() ->
             pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 20)
         ).start();
@@ -233,47 +233,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
                     allUseNums += useNums;
                 }
 
-
                 BigDecimal useSingleWeigh = (BigDecimal) map.get("useSingleWeight");
                 useSingleWeigh = CommodityUtil.unitConversion_G(useSingleWeigh, MapUtils.getString(map, "useSingleWeightUnit"));
 
                 weightTotal = weightTotal.add( useSingleWeigh.multiply(BigDecimal.valueOf(allUseNums)));
             }
         }
-//        maps.forEach( map -> {
-//
-//
-//
-//            // 购买数量
-//            int bayNums = MapUtils.getIntValue(map, "bayNums");
-//            int leftValue = MapUtils.getIntValue(map, "leftValue");
-//            int rightValue = MapUtils.getIntValue(map, "rightValue");
-//            // 范围消耗品数量
-//            int useNums = MapUtils.getIntValue(map, "useNums");
-//
-//            if (rightValue >= leftValue) {
-//                int allUseNums = bayNums/rightValue*useNums;
-//
-//                if (bayNums%rightValue >= leftValue) {
-//                    allUseNums += useNums;
-//                }
-//
-//
-//                BigDecimal singleWeigh = (BigDecimal) map.get("singleWeight");
-//                singleWeigh = CommodityUtil.unitConversion_G(singleWeigh, MapUtils.getString(map, "singleWeightUnit"));
-//                BigDecimal useSingleWeigh = (BigDecimal) map.get("useSingleWeight");
-//                useSingleWeigh = CommodityUtil.unitConversion_G(useSingleWeigh, MapUtils.getString(map, "useSingleWeightUnit"));
-//                weightTotal.set(
-//                        weightTotal.get().add(
-//                                singleWeigh.multiply(BigDecimal.valueOf(bayNums))
-//                                .add(
-//                                    useSingleWeigh.multiply(BigDecimal.valueOf(allUseNums))
-//                                )
-//                        )
-//                );
-//            }
-//
-//        });
+
         return weightTotal.divide(new BigDecimal("1000"));
     }
 
@@ -286,14 +252,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * @return
      */
     @Override
-    public void orderWeighContrast(String orderNo, BigDecimal realWight, String operator) {
+    public void orderWeighContrast(String orderNo, BigDecimal realWight, Boolean ignor, String operator) {
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("order_no", orderNo).
                 eq("state", StateEnum.normal.getCode());
         Order order = selectOne(wrapper);
 
         if (order == null) {
-            throw OperationException.customException(ResultEnum.order_not_exit);
+            throw OperationException.customException(ResultEnum.order_not_exist);
         }
 
         if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
@@ -307,11 +273,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         BigDecimal maxDifferenceValue = mailPicking.getPresetWeight().multiply(new BigDecimal("0.10"));
         mailPicking.setRealWeight(realWight);
 
-        if (maxDifferenceValue.compareTo(differenceValue) < 0) {
+        if (maxDifferenceValue.compareTo(differenceValue) < 0 && !ignor) {
             throw OperationException.customException(ResultEnum.order_weight_warning);
         }
 
         PoUtil.update(mailPicking, operator);
+
+        BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(orderNo, realWight, mailPicking.getWeightUnit());
+
+        if (orderExpressFree != null) {
+            mailPicking.setExpressFee(orderExpressFree);
+        }
+
         mailPickingService.updateById(mailPicking);
         // 释放库存
         releaseStock(order, operator);
@@ -345,7 +318,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("state", StateEnum.normal.getCode()).isNotNull("real_weight");
-        Page page = loadGrid.page();
+        Page page = loadGrid.generatorPage();
         loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
 
         return loadGrid;
@@ -455,18 +428,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * 订单是否存在或是已取消
      * @param orderNo
      */
-    private void checkOrder(String orderNo) {
+    public Order checkOrder(String orderNo) {
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.ne("state", StateEnum.delete.getCode()).eq("order_no", orderNo);
         Order order = selectOne(wrapper);
 
         if (order == null) {
-            throw OperationException.customException(ResultEnum.order_not_exit);
+            throw OperationException.customException(ResultEnum.order_not_exist);
         }
 
         if (StringUtils.equalsIgnoreCase(order.getBillState(), BillState.order_cancel.getCode())) {
             throw OperationException.customException(ResultEnum.order_cancel);
         }
+
+        return order;
     }
 
     /**
