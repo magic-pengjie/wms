@@ -26,6 +26,15 @@ public class WarningAgentInfo extends BasePo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 关联外键
+     */
+    private String fid;
+    /**
+     * 所属模块
+     */
+    private String model;
+    
+    /**
      * 预警类型编码
      */
     private String typeCode;
@@ -49,6 +58,8 @@ public class WarningAgentInfo extends BasePo implements Serializable {
      * 代办任务处理人
      */
     private String agentPerson;
-
-
+    /**
+     * 跳转参数
+     */
+    private String paramters;
 }

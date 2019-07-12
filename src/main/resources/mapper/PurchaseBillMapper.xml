@@ -55,9 +55,9 @@
     
     <sql id="bill_Column_List">
          wb.id as id, purchase_no,name,receiv_no,warehousing_no, 
-         customer_code，customer_name, is_food,purchase_date, contacts, contacts_tel, address, maker, make_date,
+         customer_code,customer_name, is_food,purchase_date, contacts, contacts_tel, address, maker, make_date,
          receiv_date,receiv_user,warehousing_date,storehouse_code,approver,approve_time
-         bill_state,create_time,create_user,update_time,update_user,remark
+         bill_state,wb.remark
     </sql>
     
      <sql id="detail_Column_List">
@@ -70,16 +70,16 @@
 		from wms_purchase_bill wb left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id
 		<where>
 			<if test="id != null and id != '' ">
-					wb.id = #{id}
+					and wb.id = #{id}
 			</if>
 			<if test="purchaseNo != null and purchaseNo != '' ">
-				wb.purchase_no = #{purchaseNo}
+				and wb.purchase_no = #{purchaseNo}
 			</if>
 			<if test="receivNo != null and receivNo != '' ">
-				wb.receiv_no = #{receivNo}
+				and wb.receiv_no = #{receivNo}
 			</if>
 			<if test="warehousingNo != null and warehousingNo != '' ">
-				wb.warehousing_no = #{warehousingNo}
+				and wb.warehousing_no = #{warehousingNo}
 			</if>
 			<if test="customerName != null and customerName != '' ">
 				and wb.customer_name like concat(concat("%",#{customerName}),"%")
@@ -101,6 +101,7 @@
 			</if>
 			and wb.state=1
 			and bd.state=1
+			order by wb.create_time,wb.update_time,wb.customer_code,wb.customer_name
 		</where>
 	</select>
 	
@@ -109,16 +110,16 @@
 		from wms_purchase_bill wb left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id
 		<where>
 			<if test="id != null and id != '' ">
-					wb.id = #{id}
+					and wb.id = #{id}
 			</if>
 			<if test="purchaseNo != null and purchaseNo != '' ">
-				wb.purchase_no = #{purchaseNo}
+				and wb.purchase_no = #{purchaseNo}
 			</if>
 			<if test="receivNo != null and receivNo != '' ">
-				wb.receiv_no = #{receivNo}
+				and wb.receiv_no = #{receivNo}
 			</if>
 			<if test="warehousingNo != null and warehousingNo != '' ">
-				wb.warehousing_no = #{warehousingNo}
+				and wb.warehousing_no = #{warehousingNo}
 			</if>
 			<if test="customerName != null and customerName != '' ">
 				and wb.customer_name like concat(concat("%",#{customerName}),"%")

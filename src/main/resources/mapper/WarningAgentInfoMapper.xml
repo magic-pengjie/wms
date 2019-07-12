@@ -6,11 +6,14 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.WarningAgentInfo">
         <id column="id" property="id" />
+        <result column="fid" property="fid" />
+        <result column="model" property="model" />
         <result column="type_code" property="typeCode" />
         <result column="type_name" property="typeName" />
         <result column="agent_code" property="agentCode" />
         <result column="agent_name" property="agentName" />
         <result column="agent_state" property="agentState" />
+        <result column="paramters" property="paramters" />
         <result column="state" property="state" />
         <result column="create_time" property="createTime" />
         <result column="create_user" property="createUser" />
@@ -21,7 +24,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, type_code, type_name, agent_code, agent_name, agent_state, state, create_time, create_user, update_time, update_user, remark
+        id,fid,model, type_code, type_name, agent_code, agent_name, agent_state,paramters, state, create_time, create_user, update_time, update_user, remark
     </sql>
 
 </mapper>

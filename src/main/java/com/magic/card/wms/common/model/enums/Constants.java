@@ -32,11 +32,11 @@ public class Constants {
 	public static final String STORAGE_AREA_CODE = "CK-GN-CCQ";
 
 	/**
-	 * 数据状态0-失效
+	 * 数据状态0-失效/未处理
 	 */
 	public static final Integer STATE_0 = 0;
 	/**
-	 * 数据状态0-游戏
+	 * 数据状态1-游戏/已处理
 	 */
 	public static final Integer STATE_1 = 1;
 	

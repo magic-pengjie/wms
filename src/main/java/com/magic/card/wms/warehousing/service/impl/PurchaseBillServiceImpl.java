@@ -192,7 +192,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		if(!"save".equals(bill.getBillState())) {
 			throw new BusinessException(ResultEnum.delete_purchase_state_error);
 		}
-		this.delete(id);
+		this.deleteById(id);
 		log.info("delete PurchaseBill success id={}", id);
 		Wrapper<PurchaseBillDetail>  w2 = new EntityWrapper<>();
 		w2.eq("purchase_id", id);

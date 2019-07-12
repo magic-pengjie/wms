@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.baseset.mapper.RulesConfigMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.RulesConfig">
+        <id column="id" property="id" />
+        <result column="rule_type" property="ruleType" />
+        <result column="rule_type_name" property="ruleTypeName" />
+        <result column="rule_name" property="ruleName" />
+        <result column="rule_key" property="ruleKey" />
+        <result column="left_value" property="leftValue" />
+        <result column="left_symbol" property="leftSymbol" />
+        <result column="right_value" property="rightValue" />
+        <result column="right_symbol" property="rightSymbol" />
+        <result column="calc_formulas" property="calcFormulas" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, rule_type,rule_type_name,rule_name, rule_key, left_value, left_symbol, right_value, right_symbol, calc_formulas, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+
+</mapper>
