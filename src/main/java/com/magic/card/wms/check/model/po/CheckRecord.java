@@ -1,15 +1,13 @@
 package com.magic.card.wms.check.model.po;
 
-import java.util.Date;
 import java.io.Serializable;
+import java.util.Date;
 
 import com.baomidou.mybatisplus.annotations.TableName;
-import com.baomidou.mybatisplus.annotations.Version;
 import com.magic.card.wms.common.model.po.BasePo;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 
 /**
  * <p>
@@ -39,13 +37,13 @@ public class CheckRecord extends BasePo implements Serializable {
      */
     private String checkUser;
     /**
-     * 零拣库位
+     * 库位类型
      */
-    private String storehouseP;
+    private String storehouseType;
     /**
-     * 存储库位
+     * 库位编码
      */
-    private String storehouseS;
+    private String storehouseCode;
     /**
      * 库存数量
      */

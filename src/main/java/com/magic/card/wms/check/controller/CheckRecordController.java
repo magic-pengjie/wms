@@ -6,16 +6,19 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.magic.card.wms.check.model.po.dto.CheckCountDto;
-import com.magic.card.wms.check.model.po.dto.CheckRecordInfoDto;
-import com.magic.card.wms.check.model.po.dto.CheckRecordStartDto;
+import com.magic.card.wms.check.model.dto.AuditCheckRecordDto;
+import com.magic.card.wms.check.model.dto.CheckCountDto;
+import com.magic.card.wms.check.model.dto.CheckRecordCanellDto;
+import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
+import com.magic.card.wms.check.model.dto.CheckRecordStartDto;
+import com.magic.card.wms.check.model.dto.QueryAuditCheckRecordDto;
+import com.magic.card.wms.check.model.po.CheckRecord;
 import com.magic.card.wms.check.service.ICheckRecordService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
@@ -53,7 +56,7 @@ public class CheckRecordController {
 		try {
 			countCheckRecord = checkRecordService.countCheckRecord(dto);
 		} catch (BusinessException e) {
-			log.info("===>> 查询库存业务逻辑异常：{}",e);
+			log.info("===>> 查询库存业务逻辑失败：{}",e);
 			return ResponseData.error(e.getErrCode(), e.getErrMsg());
 		}  catch (Exception e) {
 			log.info("===>> 查询库存异常：{}",e);
@@ -70,29 +73,101 @@ public class CheckRecordController {
 	@RequestMapping(value = "/checkRecordStart", method = RequestMethod.POST)
 	public ResponseData checkRecordStart(@RequestBody @Valid CheckRecordStartDto dto, BindingResult bindingResult ) throws BusinessException {
 		try {
-			boolean checkRecordStart = checkRecordService.checkRecordStart(dto);
-			if(!checkRecordStart) {
-				return ResponseData.error("盘点失败");
-			}
+			List<CheckRecord> checkRecordList = checkRecordService.checkRecordStart(dto);
+			return ResponseData.ok(checkRecordList);
 		} catch (BusinessException e) {
-			log.info("===>> 盘点异常：{}",e);
+			log.info("===>> 盘点失败：{}",e);
 			return ResponseData.error(e.getErrCode(), e.getErrMsg());
 		} catch (Exception e) {
 			log.info("===>> 盘点异常：{}",e);
 			return ResponseData.error("盘点异常");
 		}
+	}
+	
+	/**
+	 * 取消盘点,解除冻结
+	 */
+	@ApiOperation(value="取消盘点,解除冻结")
+	@RequestMapping(value = "/cannelCheckRecord", method = RequestMethod.POST)
+	public ResponseData cannelCheckRecord(@RequestBody @Valid CheckRecordCanellDto dto, BindingResult bindingResult ) throws BusinessException {
+		try {
+			boolean cannelFlag = checkRecordService.cannelCheckRecord(dto);
+			if(!cannelFlag) {
+				return ResponseData.error("取消盘点失败");
+			}
+		} catch (BusinessException e) {
+			log.info("===>> 取消盘点失败：{}",e);
+			return ResponseData.error(e.getErrCode(), e.getErrMsg());
+		} catch (Exception e) {
+			log.info("===>> 取消盘点异常：{}",e);
+			return ResponseData.error("取消盘点异常");
+		}
 		return ResponseData.ok();
 	}
+	
 	
 	/**
 	 * 	盘点结束，更新库存信息，及盘点信息
 	 * @throws BusinessException 
 	 */
-	@ApiOperation(value="盘点结束，更新库存信息，及盘点信息")
+	@ApiOperation(value="盘点结束，更新盘点记录,修改审批状态为：审批中")
 	@RequestMapping(value = "/updCheckRecord", method = RequestMethod.POST)
-	public ResponseData updateCheckRecordInfo(@RequestBody @Valid CheckRecordStartDto dto, BindingResult bindingResult) {
-		return null;
+	public ResponseData updateCheckRecordInfo(@RequestBody @Valid List<CheckRecord> checkRecordList, BindingResult bindingResult) {
+		try {
+			checkRecordService.updateRecordInfo(checkRecordList);
+		} catch (BusinessException e) {
+			log.info("===>> 取消盘点失败：{}",e);
+			return ResponseData.error(e.getErrCode(), e.getErrMsg());
+		} catch (Exception e) {
+			log.info("===>> 取消盘点异常：{}",e);
+			return ResponseData.error("取消盘点异常");
+		}
+		return ResponseData.ok();
 	}
+	
+	
+	/**
+	 * 	查询 盘点记录
+	 * @throws BusinessException 
+	 */
+	@ApiOperation(value="查询 盘点记录")
+	@RequestMapping(value = "/queryCheckRecord", method = RequestMethod.POST)
+	public ResponseData queryCheckRecordInfo(@RequestBody @Valid QueryAuditCheckRecordDto auditDto, BindingResult bindingResult) {
+		try {
+			return ResponseData.ok(checkRecordService.queryCheckRecord(auditDto));
+		} catch (BusinessException e) {
+			log.info("===>> 查询 盘点失败：{}",e);
+			return ResponseData.error(e.getErrCode(), e.getErrMsg());
+		} catch (Exception e) {
+			log.info("===>> 查询 盘点异常：{}",e);
+			return ResponseData.error("查询 盘点异常");
+		}
+	}
+	
+	
+	/**
+	 * 	审批盘点记录
+	 * @throws BusinessException 
+	 */
+	@ApiOperation(value="审批盘点记录,审批通过后修改库存信息")
+	@RequestMapping(value = "/auditCheckRecord", method = RequestMethod.POST)
+	public ResponseData auditCheckRecordInfo(@RequestBody @Valid AuditCheckRecordDto auditCheckRecordList, BindingResult bindingResult) {
+		boolean auditFlag = false;
+		try {
+			auditFlag = checkRecordService.auditCheckRecord(auditCheckRecordList);
+		} catch (BusinessException e) {
+			log.info("===>> 取消盘点失败：{}",e);
+			return ResponseData.error(e.getErrCode(), e.getErrMsg());
+		} catch (Exception e) {
+			log.info("===>> 取消盘点异常：{}",e);
+			return ResponseData.error("取消盘点异常");
+		}
+		if(auditFlag) {
+			return ResponseData.ok();
+		}
+		return ResponseData.error("审批失败");
+	}
+	
 	
 }
 

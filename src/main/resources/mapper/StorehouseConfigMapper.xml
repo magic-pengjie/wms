@@ -28,7 +28,7 @@
         id, storehouse_id, customer_id, commodity_id, store_nums, availabe_nums, lock_nums, priority_value, opr_type, state, create_time, create_user, update_time, update_user, remark
     </sql>
     
-    <select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.po.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.check.model.po.dto.QueryCheckRecordDto">
+    <select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.check.model.dto.QueryCheckRecordDto">
     	SELECT cbi.customer_name as customerName,
     			cbi.customer_code as customerCode,
     			sc.storehouse_id as storehouseId,

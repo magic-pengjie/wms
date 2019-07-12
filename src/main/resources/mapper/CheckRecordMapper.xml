@@ -8,8 +8,8 @@
         <result column="customer_code" property="customerCode" />
         <result column="sku_id" property="skuId" />
         <result column="check_user" property="checkUser" />
-        <result column="storehouse_p" property="storehouseP" />
-        <result column="storehouse_s" property="storehouseS" />
+        <result column="storehouse_type" property="storehouseType" />
+        <result column="storehouse_code" property="storehouseCode" />
         <result column="store_nums" property="storeNums" />
         <result column="check_nums" property="checkNums" />
         <result column="check_date" property="checkDate" />
@@ -27,7 +27,26 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, customer_code, sku_id, check_user, storehouse_p, storehouse_s, store_nums, check_nums, check_date, diff_nums, approver, approve_time, bill_state, state, create_time, create_user, update_time, update_user, remark
+        id, customer_code, sku_id, check_user, storehouse_type, storehouse_code, store_nums, check_nums, check_date, diff_nums, approver, approve_time, bill_state, state, create_time, create_user, update_time, update_user, remark
     </sql>
+	
+	<select id="queryCheckRecordList" resultMap="BaseResultMap" parameterType="com.magic.card.wms.check.model.po.CheckRecord">
+		SELECT 
+			<include refid="Base_Column_List"></include> 
+		FROM wms_check_record
+		WHERE state = 1 
+		<if test="cr.checkDate !=null and cr.checkDate !=''">
+			AND DATE_FORMAT(check_date,'%Y-%m-%d') = #{cr.checkDate}
+		</if>
+		<if test="cr.checkUser !=null and cr.checkUser !=''">
+			AND check_user = #{cr.checkUser}
+		</if>
+		<if test="cr.customerCode !=null and cr.customerCode !=''">
+			AND customer_code = #{cr.customerCode}
+		</if>
+		<if test="cr.billState !=null and cr.billState !=''">
+			AND bill_state = #{cr.billState}
+		</if>
+	</select>
 
 </mapper>

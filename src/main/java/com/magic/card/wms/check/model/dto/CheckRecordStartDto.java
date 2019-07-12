@@ -1,9 +1,10 @@
-package com.magic.card.wms.check.model.po.dto;
+package com.magic.card.wms.check.model.dto;
 
 import java.io.Serializable;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,17 +24,17 @@ public class CheckRecordStartDto implements Serializable{
     /**
      * 	库位IDList
      */
-    @ApiModelProperty("库位id列表")
+    @ApiModelProperty(value="库位id列表")
+    @NotEmpty(message="盘点库位不能为空")
     private List<Long> storeIdList;
-
+    
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("CheckRecordStartDto [");
 		if (storeIdList != null)
 			builder.append("storeIdList=").append(storeIdList);
-		builder.append("]");
 		return builder.toString();
 	}
-    
+
 }
