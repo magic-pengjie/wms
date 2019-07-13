@@ -53,6 +53,7 @@
     <!-- 获取用户商品全信息   -->
     <select id="loadCustomerCommodities" resultType="java.util.Map">
         SELECT
+            wci.id,
             wcbi.id customerId,
             wcbi.customer_name customerName,
             wbi.`name` brandName,

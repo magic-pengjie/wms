@@ -14,11 +14,13 @@ import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,8 @@ import java.util.Map;
 @Service
 public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMapper, CustomerBaseInfo> implements ICustomerBaseInfoService {
 
+    @Autowired
+    private WebUtil webUtil;
     /**
      * 默认提供的Columns
      */
