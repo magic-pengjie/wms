@@ -10,11 +10,11 @@ import lombok.Data;
 @Data
 public class PersionXml {
 	/**
-	 * 用户姓名 not null
+	 * 用户姓名
 	 */
 	private String name;
 	/**
-	 * 用户邮编 not null
+	 * 用户邮编
 	 */
 	private String postCode;
 	/**

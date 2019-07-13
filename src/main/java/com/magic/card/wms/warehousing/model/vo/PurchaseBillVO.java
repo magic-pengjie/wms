@@ -130,7 +130,11 @@ public class PurchaseBillVO{
      */
 	@ApiModelProperty("单据状态(保存:save 待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
     private String billState;
-    
+	/**
+	 * 备注
+	 */
+	@ApiModelProperty("remark")
+    private String remark;
     /**
      * 采购单商品明细
      */

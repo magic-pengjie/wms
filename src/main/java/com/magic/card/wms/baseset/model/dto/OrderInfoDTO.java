@@ -1,15 +1,15 @@
 package com.magic.card.wms.baseset.model.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import org.hibernate.validator.constraints.Length;
+import java.io.Serializable;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
-import java.util.List;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 /**
  * com.magic.card.wms.baseset.model.dto
@@ -23,10 +23,6 @@ import java.util.List;
 @ApiModel(value = "订单信息", description = "订单信息")
 public class OrderInfoDTO implements Serializable {
     private static final long serialVersionUID = -5050831342653951057L;
-    /**
-     * 快递单号
-     */
-    private String mailNo;
     
     /**
      * 订单号
@@ -103,6 +99,30 @@ public class OrderInfoDTO implements Serializable {
     @ApiModelProperty("单据状态，默认：save / 确认:confirm 作废及退单:cancel ")
     private String billState;
 
+    
+    @Valid
+    @NotNull(message = "订单商品不可为空")
+    @Size(message = "至少有一个商品", min = 1)
+    private List<OrderCommodityDTO> commodities;
+    
+    /**
+     * 快递单主键id
+     */
+    private long id;
+    /**
+     * 快递单号
+     */
+    private String mailNo;
+    
+    /**
+     * 发送次数
+     */
+    private Integer sendNums;
+    /**
+     * 发送失败原因
+     */
+    private String failReason;
+
     /**
      * 商品重量
      */
@@ -112,9 +132,4 @@ public class OrderInfoDTO implements Serializable {
      * 订单备注
      */
     private String remark;
-    
-    @Valid
-    @NotNull(message = "订单商品不可为空")
-    @Size(message = "至少有一个商品", min = 1)
-    private List<OrderCommodityDTO> commodities;
 }

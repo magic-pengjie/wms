@@ -81,4 +81,8 @@ public class MailPicking extends BasePo implements Serializable {
      * 发送次数
      */
     private Integer sendNums;
+    /**
+     * 发送失败原因
+     */
+    private String failReason;
 }

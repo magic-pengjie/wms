@@ -24,6 +24,8 @@
         <result column="update_user" property="updateUser" />
         <result column="remark" property="remark" />
         <result column="preset_weight" property="presetWeight" />
+        <result column="send_nums" property="sendNums" />
+        <result column="fail_reason" property="failReason" />
         <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.OrderCommodityDTO" column="order_no">
         	<result column="order_no" property="orderNo" />
 	        <result column="customer_code" property="customerCode" />
@@ -92,12 +94,12 @@
     
     <!-- 根据拣货单查询订单及商品信息 -->
      <select id="selectOrderByNo" resultMap="BaseResultMap" >
-       	select pi.mail_no,pi.pick_no,pi.preset_weight, oi.order_no, oi.customer_code, oi.customer_name, oi.recipt_name, oi.post_code, 
+       	select pi.id,pi.mail_no,pi.pick_no,pi.preset_weight,pi.send_nums,pi.fail_reason,oi.order_no, oi.customer_code, oi.customer_name, oi.recipt_name, oi.post_code, 
        	oi.prov, oi.city, oi.recipt_addr, oi.recipt_phone, oi.express_key, oi.is_b2b, oi.goods_value, oi.bill_state, oi.remark,
        	oc.customer_code, oc.bar_code, oc.model_no, oc.spec, oc.numbers, oc.pick_numbers, 
        	sku.sku_name
-       	from wms_order_info oi 
-       		left join wms_mail_picking_info pi on oi.order_no=pi.order_no
+       	from wms_mail_picking_info pi
+       		left join wms_order_info oi  on oi.order_no=pi.order_no
  			left join wms_order_commodity oc on pi.order_no=oc.order_no
  			left join wms_commodity_sku sku on oc.bar_code=sku.bar_code
  		<where>
@@ -106,6 +108,9 @@
  			</if>
  			<if test="orderNo != null and orderNo != '' ">
  				pi.order_no=#{orderNo}
+ 			</if>
+ 			<if test="sendState != null and sendState != '' ">
+ 				pi.send_state=#{sendState}
  			</if>
  		</where>
     </select>

@@ -24,6 +24,10 @@ public class RequestOrderXml implements Serializable {
      */
     private String ecCompanyId;
     /**
+     * 客户标识
+     */
+    private String customerId;
+    /**
      * 物流公司
      */
     private String logisticProviderID;
