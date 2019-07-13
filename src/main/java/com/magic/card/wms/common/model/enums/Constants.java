@@ -44,6 +44,22 @@ public class Constants {
 	 * 电商标识
 	 */
 	public static final String ECCOMPANY_ID = "TAOBAO";
+	/**
+	 * 客户标识
+	 */
+	public static final String CUSTOMERID = "0";
+	/**
+	 * 订单类型
+	 */
+	public static final Integer ORDER_TYPE = 1;
+	/**
+	 * 服务类型
+	 */
+	public static final Integer SERVICE_TYPE = 0;
+	/**
+	 * 业务交易号
+	 */
+	public static final String TRADENO = "259";
 	
 	/**
 	 * 物流公司ID

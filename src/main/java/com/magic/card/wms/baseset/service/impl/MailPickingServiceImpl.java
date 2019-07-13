@@ -2,6 +2,7 @@ package com.magic.card.wms.baseset.service.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,17 +22,21 @@ import com.magic.card.wms.baseset.mapper.OrderInfoMapper;
 import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.MailPicking;
+import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.baseset.model.xml.OrderCommodityXml;
 import com.magic.card.wms.baseset.model.xml.OrderDTO;
 import com.magic.card.wms.baseset.model.xml.PersionXml;
 import com.magic.card.wms.baseset.model.xml.RequestOrderXml;
+import com.magic.card.wms.baseset.model.xml.ResponsesXml;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.Digest;
+import com.magic.card.wms.common.utils.HttpUtil;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.XmlUtil;
 import com.magic.card.wms.foreign.util.DateConverter;
 import com.thoughtworks.xstream.XStream;
 
@@ -114,7 +119,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
         this.insert(mailPicking);
         
         try {
-			sendOrder(mailPicking.getPickNo(), null);
+			//sendOrder(mailPicking.getPickNo(), null);
 			log.info("send order success ");
 		} catch (Exception e) {
 			log.error("send order error:{}",e);
@@ -233,51 +238,70 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		order.setEcCompanyId(Constants.ECCOMPANY_ID);
 		order.setMsg_type(Constants.MSG_TYPE_CREATE); //创建订单
 		for (OrderInfoDTO orderInfoDTO : orderInfo) {
-			//订单基础信息
-			RequestOrderXml requestOrderXml = new RequestOrderXml();
-			requestOrderXml.setEcCompanyId(Constants.ECCOMPANY_ID);
-			requestOrderXml.setLogisticProviderID(Constants.LOGISTICPROVIDER_ID);
-			requestOrderXml.setTxLogisticID(orderInfoDTO.getOrderNo());
-			requestOrderXml.setMailNo(orderInfoDTO.getMailNo());
-			requestOrderXml.setOrderType(1);
-			requestOrderXml.setServiceType(0);
-			requestOrderXml.setWeight(orderInfoDTO.getPresetWeight().longValue());
-			//收货人信息
-			PersionXml sender = new PersionXml();
-			sender.setName(orderInfoDTO.getReciptName());
-			sender.setPostCode(orderInfoDTO.getPostCode());
-			sender.setPhone(orderInfoDTO.getReciptPhone());
-			sender.setMobile(orderInfoDTO.getReciptPhone());
-			sender.setProv(orderInfoDTO.getProv());
-			sender.setCity(orderInfoDTO.getCity());
-			sender.setAddress(orderInfoDTO.getReciptAddr());
-			requestOrderXml.setSender(sender);
-			//商品详情
-			List<OrderCommodityDTO> commodities = orderInfoDTO.getCommodities();
-			if(ObjectUtils.isEmpty(commodities)) {
+			//订单无商品，则无需发送
+			if(ObjectUtils.isEmpty(orderInfoDTO.getCommodities())) {
 				continue;
 			}
-			List<OrderCommodityXml> orderCommoditys = new ArrayList<OrderCommodityXml>();
-			commodities.forEach(OrderCommodityDTO->{
-				OrderCommodityXml commodityXml = new OrderCommodityXml();
-				commodityXml.setItemName(OrderCommodityDTO.getCommodityName());
-				commodityXml.setNumber(OrderCommodityDTO.getNumbers());
-				orderCommoditys.add(commodityXml);
-				
-			});
-			requestOrderXml.setCommodityList(orderCommoditys);
-			XStream xstream = new XStream();
-			xstream.autodetectAnnotations(true);
-			//xstream.registerConverter(new DateConverter());
-			String xml = xstream.toXML(requestOrderXml);
-			log.info("订单xml\n:{}",xml);
+			String xml = getXmlBaseInfo(orderInfoDTO);
+			
+			log.info("订单xml:\n{}",xml);
 			order.setLogistics_interface(Digest.urlEncode(xml));
 			order.setData_digest(signature(order));
 			//TODO 推送数据至邮政
-			log.info("订单xml encode:{}",order.getLogistics_interface());
+			String reason = "数据推送异常";
+			try {
+				String result = HttpUtil.restPost("", order);
+				log.info("restPost finish result:{}",result);
+				ResponsesXml response = new ResponsesXml();
+				response = (ResponsesXml) XmlUtil.parseXml(response, xml);
+				boolean success = response.getResponseItems().get(0).getSuccess();
+				if(success) {
+					reason = response.getResponseItems().get(0).getReason();
+				}
+				//修改发送状态
+				updateSendFlag(orderInfoDTO, success,reason);
+			} catch (Exception e) {
+				log.error("parseXml error:{}",e);
+				updateSendFlag(orderInfoDTO, false,reason);
+				continue;
+			}
 		}
 		
 	}
+	public String getXmlBaseInfo(OrderInfoDTO orderInfoDTO) {
+		//订单基础信息
+		RequestOrderXml requestOrderXml = new RequestOrderXml();
+		requestOrderXml.setEcCompanyId(Constants.ECCOMPANY_ID);
+		requestOrderXml.setLogisticProviderID(Constants.LOGISTICPROVIDER_ID);
+		requestOrderXml.setTxLogisticID(orderInfoDTO.getOrderNo());
+		requestOrderXml.setMailNo(orderInfoDTO.getMailNo());
+		requestOrderXml.setCustomerId(Constants.CUSTOMERID);
+		requestOrderXml.setOrderType(Constants.ORDER_TYPE);
+		requestOrderXml.setServiceType(Constants.ORDER_TYPE);
+		requestOrderXml.setWeight(orderInfoDTO.getPresetWeight().longValue());
+		//收货人信息
+		PersionXml sender = new PersionXml();
+		sender.setName(orderInfoDTO.getReciptName());
+		sender.setPostCode(orderInfoDTO.getPostCode());
+		sender.setPhone(orderInfoDTO.getReciptPhone());
+		sender.setMobile(orderInfoDTO.getReciptPhone());
+		sender.setProv(orderInfoDTO.getProv());
+		sender.setCity(orderInfoDTO.getCity());
+		sender.setAddress(orderInfoDTO.getReciptAddr());
+		requestOrderXml.setSender(sender);
+		List<OrderCommodityDTO> commodities = orderInfoDTO.getCommodities();
+		List<OrderCommodityXml> orderCommoditys = new ArrayList<OrderCommodityXml>();
+		commodities.forEach(OrderCommodityDTO->{
+			OrderCommodityXml commodityXml = new OrderCommodityXml();
+			commodityXml.setItemName(OrderCommodityDTO.getCommodityName());
+			commodityXml.setNumber(OrderCommodityDTO.getNumbers());
+			orderCommoditys.add(commodityXml);
+			
+		});
+		String xml = XmlUtil.toXml(requestOrderXml);
+		return xml;
+	}
+	
 	/**
 	 * 订单签名
 	 * @param request
@@ -291,5 +315,21 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 				.append(order.getLogistics_interface());
 		String signature = Digest.urlEncode(Digest.Md5Base64(checkStr.toString()));
 		return signature;
+	}
+	
+	/**
+	 * 修改发送
+	 */
+	public void updateSendFlag(OrderInfoDTO orderInfoDTO,boolean success,String failReason) {
+		MailPicking mailPicking = new MailPicking();
+		mailPicking.setId(orderInfoDTO.getId());
+		if(success){
+			mailPicking.setSendState("1");
+		}else {
+			mailPicking.setFailReason(failReason);
+		}
+		mailPicking.setSendNums(orderInfoDTO.getSendNums()+1);
+		mailPicking.setUpdateTime(new Date());
+		this.updateById(mailPicking);
 	}
 }
