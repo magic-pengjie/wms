@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.magic.card.wms.report.mapper.ExpressFeeConfigMapper">
+
+    <!-- 加载快递费配置数据列表   -->
+    <select id="loadGrid" resultType="java.util.Map">
+        SELECT
+            wefc.id,
+            wefc.customer_code customerCode,
+            wcbi.customer_name customerName,
+            wefc.area_code areaCode,
+            wdi.dict_name areaName ,
+            wefc.range_id rangeId,
+            wewr.left_value rangeLeftValue,
+            wewr.right_value rangeRightValue,
+            wefc.fee_value feeValue
+        FROM
+            wms_express_fee_config wefc
+        LEFT JOIN wms_express_weight_range wewr ON wewr.id = wefc.range_id
+        LEFT JOIN wms_customer_base_info wcbi ON wcbi.customer_code = wefc.customer_code
+        LEFT JOIN wms_dict_info wdi ON wdi.dict_code = wefc.area_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+</mapper>
