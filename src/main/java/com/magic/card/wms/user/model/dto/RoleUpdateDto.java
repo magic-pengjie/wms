@@ -1,6 +1,7 @@
 package com.magic.card.wms.user.model.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -51,22 +52,40 @@ public class RoleUpdateDto implements Serializable {
 	@ApiModelProperty(value="数据状态(1:正常，0:删除)")
 	private Integer state;
 	
+    /**
+     * 	新增菜單主鍵ID
+     */
+	@ApiModelProperty(value="新增菜單主鍵ID")
+	private List<Long> addMenuKeyList;
+	
+	/**
+	 * 	删除菜單主鍵ID
+	 */
+	@ApiModelProperty(value="删除菜單主鍵ID")
+	private List<Long> delMenuKeyList;
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("RoleAddDto [");
+		builder.append("RoleUpdateDto [");
+		if (roleKey != null)
+			builder.append("roleKey=").append(roleKey).append(", ");
 		if (roleType != null)
 			builder.append("roleType=").append(roleType).append(", ");
 		if (roleCode != null)
 			builder.append("roleCode=").append(roleCode).append(", ");
 		if (roleName != null)
 			builder.append("roleName=").append(roleName).append(", ");
+		if (roleDesc != null)
+			builder.append("roleDesc=").append(roleDesc).append(", ");
 		if (state != null)
 			builder.append("state=").append(state).append(", ");
-		if (roleDesc != null)
-			builder.append("roleDesc=").append(roleDesc);
+		if (addMenuKeyList != null)
+			builder.append("addMenuKeyList=").append(addMenuKeyList).append(", ");
+		if (delMenuKeyList != null)
+			builder.append("delMenuKeyList=").append(delMenuKeyList);
 		builder.append("]");
 		return builder.toString();
 	}
-
+	
 }

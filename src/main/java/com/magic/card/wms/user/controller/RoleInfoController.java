@@ -20,6 +20,7 @@ import com.magic.card.wms.user.model.dto.RoleQueryDto;
 import com.magic.card.wms.user.model.dto.RoleUpdateDto;
 import com.magic.card.wms.user.model.po.RoleInfo;
 import com.magic.card.wms.user.service.IRoleInfoService;
+import com.magic.card.wms.user.service.IRoleMenuMappingService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -39,6 +40,9 @@ public class RoleInfoController {
 	
 	@Autowired
 	private IRoleInfoService roleInfoService;
+	
+	@Autowired
+	private IRoleMenuMappingService roleMenuMappingService;
 	
 	/***
 	 * 获取角色列表

@@ -35,7 +35,7 @@
     			sc.customer_id as customerId,
     			sc.commodity_id as commodityId,
     			sc.store_nums as storeNums,
-			 	ci.commodity_name as commodityName,
+			 	cs.sku_name as commodityName,
 			 	cs.id as skuId,
 			 	cs.sku_code as skuCode,
 			 	cs.model_no as modelNo,

@@ -1,8 +1,10 @@
 package com.magic.card.wms.user.model.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -45,6 +47,13 @@ public class RoleQueryDto implements Serializable {
 	@ApiModelProperty(value="数据状态(1:正常，0:删除)")
 	private String state;
 	
+    /**
+     * 	菜單主鍵ID
+     */
+	@ApiModelProperty(value="菜單主鍵IDList")
+	@NotEmpty(message="菜單不能为空")
+	private List<Long> menuKeyList;
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -58,7 +67,9 @@ public class RoleQueryDto implements Serializable {
 		if (roleDesc != null)
 			builder.append("roleDesc=").append(roleDesc).append(", ");
 		if (state != null)
-			builder.append("state=").append(state);
+			builder.append("state=").append(state).append(", ");
+		if (menuKeyList != null)
+			builder.append("menuKeyList=").append(menuKeyList);
 		builder.append("]");
 		return builder.toString();
 	}
