@@ -252,10 +252,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	private HttpSession setUserSessionUo(User user) {
 		UserSessionUo userSession = new UserSessionUo();
 		HttpSession session = httpServletRequest.getSession();
-		BeanUtils.copyProperties(user, userSession);
 		CustomerBaseInfo baseInfo = customerBaseInfoMapper.selectById(user.getId());
 		if (null != baseInfo) {
 			userSession = BeanCopyUtil.copy(baseInfo,UserSessionUo.class);
+			userSession.setId(user.getId());
+			userSession.setUserNo(user.getUserNo());
+			userSession.setName(user.getName());
+			userSession.setCustomerId(user.getCustomerId());
 		}
 		session.setAttribute(SessionKeyConstants.USER_INFO, userSession);
 		log.info("===>> setUserSession:{} ",userSession);

@@ -33,7 +33,7 @@ public class UserSessionUo implements Serializable{
      /**
 	  *  客户主键ID
      */
-    private String customerId;
+    private Long customerId;
      /**
 	  *	 客户编码
      */
