@@ -35,6 +35,10 @@ public class User extends BasePo implements Serializable {
      * 姓名
      */
     private String name;
+    /**
+     * 商家主键ID
+     */
+    private Long customerId;
    
 
 }

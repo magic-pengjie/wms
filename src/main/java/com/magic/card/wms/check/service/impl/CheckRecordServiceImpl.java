@@ -44,6 +44,8 @@ import com.magic.card.wms.common.utils.WebUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.Resource;
+
 /**
  * <p>
  * 	盘点记录表 服务实现类
@@ -56,16 +58,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, CheckRecord> implements ICheckRecordService {
 
-	@Autowired
+	@Resource
 	private StorehouseConfigMapper storehouseConfigMapper;
 	
-	@Autowired 
+	@Resource
 	private StorehouseInfoMapper storehouseInfoMapper;
 	
-	@Autowired 
+	@Resource
 	private CheckRecordMapper checkRecordMapper;
 	
-	@Autowired
+	@Resource
 	private WebUtil webUtil;
 	
 	//根据盘点条件查询统计库存信息
@@ -73,12 +75,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public List<CheckRecordInfoDto> countCheckRecord(CheckCountDto dto) throws BusinessException {
 		/**
-		 * 	盘点维度：area_code：库区，commodity_id：商品id，customer_id：客户id
-		 *  1，根据盘点维度查询统计库表↓
-		 *  2.登记盘点记录表
-		 *  3.冻结库位
-		 *  4.盘点完成后，修改盘点记录，更新库位库存
-		 *  5.打印盘点记录单
+		 * 	盘点维度：customer_id：客户id,  根据盘点维度查询统计库表
 		 */
 		log.info("===>> CountCheckRecord.params:{}", dto);
 		List<CheckRecordInfoDto> commStoreList =  new ArrayList<CheckRecordInfoDto>();
@@ -120,14 +117,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
 		//冻结库位
-		Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
-		siWrapper.in("id", dto.getStoreIdList());
-		StorehouseInfo si = new StorehouseInfo();
-		si.setIsFrozen(IsFrozenEnum.FROZEN.getCode());//冻结
-		si.setUpdateTime(new Date());
-		si.setUpdateUser(userSession.getName());
-		Integer updateStoreFrozen = storehouseInfoMapper.update(si,siWrapper);
-		log.info("===>> storehouceInfo.updateByIds,chanage:[{}] rows!", updateStoreFrozen);
+		Integer updateStoreFrozen = updateStoreFrozenState(userSession, dto.getStoreIdList(), IsFrozenEnum.FROZEN);
 		if(updateStoreFrozen == 0) {
 			log.info("===>> 冻结失败！");
 			throw new BusinessException(400005,"未查询到库位信息，冻结失败！");
@@ -178,23 +168,17 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		log.info("===>> 取消盘点，解除冻结开始.cannelCheckRecord start...");
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
-		//冻结库位
-		Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
-		siWrapper.in("id", dto.getStoreIdList());
-		StorehouseInfo si = new StorehouseInfo();
-		si.setIsFrozen(IsFrozenEnum.UNFROZEN.getCode());//解冻
-		si.setUpdateTime(new Date());
-		si.setUpdateUser(userSession.getName());
-		Integer updateStoreFrozen = storehouseInfoMapper.update(si,siWrapper);
-		log.info("===>> storehouceInfo.updateByIds,chanage:[{}] rows!", updateStoreFrozen);
+		//解冻库位
+		Integer updateStoreFrozen = updateStoreFrozenState(userSession, dto.getStoreIdList(), IsFrozenEnum.UNFROZEN);
 		if(updateStoreFrozen>0) {
-			log.info("===>> 取消盘点成功，解除冻结结束.cannelCheckRecord end...");
+			log.info("===>> 库位解冻成功，盘点记录作废开始...");
 			//修改盘点记录为删除
 			Wrapper<CheckRecord> crWrapper = new EntityWrapper<CheckRecord>();
 			crWrapper.in("id", dto.getCheckRecordIdList());
 			crWrapper.eq("state", StateEnum.normal.getCode());
 			CheckRecord checkRecord = new CheckRecord();
-			checkRecord.setState(StateEnum.delete.getCode());
+			checkRecord.setBillState(BillState.checker_cancel.getCode());//盘点记录作废
+			checkRecord.setState(StateEnum.delete.getCode());//数据删除
 			checkRecord.setUpdateTime(new Date());
 			checkRecord.setUpdateUser(userSession.getName());
 			log.info("===>> checkRecordMapper.update.params：{}", checkRecord);
@@ -220,7 +204,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			Date date = new Date();
 			boolean checkUpdate = false;
 			for (CheckRecord checkRecord : checkRecordList) {
-				checkRecord.setBillState(BillState.checker_approving.getCode());
+				checkRecord.setBillState(BillState.checker_approving.getCode());//审批中
 				checkRecord.setUpdateTime(date);
 				checkRecord.setUpdateUser(userSession.getName());
 				checkRecord.setState(StateEnum.normal.getCode());
@@ -234,7 +218,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 				siWrapper.in("store_code", storeCodeList);
 				siWrapper.eq("state", StateEnum.normal.getCode());
 				StorehouseInfo storeInfo = new StorehouseInfo();
-				storeInfo.setIsFrozen(IsFrozenEnum.UNFROZEN.getCode());
+				storeInfo.setIsFrozen(IsFrozenEnum.UNFROZEN.getCode());//解冻
 				storeInfo.setUpdateTime(date);
 				storeInfo.setUpdateUser(userSession.getName());
 				Integer update = storehouseInfoMapper.update(storeInfo,siWrapper);
@@ -270,7 +254,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		}
 		return checkRecordMapper.queryCheckRecordList(cr);
 	}
-	
+
 	
 	//审批盘点记录
 	@Override
@@ -306,36 +290,67 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		}
 		if(updateBatchFlag && BillState.checker_approved.getCode().equals(auditDto.getBillState())) {//审核通过
 			//取盘点数量不为空的库位code
-			List<String> storeCodeList = checkRecordList.stream().filter(cr-> !StringUtils.isEmpty(cr.getCheckNums())).map(CheckRecordDto::getStorehouseCode).collect(Collectors.toList());
+			List<String> storeCodeList = checkRecordList.stream()
+					.filter(cr-> (!StringUtils.isEmpty(cr.getFirstCheckNums())||!StringUtils.isEmpty(cr.getSecondCheckNums())||!StringUtils.isEmpty(cr.getThirdCheckNums())))
+					.map(CheckRecordDto::getStorehouseCode).collect(Collectors.toList());
 			Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
 			siWrapper.in("store_code", storeCodeList);
 			siWrapper.eq("state", StateEnum.normal.getCode());
 			List<StorehouseInfo> storeInfoList = storehouseInfoMapper.selectList(siWrapper);
 			if(CollectionUtils.isEmpty(storeInfoList)) {
 				log.info("===>> storehouseInfoMapper.selectList is empty！");
-				throw new BusinessException(40009,"查询库位信息失败！");
+				throw new BusinessException(40009,"未查询到库位信息，取消盘点失败！");
 			}
 			Integer updateNum = 0;
 			for (CheckRecordDto checkRecordDto : checkRecordList) {
-				if(!StringUtils.isEmpty(checkRecordDto.getCheckNums())) {
+				if(!StringUtils.isEmpty(checkRecordDto.getFirstCheckNums())
+						||!StringUtils.isEmpty(checkRecordDto.getSecondCheckNums())
+						||!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())) {
 					StorehouseConfig sc = new StorehouseConfig();
 					Wrapper<StorehouseConfig> scWrapper = new EntityWrapper<StorehouseConfig>();
 					scWrapper.eq("state", StateEnum.normal.getCode());
 					for (StorehouseInfo storehouseInfo : storeInfoList) {
 						if(checkRecordDto.getStorehouseCode().equals(storehouseInfo.getStoreCode())) {
 							scWrapper.eq("storehouse_id",storehouseInfo.getId());
+							//1.2.3盘 正确结束， 两个一样结束， 三盘为准。审核结束，取消冻结。
+							if(!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//终盘数量
+								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+							}else if (!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//复盘数量
+								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+							}else if (!StringUtils.isEmpty(checkRecordDto.getFirstCheckNums())){//初盘数量
+								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+							}
+							sc.setUpdateTime(nowDate);
+							sc.setUpdateUser(name);
+							//修改库存
+							updateNum = storehouseConfigMapper.update(sc,scWrapper);
+							log.info("===>> update storehouseConfig change:{} rows",updateNum);
+							break;
 						}
 					}
-					sc.setStoreNums(checkRecordDto.getCheckNums());//库存数量
-					sc.setUpdateTime(nowDate);
-					sc.setUpdateUser(name);
-					//修改库存
-					updateNum = storehouseConfigMapper.update(sc,scWrapper);
-					log.info("===>> update storehouseConfig change:{} rows",updateNum);
 				}
 			}
 		}
 		return true;
 	}
-	
+
+
+	/**
+	 * 冻结或解冻库位
+	 * @param userSession
+	 * @param storeIdList
+	 * @param frozen
+	 * @return
+	 */
+	private Integer updateStoreFrozenState(UserSessionUo userSession, List<Long> storeIdList, IsFrozenEnum frozen) {
+		Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
+		siWrapper.in("id", storeIdList);
+		StorehouseInfo si = new StorehouseInfo();
+		si.setIsFrozen(frozen.getCode());//冻结
+		si.setUpdateTime(new Date());
+		si.setUpdateUser(userSession.getName());
+		Integer updateStoreFrozen = storehouseInfoMapper.update(si, siWrapper);
+		log.info("===>> storehouceInfo.updateByIds,chanage:[{}] rows!", updateStoreFrozen);
+		return updateStoreFrozen;
+	}
 }

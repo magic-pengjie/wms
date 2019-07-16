@@ -4,10 +4,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
+import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
+import com.magic.card.wms.common.utils.BeanCopyUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,22 +57,25 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-	@Autowired
+	@Resource
 	private UserRoleMappingMapper userRoleMappingMapper;
-	
-	@Autowired
+
+	@Resource
 	private RoleInfoMapper RoleInfoMapper;
-	
-	@Autowired
+
+	@Resource
 	private MenuInfoMapper menuInfoMapper;
-	
-	@Autowired
+
+	@Resource
+	private CustomerBaseInfoMapper customerBaseInfoMapper;
+
+	@Resource
 	private RedisService redisService;
-	
-	@Autowired
+
+	@Resource
 	private HttpServletRequest httpServletRequest;
-	
-	@Autowired
+
+	@Resource
 	private WebUtil webUtil;
 	
 	@Override
@@ -82,26 +89,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	public void addUser(UserDTO dto) throws BusinessException {
 		Wrapper<User> w = new EntityWrapper<>();
 		w.eq("user_no", dto.getUserNo());
+		w.eq("customer_id", dto.getCustomerId());
+		w.eq("state", StateEnum.normal.getCode());
 		User user = this.selectOne(w);
 		if(StringUtils.isEmpty(user)) {
-			user = new User(); 
+			//获取用户session
+			UserSessionUo userSession = webUtil.getUserSession();
+			user = new User();
+			Date nowDate = new Date();
 			if(StringUtils.isEmpty(dto.getPassword())) {
 				user.setPassword("wms888888");
 			}
 			user.setState(StateEnum.normal.getCode());
+			user.setCreateTime(nowDate);
+			user.setCreateUser(userSession.getName());
 			BeanUtils.copyProperties(dto, user);
 			//新增用户
 			boolean insertFlag = this.insert(user);
 			log.info("===inserUser.params:{},isSuccess:{}", user, insertFlag);
+			//新增用户角色信息
 			if(insertFlag) {
 				for (Long roleId : dto.getRoleKeyList()) {
 					UserRoleMapping entity = new UserRoleMapping();
-					entity.setUserKey(user.getId().longValue());
+					entity.setUserKey(user.getId());
+					entity.setCreateTime(nowDate);
 					entity.setRoleKey(roleId);
-					entity.setCreateTime(new Date());
-					entity.setCreateUser(user.getName());
+					entity.setCreateUser(userSession.getName());
 					entity.setState(StateEnum.normal.getCode());
-					//新增用户角色信息
 					Integer insertMappingFlag = userRoleMappingMapper.insert(entity);
 					log.info("===insertUserRoleMapping.params:{},change {} rows", entity,insertMappingFlag);
 				}
@@ -114,8 +128,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	//修改/删除
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
-	public void updateUserInfo(@Valid UserUpdateDTO dto) throws BusinessException {
+	public void updateUserInfo(UserUpdateDTO dto) throws BusinessException {
 		log.info("=== updateUserInfo params:{}", dto);
+		//获取用户session
 		UserSessionUo userSession = webUtil.getUserSession();
 		User user = this.selectById(dto.getUserKey());
 		if(!StringUtils.isEmpty(user)) {
@@ -139,7 +154,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				if(StateEnum.delete.getCode() != dto.getState() && !CollectionUtils.isEmpty(roleKeyList)) {
 					for (Long roleId : roleKeyList) {
 						UserRoleMapping userRole = new UserRoleMapping();
-						userRole.setUserKey(user.getId().longValue());
+						userRole.setUserKey(user.getId());
 						if(StringUtils.isEmpty(dto.getState())) {
 							userRole.setState(dto.getState());
 						}
@@ -204,8 +219,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			log.info("===>> login 用户不存在！userNo:{}", userKey);
 			throw new BusinessException(ResultEnum.user_name_not_exist.getCode(), ResultEnum.user_name_not_exist.getMsg());
 		}
+		CustomerBaseInfo customerBaseInfo = customerBaseInfoMapper.selectById(userInfo.getCustomerId());
+		BeanUtils.copyProperties(customerBaseInfo,userRoleMenuList);
 		BeanUtils.copyProperties(userInfo, userRoleMenuList);
 		userRoleMenuList.setUserKey(userInfo.getId());
+
 		//根据userKey查询用户角色
 		List<RoleInfo> roleList = RoleInfoMapper.queryRoleByUserKey(userKey);
 		if(CollectionUtils.isEmpty(roleList)) {
@@ -235,11 +253,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 		UserSessionUo userSession = new UserSessionUo();
 		HttpSession session = httpServletRequest.getSession();
 		BeanUtils.copyProperties(user, userSession);
+		CustomerBaseInfo baseInfo = customerBaseInfoMapper.selectById(user.getId());
+		if (null != baseInfo) {
+			userSession = BeanCopyUtil.copy(baseInfo,UserSessionUo.class);
+		}
 		session.setAttribute(SessionKeyConstants.USER_INFO, userSession);
 		log.info("===>> setUserSession:{} ",userSession);
 		//将用户信息放入redis
-		redisService.set(SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
-		log.info("===>> userSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
+//		redisService.set(SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
+//		log.info("===>> userSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_SESSION_KEY+user.getId(), user);
 		return session;
 	}
 }

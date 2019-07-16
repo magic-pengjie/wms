@@ -8,6 +8,7 @@
         <result column="user_no" property="userNo" />
         <result column="password" property="password" />
         <result column="name" property="name" />
+        <result column="customer_id" property="customerId" />
         <result column="state" property="state" />
         <result column="create_time" property="createTime" />
         <result column="create_user" property="createUser" />

@@ -37,39 +37,36 @@ public class CheckRecordDto implements Serializable {
     @ApiModelProperty(value = "库存数量")
     private Integer storeNums;
     
-    @ApiModelProperty(value = "盘点数量")
-    private Integer checkNums;
+    @ApiModelProperty(value = "初盘数量")
+    private Integer firstCheckNums;
+
+    @ApiModelProperty(value = "复盘数量")
+    private Integer secondCheckNums;
+
+    @ApiModelProperty(value = "终盘数量")
+    private Integer thirdCheckNums;
     
     @ApiModelProperty(value = "盘点日期")
     private Date checkDate;
     
     @ApiModelProperty(value = "差异数量")
     private Integer diffNums;
-    
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("CheckRecordDto [");
-		if (id != null)
-			builder.append("id=").append(id).append(", ");
-		if (customerCode != null)
-			builder.append("customerCode=").append(customerCode).append(", ");
-		if (skuId != null)
-			builder.append("skuId=").append(skuId).append(", ");
-		if (storehouseType != null)
-			builder.append("storehouseType=").append(storehouseType).append(", ");
-		if (storehouseCode != null)
-			builder.append("storehouseCode=").append(storehouseCode).append(", ");
-		if (storeNums != null)
-			builder.append("storeNums=").append(storeNums).append(", ");
-		if (checkNums != null)
-			builder.append("checkNums=").append(checkNums).append(", ");
-		if (checkDate != null)
-			builder.append("checkDate=").append(checkDate).append(", ");
-		if (diffNums != null)
-			builder.append("diffNums=").append(diffNums);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("CheckRecordDto{");
+		sb.append("id=").append(id);
+		sb.append(", customerCode='").append(customerCode).append('\'');
+		sb.append(", skuId='").append(skuId).append('\'');
+		sb.append(", storehouseType='").append(storehouseType).append('\'');
+		sb.append(", storehouseCode='").append(storehouseCode).append('\'');
+		sb.append(", storeNums=").append(storeNums);
+		sb.append(", firstCheckNums=").append(firstCheckNums);
+		sb.append(", secondCheckNums=").append(secondCheckNums);
+		sb.append(", thirdCheckNums=").append(thirdCheckNums);
+		sb.append(", checkDate=").append(checkDate);
+		sb.append(", diffNums=").append(diffNums);
+		sb.append('}');
+		return sb.toString();
 	}
-    
 }

@@ -39,28 +39,28 @@ public class UserDTO implements Serializable{
 	@ApiModelProperty(value="姓名")
     @NotBlank(message="姓名不能为空")
     private String name;
+    /**
+     * 客戶主鍵ID
+     */
+	@ApiModelProperty(value="客戶主鍵ID")
+    @NotBlank(message="客戶不能为空")
+    private String customerId;
 	/**
 	 * 角色ID
 	 */
 	@ApiModelProperty(value="角色主键List")
 	@NotEmpty(message="角色不能为空")
 	private List<Long> roleKeyList;
-	
-	
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("UserDTO [");
-		if (userNo != null)
-			builder.append("userNo=").append(userNo).append(", ");
-		if (password != null)
-			builder.append("password=").append(password).append(", ");
-		if (name != null)
-			builder.append("name=").append(name).append(", ");
-		if (roleKeyList != null)
-			builder.append("roleKey=").append(roleKeyList);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("UserDTO{");
+		sb.append("userNo='").append(userNo).append('\'');
+		sb.append(", password='").append(password).append('\'');
+		sb.append(", name='").append(name).append('\'');
+		sb.append(", customerId='").append(customerId).append('\'');
+		sb.append(", roleKeyList=").append(roleKeyList);
+		sb.append('}');
+		return sb.toString();
 	}
-	
 }

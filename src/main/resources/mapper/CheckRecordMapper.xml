@@ -11,7 +11,9 @@
         <result column="storehouse_type" property="storehouseType" />
         <result column="storehouse_code" property="storehouseCode" />
         <result column="store_nums" property="storeNums" />
-        <result column="check_nums" property="checkNums" />
+        <result column="first_check_nums" property="firstCheckNums" />
+        <result column="second_check_nums" property="secondCheckNums" />
+        <result column="third_check_nums" property="thirdCheckNums" />
         <result column="check_date" property="checkDate" />
         <result column="diff_nums" property="diffNums" />
         <result column="approver" property="approver" />
@@ -27,7 +29,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, customer_code, sku_id, check_user, storehouse_type, storehouse_code, store_nums, check_nums, check_date, diff_nums, approver, approve_time, bill_state, state, create_time, create_user, update_time, update_user, remark
+        id, customer_code, sku_id, check_user, storehouse_type, storehouse_code, store_nums, first_check_nums, second_check_nums, third_check_nums, check_date, diff_nums, approver, approve_time, bill_state, state, create_time, create_user, update_time, update_user, remark
     </sql>
 	
 	<select id="queryCheckRecordList" resultMap="BaseResultMap" parameterType="com.magic.card.wms.check.model.po.CheckRecord">

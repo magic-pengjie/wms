@@ -40,7 +40,7 @@ public class UserResponseDTO implements Serializable{
      */
     @ApiModelProperty(value="登录态Token")
     private String token;
-    
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

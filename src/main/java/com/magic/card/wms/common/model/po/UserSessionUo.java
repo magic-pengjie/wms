@@ -25,25 +25,59 @@ public class UserSessionUo implements Serializable{
     /**
      *	 密码
      */
-    private String password;
+//    private String password;
     /**
      *	 姓名
      */
     private String name;
+     /**
+	  *  客户主键ID
+     */
+    private String customerId;
+     /**
+	  *	 客户编码
+     */
+    private String customerCode;
+    /**
+	 *	 客户名称
+     */
+	private String customerName;
+    /**
+	 *	 品牌id
+     */
+	private String brandId;
+	/**
+	 *	 公司地址
+	 */
+	private String address;
+    /**
+	 *	 联系人
+     */
+	private String contactPerson;
+    /**
+	 *	 联系电话
+     */
+	private String phone;
+    /**
+	 *	 租用面积
+     */
+	private String store_area;
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("UserSessionUo [");
-		if (id != null)
-			builder.append("id=").append(id).append(", ");
-		if (userNo != null)
-			builder.append("userNo=").append(userNo).append(", ");
-		if (password != null)
-			builder.append("password=").append(password).append(", ");
-		if (name != null)
-			builder.append("name=").append(name);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("UserSessionUo{");
+		sb.append("id=").append(id);
+		sb.append(", userNo='").append(userNo).append('\'');
+		sb.append(", name='").append(name).append('\'');
+		sb.append(", customerId='").append(customerId).append('\'');
+		sb.append(", customerCode='").append(customerCode).append('\'');
+		sb.append(", customerName='").append(customerName).append('\'');
+		sb.append(", brandId='").append(brandId).append('\'');
+		sb.append(", address='").append(address).append('\'');
+		sb.append(", contactPerson='").append(contactPerson).append('\'');
+		sb.append(", phone='").append(phone).append('\'');
+		sb.append(", store_area='").append(store_area).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
-	
 }

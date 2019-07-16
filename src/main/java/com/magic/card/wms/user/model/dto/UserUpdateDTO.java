@@ -44,6 +44,12 @@ public class UserUpdateDTO implements Serializable{
      */
 	@ApiModelProperty(value="姓名")
     private String name;
+	/**
+	 * 客戶主鍵ID
+	 */
+	@ApiModelProperty(value="客戶主鍵ID")
+	@NotBlank(message="客戶不能为空")
+	private Long customerId;
 	
 	/**
 	 * 数据状态(1:正常，0:删除)
@@ -59,22 +65,15 @@ public class UserUpdateDTO implements Serializable{
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("UserUpdateDTO [");
-		if (userKey != null)
-			builder.append("userKey=").append(userKey).append(", ");
-		if (userNo != null)
-			builder.append("userNo=").append(userNo).append(", ");
-		if (password != null)
-			builder.append("password=").append(password).append(", ");
-		if (name != null)
-			builder.append("name=").append(name).append(", ");
-		if (state != null)
-			builder.append("state=").append(state).append(", ");
-		if (roleKeyList != null)
-			builder.append("roleKeyList=").append(roleKeyList);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("UserUpdateDTO{");
+		sb.append("userKey=").append(userKey);
+		sb.append(", userNo='").append(userNo).append('\'');
+		sb.append(", password='").append(password).append('\'');
+		sb.append(", name='").append(name).append('\'');
+		sb.append(", customerId='").append(customerId).append('\'');
+		sb.append(", state=").append(state);
+		sb.append(", roleKeyList=").append(roleKeyList);
+		sb.append('}');
+		return sb.toString();
 	}
-	
 }

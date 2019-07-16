@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,6 +28,8 @@ import com.magic.card.wms.user.service.IRoleMenuMappingService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.Resource;
+
 /**
  * <p>
  *  服务实现类
@@ -41,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMapper, RoleMenuMapping> implements IRoleMenuMappingService {
 
-	@Autowired
+	@Resource
 	private MenuInfoMapper menuInfoMapper;
 	
 	//新增角色菜单
@@ -55,13 +56,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 		try {
 			Date date = new Date();
 			for (Long menuKey : dto.getMenuKeyList()) {
-				RoleMenuMapping roleMenu = new RoleMenuMapping();
-				roleMenu.setRoleKey(dto.getRoleKey());
-				roleMenu.setMenuKey(menuKey);
-				roleMenu.setState(StateEnum.normal.getCode());
-				roleMenu.setCreateTime(date);
-				roleMenu.setCreateUser("SYSTEM");
-				roleMenuMappingList.add(roleMenu);
+				buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey());
 			}
 			log.info("===新增角色菜单参数:{}",roleMenuMappingList);
 			if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
@@ -76,6 +71,23 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 		
 	}
 
+	/**
+	 * 创建角色菜单信息List
+	 * @param roleMenuMappingList
+	 * @param date
+	 * @param menuKey
+	 * @param roleKey
+	 */
+	private void buildRoleMenuList(List<RoleMenuMapping> roleMenuMappingList, Date date, Long menuKey, Long roleKey) {
+		RoleMenuMapping roleMenu = new RoleMenuMapping();
+		roleMenu.setRoleKey(roleKey);
+		roleMenu.setMenuKey(menuKey);
+		roleMenu.setState(StateEnum.normal.getCode());
+		roleMenu.setCreateTime(date);
+		roleMenu.setCreateUser("SYSTEM");
+		roleMenuMappingList.add(roleMenu);
+	}
+
 	//修改/删除角色菜单
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
@@ -86,13 +98,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 			Date date = new Date();
 			if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
 				for (Long menuKey : dto.getAddMenuKeyList()) {
-					RoleMenuMapping roleMenu = new RoleMenuMapping();
-					roleMenu.setRoleKey(dto.getRoleKey());
-					roleMenu.setMenuKey(menuKey);
-					roleMenu.setState(StateEnum.normal.getCode());
-					roleMenu.setCreateTime(date);
-					roleMenu.setCreateUser("SYSTEM");
-					roleMenuMappingList.add(roleMenu);
+					buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey());
 				}
 				log.info("===update: 新增角色菜单参数:{}",roleMenuMappingList);
 				if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
@@ -117,7 +123,6 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 			log.info("=== 新增角色菜单异常:{}", e);
 			throw new BusinessException(000, "新增角色菜单信息异常，请稍后再试！");
 		}
-		
 	}
 
 	//根据用户角色Key查询目录信息

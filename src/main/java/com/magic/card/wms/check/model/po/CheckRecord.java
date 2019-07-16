@@ -49,9 +49,17 @@ public class CheckRecord extends BasePo implements Serializable {
      */
     private Integer storeNums;
     /**
-     * 盘点数量
+     * 初盘数量
      */
-    private Integer checkNums;
+    private Integer firstCheckNums;
+    /**
+     * 复盘数量
+     */
+    private Integer secondCheckNums;
+    /**
+     * 终盘数量
+     */
+    private Integer thirdCheckNums;
     /**
      * 盘点日期
      */
@@ -73,4 +81,24 @@ public class CheckRecord extends BasePo implements Serializable {
      */
     private String billState;
 
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("CheckRecord{");
+        sb.append("customerCode='").append(customerCode).append('\'');
+        sb.append(", skuId='").append(skuId).append('\'');
+        sb.append(", checkUser='").append(checkUser).append('\'');
+        sb.append(", storehouseType='").append(storehouseType).append('\'');
+        sb.append(", storehouseCode='").append(storehouseCode).append('\'');
+        sb.append(", storeNums=").append(storeNums);
+        sb.append(", firstCheckNums=").append(firstCheckNums);
+        sb.append(", secondCheckNums=").append(secondCheckNums);
+        sb.append(", thirdCheckNums=").append(thirdCheckNums);
+        sb.append(", checkDate=").append(checkDate);
+        sb.append(", diffNums=").append(diffNums);
+        sb.append(", approver='").append(approver).append('\'');
+        sb.append(", approveTime=").append(approveTime);
+        sb.append(", billState='").append(billState).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

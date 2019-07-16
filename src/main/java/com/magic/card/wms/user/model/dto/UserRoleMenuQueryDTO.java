@@ -42,6 +42,43 @@ public class UserRoleMenuQueryDTO implements Serializable{
 	@ApiModelProperty(value="姓名")
     private String name;
 	/**
+	 * 客户编码
+	 */
+	@ApiModelProperty(value="客户编码")
+	private String customerCode;
+	/**
+	 * 客户名称
+	 */
+	@ApiModelProperty(value="客户名称")
+	private String customerName;
+	/**
+	 * 品牌id
+	 */
+	@ApiModelProperty(value="品牌id")
+	private String brandId;
+	/**
+	 * 公司地址
+	 */
+	@ApiModelProperty(value="公司地址")
+	private String address;
+	/**
+	 * 联系人
+	 */
+	@ApiModelProperty(value="联系人")
+	private String contactPerson;
+
+	/**
+	 * 联系电话
+	 */
+	@ApiModelProperty(value="联系电话")
+	private String phone;
+
+	/**
+	 * 租用面积
+	 */
+	@ApiModelProperty(value="租用面积")
+	private Double storeArea;
+	/**
 	 * 角色信息List
 	 */
 	@ApiModelProperty(value="角色List")
@@ -55,22 +92,21 @@ public class UserRoleMenuQueryDTO implements Serializable{
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("UserRoleMenuQueryDTO [");
-		if (userKey != null)
-			builder.append("userKey=").append(userKey).append(", ");
-		if (userNo != null)
-			builder.append("userNo=").append(userNo).append(", ");
-		if (password != null)
-			builder.append("password=").append(password).append(", ");
-		if (name != null)
-			builder.append("name=").append(name).append(", ");
-		if (roleList != null)
-			builder.append("roleList=").append(roleList).append(", ");
-		if (menuList != null)
-			builder.append("menuList=").append(menuList);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("UserRoleMenuQueryDTO{");
+		sb.append("userKey=").append(userKey);
+		sb.append(", userNo='").append(userNo).append('\'');
+		sb.append(", password='").append(password).append('\'');
+		sb.append(", name='").append(name).append('\'');
+		sb.append(", customerCode='").append(customerCode).append('\'');
+		sb.append(", customerName='").append(customerName).append('\'');
+		sb.append(", brandId='").append(brandId).append('\'');
+		sb.append(", address='").append(address).append('\'');
+		sb.append(", contactPerson='").append(contactPerson).append('\'');
+		sb.append(", phone='").append(phone).append('\'');
+		sb.append(", storeArea=").append(storeArea);
+		sb.append(", roleList=").append(roleList);
+		sb.append(", menuList=").append(menuList);
+		sb.append('}');
+		return sb.toString();
 	}
-
 }
