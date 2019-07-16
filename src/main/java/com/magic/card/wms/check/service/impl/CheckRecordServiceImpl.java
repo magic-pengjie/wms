@@ -234,14 +234,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 	public List<CheckRecord> queryCheckRecord(QueryAuditCheckRecordDto auditDto) throws BusinessException{
 		CheckRecord cr = new CheckRecord();
 		if(!StringUtils.isEmpty(auditDto.getCheckDate())) {
-			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD");
-				String dateStr = sdf.format(auditDto.getCheckDate());
-				cr.setCheckDate(sdf.parse(dateStr));
-			} catch (Exception e) {
-				log.info("===>> DateFormat.exceptin:{}",e);
-				throw new BusinessException(40007,"日期转换失败");
-			}
+			cr.setCheckDate(auditDto.getCheckDate());
 		}
 		if(!StringUtils.isEmpty(auditDto.getCheckUser())) {
 			cr.setCheckUser(auditDto.getCheckUser());

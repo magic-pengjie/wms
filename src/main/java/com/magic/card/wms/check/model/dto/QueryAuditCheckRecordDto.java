@@ -1,6 +1,7 @@
 package com.magic.card.wms.check.model.dto;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,7 +18,7 @@ public class QueryAuditCheckRecordDto implements Serializable{
 	private String checkUser;
     
     @ApiModelProperty(value="盘点时间")
-    private String checkDate;
+    private Date checkDate;
     
     @ApiModelProperty(value="单据状态")
     private String billState;
