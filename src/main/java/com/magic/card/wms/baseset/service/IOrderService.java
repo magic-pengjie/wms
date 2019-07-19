@@ -2,6 +2,7 @@ package com.magic.card.wms.baseset.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.common.model.LoadGrid;
 
@@ -39,10 +40,9 @@ public interface IOrderService extends IService<Order> {
 
     /**
      * 修改订单
-     * @param orderInfoDTO 订单基本信息
-     * @param operator
+     * @param orderUpdateDTO 订单基本信息
      */
-    void updateOrder(OrderInfoDTO orderInfoDTO);
+    void updateOrder(OrderUpdateDTO orderUpdateDTO);
 
     /**
      * 获取满足要求的所有订单
@@ -57,7 +57,7 @@ public interface IOrderService extends IService<Order> {
      * @param customerCode
      * @return
      */
-    BigDecimal orderCommodityWeight(String orderNo, String customerCode);
+//    BigDecimal orderCommodityWeight(String orderNo, String customerCode);
 
     /**
      * 订单称重对比
@@ -76,14 +76,14 @@ public interface IOrderService extends IService<Order> {
 
     /**
      * 称重订单数据加载
-     * @param orderNo
+     * @param loadGrid
      * @return
      */
     LoadGrid orderWeighLoadGrid(LoadGrid loadGrid);
 
     /**
-     * 检出订单基本信息
-     * @param orderNo
+     * 检出系统订单是否存在或是已取消
+     * @param orderNo 系统订单 订单号 + 商家号
      */
-    Order checkOrder(String orderNo);
+    Order checkoutOrder(String orderNo);
 }

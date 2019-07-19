@@ -71,12 +71,14 @@
         SELECT
             woi.id,
             woi.order_no orderNo,
+            woi.system_order_no systemOrderNo,
             woi.customer_code customerCode,
             wcbi.customer_name customerName,
             woi.recipt_name reciptName,
             woi.recipt_phone reciptPhone,
             woi.recipt_addr reciptAddr,
             woi.express_key expressKey,
+            woi.prov prov,
             woi.is_b2b isB2b,
             woi.bill_state billState,
             woi.create_time createTime

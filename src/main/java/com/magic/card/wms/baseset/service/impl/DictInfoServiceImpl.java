@@ -53,10 +53,10 @@ public class DictInfoServiceImpl extends ServiceImpl<DictInfoMapper, DictInfo> i
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper<>();
         wrapper.eq("wdi.state", 1);
-        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingSearch(wrapper, defaultColumns, loadGrid.getSearch());
 
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
+            WrapperUtil.autoSettingOrder(wrapper, defaultColumns, loadGrid.getOrder());
         } else {
             wrapper.orderBy("wdi.dict_name");
         }

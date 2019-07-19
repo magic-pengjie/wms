@@ -63,25 +63,25 @@ public class EasyExcelUtil {
 
 	/**
 	 * 读取excle数据
-	 * 
-	 * @param <T>         excel数据
-	 * @param inputStream
-	 * @param clazz       模型类型
-	 * @param sheetNo     sheet序号
-	 * @param headRow     表头行数
+	 *
+	 * @param inputStream excel数据
+	 * @param clazz		  模型类型
+	 * @param sheetNo	  sheet序号
+	 * @param headRow	  表头行数
+	 * @param <T>
 	 * @return
 	 */
-	public static List<Object> readExcel(final InputStream inputStream,
-			final Class<? extends BaseRowModel> clazz, int sheetNo, int headRow) {
+	public static <T extends BaseRowModel> List<T> readExcel(final InputStream inputStream,
+			final Class<T> clazz, int sheetNo, int headRow) {
 		if (null == inputStream) {
 			throw new NullPointerException("the inputStream is null!");
 		}
 		
-		List<Object> data = new ArrayList<>();
-		AnalysisEventListener listener = new AnalysisEventListener() {
+		List<T> data = new ArrayList<>();
+		AnalysisEventListener listener = new AnalysisEventListener<T>() {
 
 			@Override
-			public void invoke(Object object, AnalysisContext context) {
+			public void invoke(T object, AnalysisContext context) {
 				data.add(object);
 			}
 

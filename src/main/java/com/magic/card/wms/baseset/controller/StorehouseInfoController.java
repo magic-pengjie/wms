@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,8 +53,14 @@ public class StorehouseInfoController {
 
     @ApiOperation(value = "excelImport")
     @PostMapping("excelImport")
-    public ResponseData excelImport(@RequestParam("excelFile") MultipartFile excelFile) throws IOException {
-        storehouseInfoService.excelImport(excelFile);
+    public ResponseData excelImport(@RequestParam("excelFiles") MultipartFile[] excelFiles) throws IOException {
+
+        if (excelFiles != null && excelFiles.length > 0) {
+            for (MultipartFile excelFile : excelFiles) {
+                storehouseInfoService.excelImport(excelFile);
+            }
+        }
+
         return ResponseData.ok();
     }
 

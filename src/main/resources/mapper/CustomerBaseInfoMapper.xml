@@ -46,20 +46,30 @@
     </select>
 
 
-    <!-- 获取用户商品全信息   -->
+    <!--  获取用户商品全信息
+    wbi.`name` brandName,
+    wsilj.store_code ljkw,
+    wsicc.store_code cckw,
+    wci.packing_volume packingVolume,
+    wci.packing_volume_unit packingVolumeUnit,
+    wci.packing_weight packingWeight,
+    wci.packing_weight_unit packingWeightUnit,
+
+    LEFT JOIN wms_brand_info wbi ON wcbi.brand_id = wbi.id
+    LEFT JOIN wms_storehouse_config wsc ON wci.id = wsc.commodity_id
+    LEFT JOIN wms_storehouse_info wsilj ON wsilj.id = wsc.storehouse_id AND wsilj.house_code = 'CK-GN-JHQ'
+    LEFT JOIN wms_storehouse_info wsicc ON wsicc.id = wsc.storehouse_id AND wsicc.house_code = 'CK-GN-CCQ'
+    -->
     <select id="loadCustomerCommodities" resultType="java.util.Map">
         SELECT
             wci.id,
             wcbi.id customerId,
             wcbi.customer_name customerName,
---             wbi.`name` brandName,
             wcs.sku_name skuName,
             wcs.sku_code skuCode,
             wcs.spec,
             wcs.model_no modelNo,
             wcs.bar_code barCode,
-            wsilj.store_code ljkw,
-            wsicc.store_code cckw,
             wcs.single_volume singleVolume,
             wcs.single_volume_unit	singleVolumeUnit,
             wcs.single_weight singleWeight,
@@ -67,19 +77,11 @@
             wci.packing_num packingNum,
             wcs.single_unit singleUnit,
             wci.packing_unit packingUnit,
-            wci.id customerCommodityId,
-            wci.packing_volume packingVolume,
-            wci.packing_volume_unit packingVolumeUnit,
-            wci.packing_weight packingWeight,
-            wci.packing_weight_unit packingWeightUnit
+            wci.id customerCommodityId
         FROM
             wms_customer_base_info wcbi
---             LEFT JOIN wms_brand_info wbi ON wcbi.brand_id = wbi.id
             LEFT JOIN wms_commodity_info wci ON wcbi.id = wci.customer_id
             LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
-            LEFT JOIN wms_storehouse_config wsc ON wci.id = wsc.commodity_id
-            LEFT JOIN wms_storehouse_info wsilj ON wsilj.id = wsc.storehouse_id AND wsilj.house_code = 'CK-GN-JHQ'
-            LEFT JOIN wms_storehouse_info wsicc ON wsicc.id = wsc.storehouse_id AND wsicc.house_code = 'CK-GN-CCQ'
         <where>
             ${ew.sqlSegment}
         </where>

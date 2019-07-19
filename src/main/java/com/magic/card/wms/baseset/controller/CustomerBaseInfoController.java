@@ -38,6 +38,15 @@ public class CustomerBaseInfoController {
     public ResponseData loadGrid(@ApiParam("搜索信息") @RequestBody LoadGrid loadGrid) {
         return ResponseData.ok(customerBaseInfoService.loadGrid(loadGrid));
     }
+    @ApiOperation(value = "加载所有客户数据")
+    @GetMapping("comboGrid")
+    public ResponseData comboGrid() {
+        LoadGrid loadGrid = new LoadGrid();
+        loadGrid.setCurrent(1);
+        loadGrid.setSize(1000);
+        customerBaseInfoService.loadGrid(loadGrid);
+        return ResponseData.ok(loadGrid.getRows());
+    }
 
     @ApiOperation(value = "新增客户基本信息")
     @PostMapping("add")
@@ -59,7 +68,6 @@ public class CustomerBaseInfoController {
         customerBaseInfoService.delete(id, Constants.DEFAULT_USER, false);
         return ResponseData.ok();
     }
-
 
     @ApiOperation("加载客户的所有产品")
     @PostMapping("loadCommodities/{customerId}")

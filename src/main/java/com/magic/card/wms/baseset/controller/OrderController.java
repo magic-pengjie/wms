@@ -1,12 +1,14 @@
 package com.magic.card.wms.baseset.controller;
 
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +47,14 @@ public class OrderController {
 
     /**
      * 更新订单信息
-     * @param orderInfoDTO
+     * @param orderUpdateDTO
      * @param bindingResult
      * @return
      */
-    public ResponseData updateOrder(@RequestBody @ApiParam("订单信息")@Valid OrderInfoDTO orderInfoDTO, BindingResult bindingResult) {
+    @ApiOperation("更新订单信息")
+    @PostMapping("updateOrder")
+    public ResponseData updateOrder(@RequestBody @ApiParam("订单信息")@Valid OrderUpdateDTO orderUpdateDTO, BindingResult bindingResult) {
+        orderService.updateOrder(orderUpdateDTO);
         return ResponseData.ok();
     }
 

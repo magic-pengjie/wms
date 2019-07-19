@@ -156,10 +156,10 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         Page<Object> page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.ne("state", StateEnum.delete.getCode());
-        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingSearch(wrapper, defaultColumns, loadGrid.getSearch());
 
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
+            WrapperUtil.autoSettingOrder(wrapper, defaultColumns, loadGrid.getOrder());
         } else {
             wrapper.orderBy("create_time", false);
         }

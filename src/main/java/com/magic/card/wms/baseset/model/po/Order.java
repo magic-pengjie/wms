@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.model.po;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.validation.constraints.NotNull;
@@ -81,26 +82,26 @@ public class Order extends BasePo implements Serializable {
     /**
      * 是否是批量订单
      */
-    private Boolean isBatch;
+    private boolean isBatch;
 
     /**
      * 是否B2B
      */
-    private Boolean isB2b;
+    private boolean isB2b;
     /**
      * 商品金额
      */
-    private Boolean goodsValue;
+    private BigDecimal goodsValue;
     /**
      * 单据状态(保存:save确认:confirm 作废及退单:cancel )
      */
     private String billState;
 
-    public Boolean getB2b() {
+    public boolean getB2b() {
         return isB2b;
     }
 
-    public Boolean getBatch() {
+    public boolean getBatch() {
         return isBatch;
     }
 }

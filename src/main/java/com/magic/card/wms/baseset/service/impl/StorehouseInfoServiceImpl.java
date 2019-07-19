@@ -1,11 +1,5 @@
 package com.magic.card.wms.baseset.service.impl;
 
-import com.alibaba.excel.ExcelReader;
-import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.event.AnalysisEventListener;
-import com.alibaba.excel.metadata.BaseRowModel;
-import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
@@ -14,6 +8,7 @@ import com.magic.card.wms.baseset.mapper.StorehouseInfoMapper;
 import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
+import com.magic.card.wms.baseset.model.vo.ExcelStorehouseVO;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.BusinessException;
@@ -24,7 +19,7 @@ import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.EasyExcelUtil;
 import com.magic.card.wms.common.utils.PoUtil;
-import lombok.Data;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,15 +178,13 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         }
 
         try {
+            List<ExcelStorehouseVO> storehouses = EasyExcelUtil.readExcel(excelFile.getInputStream(), ExcelStorehouseVO.class, 1, 1);
 
-            ExcelReader excelReader = new ExcelReader(excelFile.getInputStream(), null, new AnalysisEventListener() {
+            if (CollectionUtils.isNotEmpty(storehouses)) {
+                for (ExcelStorehouseVO excelStorehouse: storehouses) {
+                    // 移除空数据
+                    if (StringUtils.isBlank(excelStorehouse.getStoreCode())) continue;
 
-                @Override
-                public void invoke(Object obj, AnalysisContext context) {
-                    List<Object> objs = (List<Object>) obj;
-                    ExcelStorehouse excelStorehouse = new ExcelStorehouse();
-                    excelStorehouse.setStoreCode(objs.get(0).toString());
-                    excelStorehouse.setPriorityValue((Integer) objs.get(1));
                     StorehouseInfo storehouse = new StorehouseInfo();
                     storehouse.setHouseCode(excelStorehouse.getHouseCode());
                     storehouse.setAreaCode(excelStorehouse.getAreaCode());
@@ -210,13 +202,8 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
                     PoUtil.add(storehouse, Constants.DEFAULT_USER);
                     insert(storehouse);
                 }
+            }
 
-                @Override
-                public void doAfterAllAnalysed(AnalysisContext context) {
-
-                }
-            });
-            excelReader.read(new Sheet(0, 1, null));
         } catch (IOException e) {
             throw OperationException.customException(ResultEnum.upload_file_suffix_err);
         }
@@ -270,47 +257,5 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
             throw OperationException.customException(ResultEnum.store_house_error, "区域编号已被其他功能区占用");
         }
     }
-
-    @Data
-    class ExcelStorehouse extends BaseRowModel {
-        @ExcelProperty(value = "库位编号", index = 0)
-        private String storeCode;
-        @ExcelProperty(value = "优先值", index = 1)
-        private Integer priorityValue;
-
-        public String getHouseCode() {
-
-            if (storeCode.contains("PA")) {
-                return "CK-GN-JHQ";
-            }
-
-            // 存储区
-            return "CK-GN-CCQ";
-        }
-
-        public String getAreaCode() {
-            String[] codes = storeCode.split("-");
-
-            if (codes.length == 2) {
-                return codes[0];
-            }
-
-            try {
-                Integer.parseInt(codes[1]);
-                return codes[0];
-            } catch (NumberFormatException e) {
-                return StringUtils.joinWith("-", codes[0], codes[1]);
-            }
-        }
-
-        public Integer getState() {
-            if (priorityValue == null || priorityValue == 0) {
-                // 停用
-                return 3;
-            } else {
-                // 正常使用
-                return 1;
-            }
-        }
-    }
 }
+

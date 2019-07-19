@@ -50,10 +50,10 @@ public class BrandInfoServiceImpl extends ServiceImpl<BrandInfoMapper, Brand> im
         EntityWrapper<Brand> brandInfo = new EntityWrapper<>();
         // 获取状态正常数据
         brandInfo.eq("state", 1);
-        WrapperUtil.searchSet(brandInfo, defaultColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingSearch(brandInfo, defaultColumns, loadGrid.getSearch());
 
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            WrapperUtil.orderSet(brandInfo, defaultColumns, loadGrid.getOrder());
+            WrapperUtil.autoSettingOrder(brandInfo, defaultColumns, loadGrid.getOrder());
         } else {
             brandInfo.orderBy("id");
         }

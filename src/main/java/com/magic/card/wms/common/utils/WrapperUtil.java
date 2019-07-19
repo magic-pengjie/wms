@@ -5,6 +5,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * com.magic.card.wms.common.utils
@@ -22,23 +23,8 @@ public class WrapperUtil {
      * @param columns
      * @param search
      */
-    public static void searchSet(Wrapper wrapper, Map<String, String> columns, Map<String, Object> search) {
-        wrapper.eq("1", 1);
-
-        if (MapUtils.isNotEmpty(search)) {
-            search.forEach((key, value) -> {
-
-                if (value != null && value instanceof String) {
-
-                    if (StringUtils.isNotBlank(columns.get(key)))
-                        wrapper.like(columns.get(key), value.toString());
-
-                }
-
-            });
-
-        }
-
+    public static void autoSettingSearch(Wrapper wrapper, Map<String, String> columns, Map<String, Object> search) {
+        autoSettingSearch(wrapper, columns, search, null);
     }
 
     /**
@@ -47,8 +33,18 @@ public class WrapperUtil {
      * @param columns
      * @param order
      */
-    public static void orderSet(Wrapper wrapper, Map<String, String> columns, Map<String, String> order) {
+    public static void autoSettingOrder(Wrapper wrapper, Map<String, String> columns, Map<String, String> order) {
+        autoSettingOrder(wrapper, columns, order, null);
+    }
 
+    /**
+     * 自动设置排序字段
+     * @param wrapper Wrapper
+     * @param columns 列定义
+     * @param order 排序信息
+     * @param defaultSetOrder 设置默认的排序信息
+     */
+    public static void autoSettingOrder(Wrapper wrapper, Map<String, String> columns, Map<String, String> order, Consumer<Wrapper> defaultSetOrder) {
         if (MapUtils.isNotEmpty(order)) {
             order.forEach((key, value) -> {
 
@@ -61,7 +57,43 @@ public class WrapperUtil {
 
             });
 
-        }
+        } else {
 
+            if (defaultSetOrder != null) {
+                defaultSetOrder.accept(wrapper);
+            }
+
+        }
+    }
+
+    /**
+     * 自动设置搜索条件
+     * @param wrapper
+     * @param columns
+     * @param search
+     * @param defaultSetSearch
+     */
+    public static void autoSettingSearch(Wrapper wrapper, Map<String, String> columns, Map<String, Object> search, Consumer<Wrapper> defaultSetSearch) {
+        wrapper.eq("1", 1);
+
+        if (MapUtils.isNotEmpty(search)) {
+            search.forEach((key, value) -> {
+
+                if (value != null && value instanceof String) {
+
+                    if (StringUtils.isNotBlank(columns.get(key))) {
+                        wrapper.like(columns.get(key), value.toString());
+                    }
+
+                }
+
+            });
+        } else {
+
+            if (defaultSetSearch != null) {
+                defaultSetSearch.accept(wrapper);
+            }
+
+        }
     }
 }

@@ -64,10 +64,10 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
         EntityWrapper<CommoditySku> skuEntityWrapper = new EntityWrapper<>();
 
         skuEntityWrapper.eq("state", 1);
-        WrapperUtil.searchSet(skuEntityWrapper, defaultColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingSearch(skuEntityWrapper, defaultColumns, loadGrid.getSearch());
 
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            WrapperUtil.orderSet(skuEntityWrapper, defaultColumns, loadGrid.getOrder());
+            WrapperUtil.autoSettingOrder(skuEntityWrapper, defaultColumns, loadGrid.getOrder());
         } else {
             skuEntityWrapper.orderBy("update_time", false);
         }

@@ -61,8 +61,8 @@ public class ExpressFeeConfigService extends ServiceImpl<ExpressFeeConfigMapper,
     public LoadGrid loadGrid(LoadGrid loadGrid) {
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
-        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
-        WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
+        WrapperUtil.autoSettingSearch(wrapper, defaultColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingOrder(wrapper, defaultColumns, loadGrid.getOrder());
         loadGrid.finallyResult(page, baseMapper.loadGrid(page, wrapper));
         return loadGrid;
     }
@@ -111,7 +111,7 @@ public class ExpressFeeConfigService extends ServiceImpl<ExpressFeeConfigMapper,
      * @return
      */
     public BigDecimal orderExpressFree(String orderNo, BigDecimal realWeight, String weightUnit) {
-        Order order = orderService.checkOrder(orderNo);
+        Order order = orderService.checkoutOrder(orderNo);
         BigDecimal realWeigh_g = CommodityUtil.unitConversion_G(realWeight, weightUnit);
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("state", StateEnum.normal.getCode())

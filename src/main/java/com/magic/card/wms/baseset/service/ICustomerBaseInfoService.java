@@ -69,9 +69,9 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
     LoadGrid loadCustomerCommodities(LoadGrid loadGrid, String customerId);
 
     /**
-     * 检测客户是否存在，存在则返回客户信息
-     * @param wrapper
+     * 检出客户是否存在，存在则返回客户信息
+     * @param customerCode 客户编码
      * @return
      */
-    CustomerBaseInfo checkCustomer(String customerCode);
+    CustomerBaseInfo checkoutCustomer(String customerCode);
 }

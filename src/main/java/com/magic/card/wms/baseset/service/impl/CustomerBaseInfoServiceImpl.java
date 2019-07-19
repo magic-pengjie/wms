@@ -13,6 +13,7 @@ import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
@@ -45,6 +46,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
      * 默认提供的Columns
      */
     private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
+    private static Map<String, String> customerCommodityColumns = Maps.newConcurrentMap();
     static {
         defaultColumns.put("id", "cbf.id");
         defaultColumns.put("customerName", "cbf.customer_name");
@@ -55,6 +57,23 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         defaultColumns.put("brandId", "cbf.brand_id");
         defaultColumns.put("brandName", "name");
         defaultColumns.put("brandName", "bi.`name`");
+
+        customerCommodityColumns.put("id", "wci.id");
+        customerCommodityColumns.put("customerId", "wcbi.id");
+        customerCommodityColumns.put("customerName", "wcbi.customer_name");
+        customerCommodityColumns.put("skuName", "wcs.sku_name");
+        customerCommodityColumns.put("skuCode", "wcs.sku_code");
+        customerCommodityColumns.put("spec", "wcs.spec");
+        customerCommodityColumns.put("modelNo", "wcs.model_no");
+        customerCommodityColumns.put("barCode", "wcs.bar_code");
+        customerCommodityColumns.put("wcs.bar_code", "wcs.single_volume");
+        customerCommodityColumns.put("singleVolumeUnit", "wcs.single_volume_unit");
+        customerCommodityColumns.put("singleWeight", "wcs.single_weight");
+        customerCommodityColumns.put("singleWeightUnit", "wcs.single_weight_unit");
+        customerCommodityColumns.put("packingNum", "wci.packing_num");
+        customerCommodityColumns.put("singleUnit", "wcs.single_unit ");
+        customerCommodityColumns.put("packingUnit", "wci.packing_unit");
+        customerCommodityColumns.put("customerCommodityId", "wci.id ");
     }
 
     @Override
@@ -62,10 +81,10 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("cbf.state", 1);
-        WrapperUtil.searchSet(wrapper, defaultColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingSearch(wrapper, defaultColumns, loadGrid.getSearch());
 
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
+            WrapperUtil.autoSettingOrder(wrapper, defaultColumns, loadGrid.getOrder());
         } else {
             wrapper.orderBy("cbf.update_time", false);
         }
@@ -103,17 +122,15 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     /**
      * 检测客户是否存在，存在则返回客户信息
      *
-     * @param wrapper
+     * @param customerCode
      * @return
      */
     @Override
-    public CustomerBaseInfo checkCustomer(String customerCode) {
+    public CustomerBaseInfo checkoutCustomer(String customerCode) {
         if (StringUtils.isNotBlank(customerCode)) {
             EntityWrapper wrapper = new EntityWrapper();
             wrapper.eq("state", Constants.ACTIVITY_STATE);
             wrapper.eq("customer_code", customerCode);
-
-
             CustomerBaseInfo customerBaseInfo = this.selectOne(wrapper);
 
             if (customerBaseInfo == null) {
@@ -137,20 +154,19 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     public LoadGrid loadCustomerCommodities(LoadGrid loadGrid, String customerId) {
         Page page = loadGrid.generatorPage();
         Wrapper wrapper = new EntityWrapper<>();
-        wrapper.eq("1", 1);
+        wrapper.eq("state", StateEnum.normal.getCode());
 
-        if (!StringUtils.equalsIgnoreCase("all", customerId))
+        if (!StringUtils.equalsIgnoreCase("all", customerId)) {
             wrapper.eq("wcbi.id", customerId);
-
-        if (MapUtils.isNotEmpty(loadGrid.getSearch())) {
-            // TODO 设置客户商品查询条件
         }
 
-        if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-            // TODO 设置客户商品排序条件
-        } else {
-            wrapper.orderBy("wcbi.id");
-        }
+        WrapperUtil.autoSettingSearch(wrapper, customerCommodityColumns, loadGrid.getSearch());
+        WrapperUtil.autoSettingOrder(
+                wrapper,
+                customerCommodityColumns,
+                loadGrid.getOrder(),
+                defaultSettingOrder -> defaultSettingOrder.orderBy("wcbi.id")
+        );
 
         loadGrid.finallyResult(page, baseMapper.loadCustomerCommodities(page, wrapper));
         return loadGrid;
