@@ -33,10 +33,16 @@ public interface IOrderService extends IService<Order> {
 
     /**
      * 导入其他系统订单
-     * @param orderInfoDTO
+     * @param orderInfoDTO 订单基本信息
+     */
+    void importOrder(OrderInfoDTO orderInfoDTO);
+
+    /**
+     * 修改订单
+     * @param orderInfoDTO 订单基本信息
      * @param operator
      */
-    void importOrder(OrderInfoDTO orderInfoDTO, String operator);
+    void updateOrder(OrderInfoDTO orderInfoDTO);
 
     /**
      * 获取满足要求的所有订单

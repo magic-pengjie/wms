@@ -1,10 +1,12 @@
 package com.magic.card.wms.baseset.service;
 
+import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.LoadGrid;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -31,6 +33,18 @@ public interface IStorehouseInfoService extends IService<StorehouseInfo> {
     void add(StorehouseInfoDTO storehouseInfoDTO, String operator);
 
     /**
+     * 批量添加仓库库位信息
+     * @param batchStorehouseDTO
+     */
+    void batchAdd(BatchStorehouseDTO batchStorehouseDTO);
+
+    /**
+     * 停用库位
+     * @param ids
+     */
+    void stop(String... ids);
+
+    /**
      * 修改仓库库位信息
      * @param storehouseInfoDTO
      * @param operator
@@ -43,4 +57,10 @@ public interface IStorehouseInfoService extends IService<StorehouseInfo> {
      * @param id
      */
     void delete(Long id);
+
+    /**
+     * excel 导入库位信息
+     * @param excelFile
+     */
+    void excelImport(MultipartFile excelFile);
 }

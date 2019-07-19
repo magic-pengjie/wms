@@ -39,6 +39,8 @@ public enum ResultEnum {
 	data_add_failed(10010, "数据添加失败"),
 	data_update_failed(10011, "数据更新失败"),
 	data_delete_failed(10012, "数据删除失败"),
+	upload_file_inexistence(10013, "上传文件不存在"),
+	upload_file_suffix_err(10014, "上传文件格式有误"),
 	system_busy(11111, "系统繁忙请稍后再试"),
 
 	commodity_stock_setting_deficiency(10013, "当前商品库存不存在！"),
@@ -54,7 +56,10 @@ public enum ResultEnum {
 	store_house_error(20009, "仓库信息异常"),
 	query_role_failed(200010,"查询角色列表失败"),
 	add_role_failed(200011,"新增角色失败"),
-	
+
+
+	excel_import_storehouse(300000,"Excel导入仓库库位信息失败！"),
+
 	select_purchase_failed(400000,"查询单据失败"),
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),
 	delete_purchase_not_exsit(400002,"采购单不存在删除失败"),
@@ -77,6 +82,7 @@ public enum ResultEnum {
 	order_cancel(50007, "当前订单已取消，请将商品放回库位"),
 	order_weight_warning(50008, "称重不在预定范围值内"),
 	order_package_no_hc(50009, "当前订单商品没有设置耗材"),
+	order_lock(50010, "订单超过15分钟已锁定"),
 
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),

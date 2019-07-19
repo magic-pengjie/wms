@@ -31,21 +31,15 @@ public class CommodityConsumablesConfig extends BasePo implements Serializable {
      */
     private Long id;
     /**
-     * 商品id
+     * 商品Code 商品条码
      */
-    private String commodityId;
+    private String commodityCode;
+
     /**
-     * sku id
+     * 消耗商品Code 商品条码
      */
-    private String skuId;
-    /**
-     * 消耗商品id
-     */
-    private String useCommodityId;
-    /**
-     * 消耗商品 sku id
-     */
-    private String useSkuId;
+    private String useCommodityCode;
+
     /**
      * 左区间值
      */

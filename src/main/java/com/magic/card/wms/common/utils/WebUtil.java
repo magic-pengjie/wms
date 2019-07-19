@@ -3,6 +3,7 @@ package com.magic.card.wms.common.utils;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.magic.card.wms.common.exception.OperationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +53,21 @@ public class WebUtil {
 		return httpServletRequest.getHeader(name);
 	}
 
+	/**
+	 * 获取操作人员
+	 * @return
+	 */
+	public String operator() {
+		try {
+			UserSessionUo userSession = getUserSession();
+			return userSession.getName();
+		} catch (BusinessException e) {
+			OperationException operationException = new OperationException();
+			operationException.setErrCode(e.getErrCode());
+			operationException.setErrMsg(e.getErrMsg());
+			throw operationException;
+		}
+	}
 }
 
 

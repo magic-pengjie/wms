@@ -19,12 +19,14 @@ import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.CommodityUtil;
+import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import com.magic.card.wms.report.service.ExpressFeeConfigService;
 import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +62,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private ICommodityStockService commodityStockService;
     @Autowired
     private ExpressFeeConfigService expressFeeConfigService;
+    @Autowired
+    private IMailPickingDetailService IMailPickingDetailService;
+    @Autowired
+    private WebUtil webUtil;
     /**
      *
      */
@@ -137,10 +144,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * 导入其他系统订单
      *
      * @param orderInfoDTO
-     * @param operator
      */
     @Override @Transactional
-    public void importOrder(OrderInfoDTO orderInfoDTO, String operator) {
+    public void importOrder(OrderInfoDTO orderInfoDTO) {
+//        String operator = webUtil.operator();
+        String operator = Constants.DEFAULT_USER;
+
         // 订单取消
         if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
             cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
@@ -148,6 +157,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         CustomerBaseInfo customerBaseInfo = checkOrder(orderInfoDTO);
         Order order = new Order();
+        order.setSystemOrderNo(StringUtils.join(orderInfoDTO.getOrderNo(), orderInfoDTO.getCustomerCode()));
         PoUtil.add(orderInfoDTO, order, operator);
 
         // 保存单号
@@ -162,15 +172,42 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         // 订单商品保存
         orderInfoDTO.getCommodities().stream().forEach(orderCommodityDTO -> {
-            orderCommodityDTO.setOrderNo(orderInfoDTO.getOrderNo());
+            orderCommodityDTO.setOrderNo(order.getSystemOrderNo());
             orderCommodityDTO.setCustomerCode(orderInfoDTO.getCustomerCode());
             this.orderCommodityService.importOrderCommodity(orderCommodityDTO, "" + customerBaseInfo.getId(), operator);
         });
 
+        // TODO 根据拆单规则生成包裹快递篮
+        // 当前默认是按照一个订单一个包裹
+        String mailNo = UUID.randomUUID().toString();
+        orderInfoDTO.getCommodities().stream().forEach(orderCommodityDTO -> {
+            MailPickingDetail mailPickingDetail = new MailPickingDetail();
+            mailPickingDetail.setOrderNo(order.getSystemOrderNo());
+            mailPickingDetail.setMailNo(mailNo);
+            mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
+            mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
+            IMailPickingDetailService.add(mailPickingDetail);
+        });
+
         // 触发生成拣货单 同检验拣货区商品是否充足
         new Thread(() ->
-            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 20)
+            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 1)
         ).start();
+    }
+
+    /**
+     * 修改订单
+     *
+     * @param orderInfoDTO 订单基本信息
+     */
+    @Override
+    public void updateOrder(OrderInfoDTO orderInfoDTO) {
+        Order order = checkOrder(orderInfoDTO.getOrderNo());
+
+        if(order.getCreateTime().before(DateTime.now().minusMinutes(15).toDate())) {
+            throw OperationException.customException(ResultEnum.order_lock);
+        }
+
     }
 
     /**
@@ -184,10 +221,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         if (StringUtils.isBlank(customerCode)) return null;
 
-        // 判定是否有满足 20 条数据
+        // 判定是否有满足 20 条数据 且订单已经锁定 15 分钟
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("customer_code", customerCode);
         wrapper.eq("state", StateEnum.normal.getCode());
+        // 订单是否已经锁定 15
+        wrapper.lt("create_time", DateTime.now().minusMinutes(15).toDate());
         wrapper.orderBy("create_time");
 
         if (this.selectCount(wrapper) >= executeSize) {

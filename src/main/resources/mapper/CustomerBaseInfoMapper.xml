@@ -22,11 +22,11 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, customer_code, customer_name, brand_id, address, contact_person, state, create_time, create_user, update_time, update_user, remark
+        id, customer_code, customer_name, address, contact_person, state, create_time, create_user, update_time, update_user, remark
     </sql>
 
     <sql id="select_cbf">
-        cbf.id, cbf.customer_name customerName, cbf.customer_code customerCode, cbf.address, cbf.phone, cbf.contact_person contactPerson, cbf.brand_id brandId,
+        cbf.id, cbf.customer_name customerName, cbf.customer_code customerCode, cbf.address, cbf.phone, cbf.contact_person contactPerson
     </sql>
     <sql id="table_cbf">
         wms_customer_base_info cbf
@@ -34,15 +34,11 @@
     <sql id="table_bi">
         wms_brand_info bi
     </sql>
+
     <select id="loadGrid" resultType="java.util.Map">
         select
             <include refid="select_cbf"></include>
-                bi.`name` brandName
         from <include refid="table_cbf"></include>
-        left join
-            <include refid="table_bi"></include>
-        on cbf.brand_id = bi.id
-
         <where>
             ${ew.sqlSegment}
         </where>
@@ -56,7 +52,7 @@
             wci.id,
             wcbi.id customerId,
             wcbi.customer_name customerName,
-            wbi.`name` brandName,
+--             wbi.`name` brandName,
             wcs.sku_name skuName,
             wcs.sku_code skuCode,
             wcs.spec,
@@ -78,7 +74,7 @@
             wci.packing_weight_unit packingWeightUnit
         FROM
             wms_customer_base_info wcbi
-            LEFT JOIN wms_brand_info wbi ON wcbi.brand_id = wbi.id
+--             LEFT JOIN wms_brand_info wbi ON wcbi.brand_id = wbi.id
             LEFT JOIN wms_commodity_info wci ON wcbi.id = wci.customer_id
             LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
             LEFT JOIN wms_storehouse_config wsc ON wci.id = wsc.commodity_id

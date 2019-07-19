@@ -45,6 +45,7 @@ public class StorehouseInfoDTO implements Serializable {
     @ApiModelProperty("库位优先值")
     @NotNull(message = "库位优先值不可为空")
     private Integer priorityValue;
+
     /**
      * 是否冻结库存(否:N 是:Y)
      */

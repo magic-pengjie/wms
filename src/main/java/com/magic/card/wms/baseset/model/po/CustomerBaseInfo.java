@@ -31,10 +31,7 @@ public class CustomerBaseInfo extends BasePo implements Serializable {
      * 客户名称
      */
     private String customerName;
-    /**
-     * 品牌id
-     */
-    private String brandId;
+
     /**
      * 公司地址
      */

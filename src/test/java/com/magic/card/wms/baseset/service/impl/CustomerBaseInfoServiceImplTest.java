@@ -42,7 +42,7 @@ public class CustomerBaseInfoServiceImplTest extends MagicWmsApplicationTests {
         CustomerBaseInfoDTO customerBaseInfoDTO = new CustomerBaseInfoDTO();
         customerBaseInfoDTO.setCustomerCode("www.baidu.com");
         customerBaseInfoDTO.setCustomerName("百度（上海）信息科技有限公司");
-        customerBaseInfoDTO.setBrandId("120025336");
+//        customerBaseInfoDTO.setBrandId("120025336");
         customerBaseInfoDTO.setContactPerson("Mr.Zhang");
         customerBaseInfoDTO.setAddress("上海市闵行区快乐大厦603室");
         customerBaseInfoDTO.setRemark("百度（上海）信息科技有限公司 \n 地址：上海市闵行区快乐大厦603室");

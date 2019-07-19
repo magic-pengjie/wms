@@ -30,7 +30,6 @@ public class CommoditySkuServiceImplTest extends MagicWmsApplicationTests {
     public void addCommoditySKU() throws BusinessException {
         CommoditySkuDTO skuDTO = new CommoditySkuDTO();
         skuDTO.setBarCode("1111111111111");  // 商品二维码
-        skuDTO.setCommodityId("1111111111111"); // 商品ID 默认是使用二维码
         skuDTO.setSkuCode("1111111111111"); // 商品SKU码 没有提供默认是二维码
         skuDTO.setSkuName("飞鹤第一阶段奶粉"); // 商品SKU名称
         skuDTO.setSpec("FH-NF-1");

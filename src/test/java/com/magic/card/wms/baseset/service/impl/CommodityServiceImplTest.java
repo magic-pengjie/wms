@@ -28,12 +28,12 @@ public class CommodityServiceImplTest extends MagicWmsApplicationTests {
         dto.setCommodityCode("1111111111111");
         dto.setCommodityName("飞鹤第一阶段奶粉");
         dto.setCustomerId("1");
-        dto.setPackingNum(12);
-        dto.setPackingUnit("箱");
-        dto.setPackingVolume(new BigDecimal(0.95));
-        dto.setPackingVolumeUnit("m³");
-        dto.setPackingWeight(new BigDecimal(13.5));
-        dto.setPackingWeightUnit("KG");
+//        dto.setPackingNum(12);
+//        dto.setPackingUnit("箱");
+//        dto.setPackingVolume(new BigDecimal(0.95));
+//        dto.setPackingVolumeUnit("m³");
+//        dto.setPackingWeight(new BigDecimal(13.5));
+//        dto.setPackingWeightUnit("KG");
         commodityInfoService.add(dto, Constants.DEFAULT_USER);
     }
 

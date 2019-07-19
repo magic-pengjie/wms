@@ -1,9 +1,12 @@
 package com.magic.card.wms.common.utils;
 
+import com.google.common.collect.Lists;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.po.BasePo;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import java.util.Date;
+import java.util.List;
 
 /**
  * com.magic.card.wms.common.model.po
@@ -62,6 +65,24 @@ public class PoUtil {
         po.setCreateTime(new Date());
         po.setCreateUser(operator);
         update(po, operator);
+    }
+
+    /**
+     * 批量添加操作
+     * @param operator
+     * @param pos
+     * @param <Po>
+     */
+    public static <Po extends  BasePo> void batchAdd(String operator, List<Po> pos) {
+        Date now = new Date();
+
+        for (Po po : pos) {
+            po.setCreateTime(now);
+            po.setUpdateTime(now);
+            po.setCreateUser(operator);
+            po.setUpdateUser(operator);
+        }
+
     }
 
     /**

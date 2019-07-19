@@ -41,36 +41,6 @@ public class CommodityInfoDTO implements Serializable {
      */
     @ApiModelProperty("商品名称")
     private String commodityName;
-    /**
-     * 包装量
-     */
-    @ApiModelProperty("包装量")
-    private Integer packingNum;
-    /**
-     * 包装单位
-     */
-    @ApiModelProperty("包装单位")
-    private String packingUnit;
-    /**
-     * 包装重量
-     */
-    @ApiModelProperty("包装重量")
-    private BigDecimal packingWeight;
-    /**
-     * 包重单位
-     */
-    @ApiModelProperty("包重单位")
-    private String packingWeightUnit;
-    /**
-     * 包装体积
-     */
-    @ApiModelProperty("包装体积")
-    private BigDecimal packingVolume;
-    /**
-     * 包体单位
-     */
-    @ApiModelProperty("包体单位")
-    private String packingVolumeUnit;
 
     @ApiModelProperty("备注")
     private String remark;

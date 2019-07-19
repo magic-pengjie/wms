@@ -35,6 +35,12 @@ public class Order extends BasePo implements Serializable {
      * 订单号
      */
     private String orderNo;
+
+    /**
+     * 系统订单号 订单号 + 商家编码
+     */
+    private String systemOrderNo;
+
     /**
      * 商家编码
      */
@@ -71,6 +77,12 @@ public class Order extends BasePo implements Serializable {
      * 快递公司标识
      */
     private String expressKey;
+
+    /**
+     * 是否是批量订单
+     */
+    private Boolean isBatch;
+
     /**
      * 是否B2B
      */
@@ -86,5 +98,9 @@ public class Order extends BasePo implements Serializable {
 
     public Boolean getB2b() {
         return isB2b;
+    }
+
+    public Boolean getBatch() {
+        return isBatch;
     }
 }
