@@ -33,9 +33,24 @@ public class OrderController {
     @Autowired
     private IPickingBillService pickingBillService;
 
+    /**
+     * 加载订单数据
+     * @param loadGrid
+     * @return
+     */
     @PostMapping("loadGrid")
     public ResponseData loadGrid(@RequestBody LoadGrid loadGrid) {
        return ResponseData.ok(orderService.loadGrid(loadGrid));
+    }
+
+    /**
+     * 更新订单信息
+     * @param orderInfoDTO
+     * @param bindingResult
+     * @return
+     */
+    public ResponseData updateOrder(@RequestBody @ApiParam("订单信息")@Valid OrderInfoDTO orderInfoDTO, BindingResult bindingResult) {
+        return ResponseData.ok();
     }
 
     @GetMapping("loadOrderCommodityGrid")
@@ -46,7 +61,7 @@ public class OrderController {
     @ApiOperation("订单导入")
     @PostMapping("import")
     public ResponseData importOrder(@RequestBody @ApiParam("订单信息")@Valid OrderInfoDTO orderInfoDTO, BindingResult bindingResult) {
-        this.orderService.importOrder(orderInfoDTO, Constants.DEFAULT_USER);
+        this.orderService.importOrder(orderInfoDTO);
         return ResponseData.ok();
     }
 

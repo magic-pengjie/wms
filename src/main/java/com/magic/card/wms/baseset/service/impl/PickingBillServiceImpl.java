@@ -21,7 +21,9 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +56,8 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     private ExpressProviderManager expressProviderManager;
     @Autowired
     private IPickingBillExceptionService pickingBillExceptionService;
+    @Autowired
+    private IMailPickingDetailService mailPickingDetailService;
 
     static {
         defaultColumns.put("id", "id");
@@ -300,16 +304,17 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      */
     @Synchronized // 添加同步锁
     public void generatorPickingBill(String customerCode, Integer executeSize, String operator) {
-        //触发规则生成拣货单 （满足20生成拣货单）
-        //获取（满足要求）的订单数据
-        List<Order> orders = orderService.obtainOrderList(customerCode, executeSize);
+        //触发规则生成拣货单 （满足20 生成拣货单）
+        // 获取（满足要求）的订单数据
+        // TODO 生成拣货单 更改规则
+        List<Map> virtualMails = mailPickingDetailService.virtualMails(customerCode, executeSize);
 
-        if (orders == null || orders.isEmpty()) return;
+        if (CollectionUtils.isEmpty(virtualMails)) return;
 
-        //生成拣货单
-        Long pickNo = System.currentTimeMillis(); //使用系统时间作为拣货单的单号
+        //生成拣货单 时间戳 年月日时分秒 + 随机四位数
+        String pickNo = DateTime.now().toString("yyyyMMddHHmmss") + RandomStringUtils.random(4,"0123456789");
         PickingBill pickingBill = new PickingBill();
-        pickingBill.setPickNo(pickNo.toString());
+        pickingBill.setPickNo(pickNo);
         pickingBill.setProcessStage("new_pick"); // 新的拣货单
         pickingBill.setBillState("save");// 设置拣货单状态 save
         PoUtil.add(pickingBill, operator);
@@ -317,26 +322,49 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         if (this.baseMapper.insert(pickingBill) < 1) return;
 
         //生成快递拣货篮 20
-        // TODO 生成快递拣货篮可优化
-        for (int i = 1; i <= orders.size(); i++) {
-            Order order = orders.get(i-1);
+        for (int basketNum = 1; basketNum <= virtualMails.size(); basketNum++) {
+            Map virtualMail = virtualMails.get(basketNum - 1);
+            Order order = orderService.selectOne(
+                    new EntityWrapper().eq(
+                            "system_order_no",
+                            virtualMail.get("systemOrderNo")
+                    )
+            );
+            String realMail = expressProviderManager.useExpressNo(order.getExpressKey());
             MailPicking mailPicking = new MailPicking();
             mailPicking.setOrderNo(order.getOrderNo());
             mailPicking.setPickNo(pickingBill.getPickNo());
-            mailPicking.setBasketNum(i);
+            mailPicking.setBasketNum(basketNum);
             //获取快递单号
-            mailPicking.setMailNo(expressProviderManager.useExpressNo(order.getExpressKey()));
+            mailPicking.setMailNo(realMail);
             //获取订单标准重量
-            mailPicking.setPresetWeight(orderService.orderCommodityWeight(order.getOrderNo(), order.getCustomerCode()));
+            mailPicking.setPresetWeight(mailPickingDetailService.mailPickingWeight(MapUtils.getString(
+                    virtualMail,
+                    "mailNo"
+            )));
             mailPicking.setWeightUnit("kg");
             mailPickingService.generatorMailPicking(mailPicking, operator);
+
+            // region 更新拣货篮详情信息
+            EntityWrapper wrapper = new EntityWrapper();
+            wrapper.eq("mail_no", MapUtils.getString(
+                    virtualMail,
+                    "mailNo"
+            )).eq("state", StateEnum.normal.getCode());
+            MailPickingDetail mailPickingDetail = new MailPickingDetail();
+            mailPickingDetail.setMailNo(mailPicking.getMailNo());
+            mailPickingDetail.setPickNo(mailPicking.getPickNo());
+            PoUtil.update(mailPickingDetail, operator);
+            mailPickingDetailService.update(mailPickingDetail, wrapper);
+            // endregion
+
+            // region 更新订单状态（已生成拣货单数据）
             order.setState(StateEnum.order_pick.getCode());
             order.setUpdateTime(new Date());
             order.setUpdateUser(operator);
-            // 更新订单-拣货状态
             orderService.updateById(order);
+            // endregion
         }
-
     }
 
     /**

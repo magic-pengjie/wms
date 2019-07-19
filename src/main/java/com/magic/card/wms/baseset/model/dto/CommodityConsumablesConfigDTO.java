@@ -27,27 +27,19 @@ public class CommodityConsumablesConfigDTO implements Serializable {
     @ApiModelProperty("修改关系是必须提供，否则验证不通过")
     private Long id;
     /**
-     * 商品id
+     * 商品条码
      */
-    @NotNull(message = "商品ID不可为空")
-    @ApiModelProperty("商品ID是必须提供，否则验证不通过")
-    private String commodityId;
+    @NotNull(message = "商品条码不可为空")
+    @ApiModelProperty("商品条码是必须提供，否则验证不通过")
+    private String commodityCode;
+
     /**
-     * sku id
+     * 消耗商品条码
      */
-    @ApiModelProperty("商品skuID")
-    private String skuId;
-    /**
-     * 消耗商品id
-     */
-    @NotNull(message = "消耗商品ID不可为空")
-    @ApiModelProperty("消耗商品ID是必须提供，否则验证不通过")
-    private String useCommodityId;
-    /**
-     * 消耗商品 sku id
-     */
-    @ApiModelProperty("消耗商品SKU ID")
-    private String useSkuId;
+    @NotNull(message = "消耗商品条码不可为空")
+    @ApiModelProperty("消耗商品条码是必须提供，否则验证不通过")
+    private String useCommodityCode;
+
     /**
      * 左区间值
      */

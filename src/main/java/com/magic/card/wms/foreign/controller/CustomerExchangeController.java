@@ -38,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/customer/data")
 @Api(value = "对接客户系统" ,description = "对接客户系统")
-
 @Slf4j
 public class CustomerExchangeController {
 
@@ -84,7 +83,7 @@ public class CustomerExchangeController {
 			dto.setCustomerCode(request.getCustomerCode());
 			dto.setCustomerName(request.getCustomerName());
 			
-			orderService.importOrder(dto, Constants.DEFAULT_USER);
+			orderService.importOrder(dto);
 			return ResponseData.ok();
 		} catch (OperationException o) {
 			log.error("保存订单失败:{}", o);

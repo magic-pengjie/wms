@@ -31,23 +31,17 @@
     <select id="loadGrid" resultType="java.util.Map">
         SELECT
             wccc.id,
-            wccc.commodity_id commodityId,
-            wccc.use_commodity_id useCommodityId,
-            wcbi.customer_name customerName,
+            wccc.commodity_code commodityCode,
+            wccc.use_commodity_code useCommodityCode,
             wcs.sku_name skuName,
-            wcbixh.customer_name useCustomerName,
             wcsxh.sku_name useSkuName,
             wccc.left_value leftVale,
             wccc.right_value rightValue,
             wccc.use_nums userNums
         FROM
             wms_commodity_consumables_config wccc
-            LEFT JOIN wms_commodity_info wci ON wccc.commodity_id = wci.id
-            LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wci.customer_id
-            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code
-            LEFT JOIN wms_commodity_info wcixh ON wccc.use_commodity_id = wcixh.id
-            LEFT JOIN wms_customer_base_info wcbixh ON wcbixh.id = wcixh.customer_id
-            LEFT JOIN wms_commodity_sku wcsxh ON wcsxh.bar_code = wcixh.commodity_code
+            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wccc.commodity_code
+            LEFT JOIN wms_commodity_sku wcsxh ON wcsxh.bar_code = wccc.use_commodity_code
         <where>
             ${ew.sqlSegment}
         </where>

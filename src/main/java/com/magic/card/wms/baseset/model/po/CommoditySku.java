@@ -29,10 +29,7 @@ public class CommoditySku extends BasePo implements Serializable {
      * sku名称
      */
     private String skuName;
-    /**
-     * 商品id
-     */
-    private String commodityId;
+
     /**
      * 规格
      */

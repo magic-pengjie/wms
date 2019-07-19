@@ -34,11 +34,9 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
     private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
     static {
         defaultColumns.put("id", "wccc.id");
-        defaultColumns.put("commodityId", "wccc.commodity_id");
-        defaultColumns.put("useCommodityId", "wccc.use_commodity_id");
-        defaultColumns.put("customerName", "wcbi.customer_name");
+        defaultColumns.put("commodityCode", "wccc.commodity_code");
+        defaultColumns.put("useCommodityCode", "wccc.use_commodity_code");
         defaultColumns.put("skuName", "wcs.sku_name");
-        defaultColumns.put("useCustomerName", "wcbixh.customer_name");
         defaultColumns.put("useSkuName", "wcsxh.sku_name");
         defaultColumns.put("leftVale", "wccc.left_value");
         defaultColumns.put("rightValue", "wccc.right_value");
@@ -61,7 +59,7 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
         if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
             WrapperUtil.orderSet(wrapper, defaultColumns, loadGrid.getOrder());
         } else {
-            wrapper.orderBy("wcbi.customer_name");
+            wrapper.orderBy("wcsxh.sku_name");
         }
 
         loadGrid.finallyResult(page, this.baseMapper.loadGrid(page, wrapper));

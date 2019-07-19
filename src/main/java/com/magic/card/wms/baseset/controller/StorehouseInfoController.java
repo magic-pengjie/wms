@@ -1,11 +1,13 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.utils.EasyExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -13,8 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -42,6 +47,17 @@ public class StorehouseInfoController {
     @PostMapping("add")
     public ResponseData add(@RequestBody @Valid StorehouseInfoDTO dto, BindingResult result) {
         storehouseInfoService.add(dto, Constants.DEFAULT_USER);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation(value = "excelImport")
+    @PostMapping("excelImport")
+    public ResponseData excelImport(@RequestParam("excelFile") MultipartFile excelFile) throws IOException {
+        storehouseInfoService.excelImport(excelFile);
+        return ResponseData.ok();
+    }
+
+    public ResponseData batchAdd(@RequestBody @Valid BatchStorehouseDTO batchStorehouseDTO, BindingResult result) {
         return ResponseData.ok();
     }
 

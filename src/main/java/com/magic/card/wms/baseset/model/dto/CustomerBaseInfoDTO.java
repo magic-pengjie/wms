@@ -42,11 +42,6 @@ public class CustomerBaseInfoDTO implements Serializable {
     private String customerName;
 
     /**
-     * 品牌id
-     */
-    private String brandId;
-
-    /**
      * 品牌名称
      */
     private String brandName;

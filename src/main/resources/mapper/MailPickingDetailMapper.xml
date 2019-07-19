@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.magic.card.wms.baseset.mapper.MailPickingDetailMapper">
+
+    <!--   获取虚拟快递单号，用于生成拣货单数据 -->
+    <select id="virtualMails" resultType="java.util.Map">
+        SELECT
+            wmpd.mail_no mailNo,
+            wmpd.order_no systemOrderNo
+        FROM
+            wms_mail_picking_detail wmpd
+            LEFT JOIN wms_order_info woi ON wmpd.order_no = woi.system_order_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+    <!--    获取包裹商品对应的耗材清单   -->
+    <select id="mailPickingCommodityInfo" resultType="java.util.Map">
+        SELECT
+            woi.customer_code customer,
+            woi.order_no orderNo,
+            woi.system_order_no systemOrderNo,
+            wmpd.commodity_code commodityCode,
+            wcs.sku_name skuName,
+            wmpd.package_nums bayNums,
+            wcs.single_weight singleWeight,
+            wcs.single_weight_unit singleWeightUnit,
+            wcshc.bar_code useBarCode,
+            wcshc.sku_name useSkuName,
+            wcshc.single_weight useSingleWeight,
+            wcshc.single_weight_unit useSingleWeightUnit,
+            wccc.left_value leftValue,
+            wccc.right_value rightValue,
+            wccc.use_nums useNums
+        FROM
+            wms_mail_picking_detail wmpd
+            LEFT JOIN wms_order_info woi ON woi.system_order_no = wmpd.order_no
+            LEFT JOIN wms_commodity_sku wcs ON wmpd.commodity_code = wcs.bar_code
+            LEFT JOIN wms_commodity_consumables_config wccc ON wccc.commodity_code = wmpd.commodity_code
+            LEFT JOIN wms_commodity_sku wcshc ON wccc.use_commodity_code = wcshc.bar_code
+        WHERE wmpd.mail_no = #{virtualMail}
+    </select>
+
+</mapper>

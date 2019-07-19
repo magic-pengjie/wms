@@ -1,8 +1,17 @@
 package com.magic.card.wms.baseset.service.impl;
 
+import com.alibaba.excel.ExcelReader;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.metadata.BaseRowModel;
+import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.google.common.collect.Lists;
 import com.magic.card.wms.baseset.mapper.StorehouseInfoMapper;
+import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
@@ -12,10 +21,22 @@ import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.utils.EasyExcelUtil;
 import com.magic.card.wms.common.utils.PoUtil;
+import lombok.Data;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.swing.text.html.parser.Entity;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <p>
@@ -65,6 +86,63 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
 
     }
 
+    /**
+     * 批量添加仓库库位信息
+     *
+     * @param batchStorehouseDTO
+     */
+    @Override
+    public void batchAdd(BatchStorehouseDTO batchStorehouseDTO) {
+        LinkedList<StorehouseInfo> storehouses = Lists.newLinkedList();
+        LinkedList<String> storeCodes = Lists.newLinkedList();
+        checkStoreArea(batchStorehouseDTO.getHouseCode(), batchStorehouseDTO.getAreaCode());
+        for (int storeNo = batchStorehouseDTO.getStoreMaxNo(); storeNo <= batchStorehouseDTO.getStoreMaxNo(); storeNo++) {
+
+            String number = RandomStringUtils.random(
+                    batchStorehouseDTO.getStoreMaxNo().toString().length() - ("" + storeNo).length(),
+                    '0'
+            ) + storeNo;
+
+            StorehouseInfo storehouse = new StorehouseInfo();
+            BeanUtils.copyProperties(batchStorehouseDTO, storehouse);
+            String storeCode = StringUtils.joinWith(
+                    "-",
+                    batchStorehouseDTO.getAreaCode(),
+                    batchStorehouseDTO.getChannelNo()
+            );
+
+            if (StringUtils.isAnyBlank(batchStorehouseDTO.getTierNo(), batchStorehouseDTO.getRockNo())) {
+                // 大区
+                storeCode = StringUtils.joinWith("-", storeCode, number);
+            } else {
+                // 小区
+                storeCode = StringUtils.joinWith(null,  batchStorehouseDTO.getRockNo(), batchStorehouseDTO.getTierNo(), number);
+            }
+            storeCodes.add(storeCode);
+            storehouse.setStoreCode(storeCode);
+            storehouses.add(storehouse);
+        }
+        PoUtil.batchAdd(Constants.DEFAULT_USER, storehouses);
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.in("store_code", storeCodes).ne("state", StateEnum.delete.getCode());
+
+        if (selectCount(wrapper) > 0) {
+            throw OperationException.customException(ResultEnum.store_house_error, "库位编号已被占用");
+        }
+
+        insertBatch(storehouses);
+    }
+
+    /**
+     * 停用库位
+     *
+     * @param ids
+     */
+    @Override
+    public void stop(String... ids) {
+
+    }
+
     @Override @Transactional
     public void update(StorehouseInfoDTO storehouseInfoDTO, String operator) {
         checkStorehouse(storehouseInfoDTO, true);
@@ -90,6 +168,61 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     }
 
     /**
+     * excel 导入库位信息
+     *
+     * @param excelFile
+     */
+    @Override
+    public void excelImport(MultipartFile excelFile) {
+        String fileName = excelFile.getOriginalFilename();
+
+        if (fileName == null ) {
+            throw OperationException.customException(ResultEnum.upload_file_inexistence);
+        }
+        if (!fileName.toLowerCase().endsWith(ExcelTypeEnum.XLS.getValue()) && !fileName.toLowerCase().endsWith(ExcelTypeEnum.XLSX.getValue())) {
+            throw OperationException.customException(ResultEnum.upload_file_suffix_err);
+        }
+
+        try {
+
+            ExcelReader excelReader = new ExcelReader(excelFile.getInputStream(), null, new AnalysisEventListener() {
+
+                @Override
+                public void invoke(Object obj, AnalysisContext context) {
+                    List<Object> objs = (List<Object>) obj;
+                    ExcelStorehouse excelStorehouse = new ExcelStorehouse();
+                    excelStorehouse.setStoreCode(objs.get(0).toString());
+                    excelStorehouse.setPriorityValue((Integer) objs.get(1));
+                    StorehouseInfo storehouse = new StorehouseInfo();
+                    storehouse.setHouseCode(excelStorehouse.getHouseCode());
+                    storehouse.setAreaCode(excelStorehouse.getAreaCode());
+                    storehouse.setStoreCode(excelStorehouse.getStoreCode());
+                    storehouse.setPriorityValue(excelStorehouse.getPriorityValue());
+                    storehouse.setState(excelStorehouse.getState());
+                    checkStoreArea(excelStorehouse.getHouseCode(), excelStorehouse.getAreaCode());
+                    EntityWrapper wrapper = new EntityWrapper();
+                    wrapper.eq("store_code", excelStorehouse.getStoreCode()).ne("state", StateEnum.delete.getCode());
+
+                    if (selectCount(wrapper) > 0) {
+                        throw OperationException.customException(ResultEnum.store_house_error, "库位编号已被占用");
+                    }
+
+                    PoUtil.add(storehouse, Constants.DEFAULT_USER);
+                    insert(storehouse);
+                }
+
+                @Override
+                public void doAfterAllAnalysed(AnalysisContext context) {
+
+                }
+            });
+            excelReader.read(new Sheet(0, 1, null));
+        } catch (IOException e) {
+            throw OperationException.customException(ResultEnum.upload_file_suffix_err);
+        }
+    }
+
+    /**
      * 仓储信息添加修改数据检查
      * @param storehouseInfoDTO
      * @param updateOperation
@@ -101,24 +234,11 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
             PoUtil.checkId(storehouseInfoDTO.getId());
         }
 
-
-        storehouseInfoDTO.getHouseCode(); // 拣货区/存储区...
-        storehouseInfoDTO.getAreaCode(); // A/B/C 区域编号
-        storehouseInfoDTO.getStoreCode(); // PA-12-CK10001 库位编号
-
         // 判断功能区 区域编号是否被占用
-        EntityWrapper<StorehouseInfo> wrapper = new EntityWrapper<>();
-        wrapper.eq("area_code", storehouseInfoDTO.getAreaCode());
-        wrapper.ne("house_code", storehouseInfoDTO.getHouseCode());
-        // 确保数据是可用状态
-        wrapper.eq("state", 1);
-
-        if (this.selectCount(wrapper) > 0) {
-            throw OperationException.customException(ResultEnum.store_house_error, "区域编号已被其他功能区占用");
-        }
+        checkStoreArea(storehouseInfoDTO.getHouseCode(), storehouseInfoDTO.getAreaCode());
 
         // 判断库位编号是否
-        wrapper = new EntityWrapper<>();
+        EntityWrapper wrapper = new EntityWrapper<>();
         wrapper.eq("store_code", storehouseInfoDTO.getStoreCode());
 
         if (updateOperation) {
@@ -132,5 +252,65 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
             throw OperationException.customException(ResultEnum.store_house_error, "库位编号已被占用");
          }
 
+    }
+
+    /**
+     * 库区编号时候被占用
+     * @param houseCode
+     * @param areaCode
+     */
+    private void checkStoreArea(String houseCode, String areaCode) {
+        EntityWrapper<StorehouseInfo> wrapper = new EntityWrapper<>();
+        wrapper.eq("area_code", houseCode);
+        wrapper.ne("house_code", areaCode);
+        // 确保数据是可用状态
+        wrapper.eq("state", 1);
+
+        if (this.selectCount(wrapper) > 0) {
+            throw OperationException.customException(ResultEnum.store_house_error, "区域编号已被其他功能区占用");
+        }
+    }
+
+    @Data
+    class ExcelStorehouse extends BaseRowModel {
+        @ExcelProperty(value = "库位编号", index = 0)
+        private String storeCode;
+        @ExcelProperty(value = "优先值", index = 1)
+        private Integer priorityValue;
+
+        public String getHouseCode() {
+
+            if (storeCode.contains("PA")) {
+                return "CK-GN-JHQ";
+            }
+
+            // 存储区
+            return "CK-GN-CCQ";
+        }
+
+        public String getAreaCode() {
+            String[] codes = storeCode.split("-");
+
+            if (codes.length == 2) {
+                return codes[0];
+            }
+
+            try {
+                Integer.parseInt(codes[1]);
+                return codes[0];
+            } catch (NumberFormatException e) {
+                return StringUtils.joinWith("-", codes[0], codes[1]);
+            }
+        }
+
+        public Integer getState() {
+            if (priorityValue == null || priorityValue == 0) {
+                // 停用
+                return 3;
+            } else {
+                // 正常使用
+                return 1;
+            }
+        }
     }
 }
