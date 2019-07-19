@@ -1,10 +1,12 @@
 package com.magic.card.wms.check.service.impl;
 
+import java.awt.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -122,7 +124,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			log.info("===>> 冻结失败！");
 			throw new BusinessException(400005,"未查询到库位信息，冻结失败！");
 		}
-		
+
 		//生成盘点记录
 		log.info("===>> 生成盘点记录开始..");
 		List<CheckRecordInfoDto> commStoreList =  new ArrayList<CheckRecordInfoDto>();
@@ -146,7 +148,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			cr.setStorehouseCode(cs.getStoreCode());
 			cr.setBillState(BillState.checker_save.getCode());//初始化状态
 			cr.setCheckDate(date);
-			cr.setCheckUser(userSession.getName());
+			cr.setCheckUser(userSession.getUserNo());
 			cr.setCreateTime(date);
 			cr.setCreateUser(userSession.getName());
 			cr.setState(StateEnum.normal.getCode());

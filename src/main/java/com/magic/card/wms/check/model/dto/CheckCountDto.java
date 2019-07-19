@@ -24,13 +24,13 @@ public class CheckCountDto implements Serializable{
      * 	盘点类型
      */
     @ApiModelProperty("盘点类型(M:月盘，Q:季盘，Y:年盘)")
-    @NotBlank(message = "盘点类型不能为空1")
 	private String checkType;
-    
+
     /**
      * 	商家
      */
     @ApiModelProperty("商家ID")
+	@NotBlank(message = "商家不能为空")
     private String customerId;
 
     /**
