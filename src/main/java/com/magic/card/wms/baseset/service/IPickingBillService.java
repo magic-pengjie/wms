@@ -45,15 +45,14 @@ public interface IPickingBillService extends IService<PickingBill> {
      * @param operator
      * @return 放置位编号
      */
-    Integer checkInvoice(String pickNo, String commodityCode, String operator);
+    Integer checkInvoice(String pickNo, String commodityCode);
 
     /**
      * 配货单检测结束
-     * @param pickNo
-     * @param defaultUser
+     * @param pickNo 拣货单号
      * @return
      */
-    Object checkInvoiceClose(String pickNo, String operator);
+    Object checkInvoiceClose(String pickNo);
 
     /**
      * 拣货单列表
@@ -68,4 +67,11 @@ public interface IPickingBillService extends IService<PickingBill> {
      * @return
      */
     List<Map> pickBillLoadGrid(String pickNo);
+
+    /**
+     * 拣货单加解锁处理
+     * @param pickNo 拣货单号
+     * @param lock 是否锁定
+     */
+    void pickLockProcess(String pickNo, Boolean lock);
 }

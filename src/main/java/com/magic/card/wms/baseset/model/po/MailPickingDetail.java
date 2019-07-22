@@ -45,4 +45,12 @@ public class MailPickingDetail extends BasePo implements Serializable {
      * 已拣商品数
      */
     private Integer pickNums;
+
+    /**
+     * 增加拣货量
+     * @param plusNum
+     */
+    public void pickNumsPlus(Integer plusNum) {
+        this.pickNums += plusNum;
+    }
 }

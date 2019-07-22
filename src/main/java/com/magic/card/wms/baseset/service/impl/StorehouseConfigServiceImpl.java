@@ -15,6 +15,7 @@ import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.model.enums.StoreTypeEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 
 import java.util.ArrayList;
@@ -197,7 +198,7 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
 	}
 
     /**
-     * 客户商品补货推荐数据
+     * 客户商品补货推荐(存储区)数据
      *
      * @param customerCode
      * @param commodityCode
@@ -209,6 +210,7 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         wrapper.eq("wsc.state", StateEnum.normal.getCode())
                 .eq("wcbi.customer_code", customerCode)
                 .eq("wcs.bar_code", commodityCode)
+                .eq("wsi.house_code", StoreTypeEnum.CCQ.getCode())
                 .gt("wsc.available_nums", 0)
                 .orderBy("wsc.entry_time")
                 .orderBy("wsc.end_time");

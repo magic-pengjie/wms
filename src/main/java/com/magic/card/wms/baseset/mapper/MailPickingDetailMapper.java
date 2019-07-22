@@ -21,16 +21,31 @@ public interface MailPickingDetailMapper extends BaseMapper<MailPickingDetail> {
 
     /**
      * 获取虚拟快递单号
-     * @param page
-     * @param entityWrapper
+     * @param page 分页信息
+     * @param entityWrapper 查询信息
      * @return
      */
     List<Map> virtualMails(Page page, @Param("ew") EntityWrapper entityWrapper);
 
     /**
      * 获取包裹商品对应的耗材清单
-     * @param virtualMail
+     * @param virtualMail 虚拟快递单号 UUID
      * @return
      */
     List<Map> mailPickingCommodityInfo(@Param("virtualMail") String virtualMail);
+
+    /**
+     * 获取拣货单复检商品清单列表
+     * @param pickNo 拣货单号
+     * @param commodityCode 商品条形码
+     * @return
+     */
+    List<Map> invoiceCheckCommodityList(@Param("pickNo") String pickNo, @Param("commodityCode") String commodityCode);
+
+    /**
+     * 批量加载包裹商品数据
+     * @param entityWrapper  查询、排序条件
+     * @return
+     */
+    List<Map> batchLoadMailCommodity(@Param("ew") EntityWrapper entityWrapper);
 }

@@ -1,9 +1,9 @@
 package com.magic.card.wms.baseset.controller;
 
-import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
+import com.magic.card.wms.common.model.enums.Constants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,5 +41,31 @@ public class PickBillController {
     public ResponseData executeGenerator() {
         pickingBillService.timingGenerator();
         return ResponseData.ok();
+    }
+
+    @ApiOperation("锁定拣货单")
+    @GetMapping("lockPick")
+    public ResponseData lockPick(@RequestParam String pickNo) {
+        pickingBillService.pickLockProcess(pickNo, true);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("解锁拣货单")
+    @GetMapping("unlockPick")
+    public ResponseData unlockPick(@RequestParam String pickNo) {
+        pickingBillService.pickLockProcess(pickNo, false);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("配货复核")
+    @GetMapping("invoiceCheck")
+    public ResponseData invoiceCheck(@RequestParam String pickNo, @RequestParam String commodityCode) {
+        return ResponseData.ok(pickingBillService.checkInvoice(pickNo, commodityCode));
+    }
+
+    @ApiOperation("配货复核手动关闭")
+    @GetMapping("invoiceCheckClose")
+    public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
+        return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo, Constants.DEFAULT_USER));
     }
 }

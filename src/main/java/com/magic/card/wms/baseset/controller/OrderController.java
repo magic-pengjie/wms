@@ -82,18 +82,6 @@ public class OrderController {
         return ResponseData.ok(pickingBillService.generatorInvoice(Constants.DEFAULT_USER, 1, pickNos));
     }
 
-    @ApiOperation("配货复检")
-    @GetMapping("invoiceCheck")
-    public ResponseData invoiceCheck(@RequestParam String pickNo, @RequestParam String commodityCode) {
-        return ResponseData.ok(pickingBillService.checkInvoice(pickNo, commodityCode, Constants.DEFAULT_USER));
-    }
-
-    @ApiOperation("配货复检手动关闭")
-    @GetMapping("invoiceCheckClose")
-    public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
-        return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo, Constants.DEFAULT_USER));
-    }
-
     @ApiOperation("订单物品称重")
     @GetMapping("weigh")
     public ResponseData orderWeigh(

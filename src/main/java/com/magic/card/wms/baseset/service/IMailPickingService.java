@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -40,16 +41,15 @@ public interface IMailPickingService extends IService<MailPicking> {
 
     /**
      * 自动更新拣货篮所有订单完成状态
-     * @param pickNo
+     * @param pickNo 拣货单号
      */
-    void autoUpdatePickingFinishState(String pickNo, String operator);
+    void autoUpdatePickingFinishState(String pickNo);
 
     /**
      * 更新拣货篮指定订单 -> 完成状态
-     * @param pickNo
-     * @param orderNo
+     * @param mailNo 快递单号
      */
-    void updatePickingFinishState(String pickNo, String orderNo, String operator);
+    void updatePickingFinishState(String mailNo);
 
     /**
      * 获取拣货单各个拣货篮的完成状态
@@ -79,4 +79,13 @@ public interface IMailPickingService extends IService<MailPicking> {
     * @param orderNo 订单号
     */
     void sendOrder(String pickNo,String orderNo) throws UnsupportedEncodingException;
+
+    /**
+     * 包裹称重
+     * @param mailNo 快递单号
+     * @param realWeight 称重重量（kg）
+     * @param ignore 是否忽略称重异常
+     */
+    void packageWeigh(String mailNo, BigDecimal realWeight, Boolean ignore);
+
 }

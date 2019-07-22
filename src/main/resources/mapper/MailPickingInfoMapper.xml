@@ -113,5 +113,39 @@
             woc.order_no,
             woc.bar_code
     </select>
+    <!--   拣货单所有复检完毕的包裹快递单号 -->
+    <select id="finishedPackage" resultType="java.lang.String">
+        SELECT
+             wmpi.mail_no
+        FROM
+            wms_mail_picking_info wmpi
+        LEFT JOIN wms_mail_picking_detail wmpd ON wmpd.mail_no = wmpi.mail_no
+        WHERE
+            wmpi.is_finish != 1
+            AND wmpi.state != 0
+            AND wmpi.pick_no = #{pickNo}
+        GROUP BY
+            wmpi.mail_no
+        HAVING
+            SUM( wmpd.package_nums > wmpd.pick_nums ) = 0
+    </select>
+    <!--  拣货单所有包裹基本信息  -->
+    <select id="pickBillMails" resultType="java.util.Map">
+        SELECT
+            wmpi.basket_num basketNum,
+            wmpi.mail_no mailNo,
+            woi.order_no orderNo,
+            woi.system_order_no systemOrderNo,
+            woi.prov,
+            woi.express_key expressKey,
+            woi.bill_state,
+            wmpi.is_finish isFinish
+        FROM
+            wms_mail_picking_info wmpi
+            LEFT JOIN wms_order_info woi ON woi.system_order_no wmpi.order_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
 
 </mapper>

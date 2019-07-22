@@ -79,6 +79,8 @@
 			wsc.customer_id customerId,
 			wsc.commodity_id commodityId,
 			wcbi.customer_name customerName,
+			wcbi.customer_code customerCode,
+			wcs.bar_code barCode,
 			wcs.sku_name skuName,
 			wcs.spec spec,
 			wcs.model_no modelNo,
@@ -86,8 +88,6 @@
 			wsi.store_code storeCode,
 			wsi.house_code houseCode,
 			wdi.dict_name houseName,
-			wci.packing_num packingNum,
-			wci.packing_unit packingUnit,
 			wsc.store_nums storeNums,
 			wsc.available_nums availableNums,
 			wsc.lock_nums lockNums

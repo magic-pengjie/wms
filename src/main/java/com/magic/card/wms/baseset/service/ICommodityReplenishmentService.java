@@ -17,5 +17,5 @@ public interface ICommodityReplenishmentService extends IService<CommodityReplen
      * @param storeCode 零拣库位编号
      * @param stockoutNums 商品缺少量
      */
-    void handleReplenishment(String storeCode, Integer stockoutNums);
+    void addReplenishmentNotice(String storeCode, Integer stockoutNums);
 }

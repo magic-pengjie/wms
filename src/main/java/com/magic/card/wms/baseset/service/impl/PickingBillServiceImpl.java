@@ -15,6 +15,7 @@ import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import com.magic.card.wms.config.express.ExpressProviderManager;
 import lombok.Synchronized;
@@ -58,6 +59,8 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     private IPickingBillExceptionService pickingBillExceptionService;
     @Autowired
     private IMailPickingDetailService mailPickingDetailService;
+    @Autowired
+    private WebUtil webUtil;
 
     static {
         defaultColumns.put("id", "id");
@@ -87,14 +90,13 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     /**
      * 配货单检测结束
      * @param pickNo
-     * @param operator
      * @return
      */
     @Override @Transactional
-    public Object checkInvoiceClose(String pickNo, String operator) {
+    public Object checkInvoiceClose(String pickNo) {
+        String operator = webUtil.operator();
         // 检出拣货单基本信息
         PickingBill pickingBill = checkOutPickBill(pickNo);
-
 
         // 统计拣货单所有订单商品未分拣完成
         List<Map> omitOrderCommodities = mailPickingService.omitOrderCommodityList(pickNo, StateEnum.normal.getCode());
@@ -180,15 +182,16 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         return mailPickingService.loadMailPickings(pickNo);
     }
 
+
     /**
      * 配货单检测
      *
      * @param pickNo
      * @param commodityCode
-     * @param operator
      */
     @Override @Transactional
-    public Integer checkInvoice(String pickNo, String commodityCode, String operator) {
+    public Integer checkInvoice(String pickNo, String commodityCode) {
+        String operator = webUtil.operator();
         // 先检测 拣货单是否存在
         PickingBill pickingBill = checkOutPickBill(pickNo);
         // 更新拣货单状态
@@ -199,12 +202,13 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         }
 
         // 检测清单物品
-        List<Map> checkList = this.mailPickingService.invoiceCheckList(pickNo, commodityCode);
+        List<Map> checkList = mailPickingDetailService.invoiceCheckCommodityList(pickNo, commodityCode);
 
         if (CollectionUtils.isEmpty(checkList)) {
             // 拣错商品，异常处理
             checkInvoiceException(pickNo, commodityCode, BillState.pick_exception_error, operator);
         }
+
         // 过滤商品已拣好订单
         checkList = checkList.stream().filter( checkInvoice ->
             MapUtils.getBoolean(checkInvoice, "pickState")
@@ -218,19 +222,17 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         // 获取一个数据进行拣货处理
         Map invoice = checkList.get(0);
         // 获取订单商品数据
-        String orderCommodityId = MapUtils.getString(invoice, "orderCommodityId");
-        OrderCommodity orderCommodity = orderCommodityService.selectById(orderCommodityId);
+        String mailDetailId = MapUtils.getString(invoice, "mailDetailId");
+        MailPickingDetail mailPickingDetail = mailPickingDetailService.selectById(mailDetailId);
         // 增量拣货商品
-        orderCommodity.pickNumberPlus(1);
-        PoUtil.update(orderCommodity, operator);
+        mailPickingDetail.pickNumsPlus(1);
+        PoUtil.update(mailPickingDetail, operator);
         // 更新订单商品数据
-        orderCommodityService.updateById(orderCommodity);
+        mailPickingDetailService.updateById(mailPickingDetail);
         //执行货篮 拣货状态更新
-        Thread updatePickingFinishState = new Thread(() ->
-                mailPickingService.updatePickingFinishState(pickNo, orderCommodity.getOrderNo(), operator)
-        );
-        updatePickingFinishState.setName("Update-Picking-Finish-State." + System.currentTimeMillis());
-        updatePickingFinishState.start();
+        new Thread(() ->
+                mailPickingService.updatePickingFinishState(mailPickingDetail.getMailNo())
+        , "Update-Picking-Finish-State." + System.currentTimeMillis()).start();
         // 返回货篮号
         return (Integer) invoice.get("basketNum");
     }
@@ -244,11 +246,14 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         log.info("定时任务执行开始****** start times: {}ms", start);
         // 获取系统中所有满足要求的订单(订单客户)
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode());
-        wrapper.eq("is_b2b", false);
-        wrapper.groupBy("customer_code");
-        wrapper.having("COUNT(*) > 0");
+        wrapper.eq("state", StateEnum.normal.getCode()).
+                eq("is_b2b", false).
+                // 15分钟锁定订单
+                gt("create_time", DateTime.now().minusMinutes(15)).
+                groupBy("customer_code").
+                having("COUNT(*) > 0");
         List<String> customerCodes = baseMapper.customerCodes(wrapper);
+
         if (customerCodes != null && customerCodes.size() > 0) {
             customerCodes.stream().forEach(customerCode -> generatorPickingBill(customerCode, 1, Constants.TIMING_GENERATOR_PICK_USER));
         }
@@ -277,7 +282,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         wrapper.le("state", allowSize);
         wrapper.in("pick_no", pickNos);
         // 获取多个拣货单
-        List<PickingBill> pickBills = this.selectList(wrapper);
+        List<PickingBill> pickBills = selectList(wrapper);
 
         if (pickBills == null || pickBills.isEmpty()) {
             throw OperationException.customException(ResultEnum.invoice_pick_no, "拣货单不存在或拣货单已打印过");
@@ -302,11 +307,10 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      * @param executeSize
      * @param operator
      */
-    @Synchronized // 添加同步锁
+    @Synchronized
     public void generatorPickingBill(String customerCode, Integer executeSize, String operator) {
         //触发规则生成拣货单 （满足20 生成拣货单）
         // 获取（满足要求）的订单数据
-        // TODO 生成拣货单 更改规则
         List<Map> virtualMails = mailPickingDetailService.virtualMails(customerCode, executeSize);
 
         if (CollectionUtils.isEmpty(virtualMails)) return;
@@ -344,7 +348,6 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
             )));
             mailPicking.setWeightUnit("kg");
             mailPickingService.generatorMailPicking(mailPicking, operator);
-
             // region 更新拣货篮详情信息
             EntityWrapper wrapper = new EntityWrapper();
             wrapper.eq("mail_no", MapUtils.getString(
@@ -357,7 +360,6 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
             PoUtil.update(mailPickingDetail, operator);
             mailPickingDetailService.update(mailPickingDetail, wrapper);
             // endregion
-
             // region 更新订单状态（已生成拣货单数据）
             order.setState(StateEnum.order_pick.getCode());
             order.setUpdateTime(new Date());
@@ -409,6 +411,29 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         if (StringUtils.equalsIgnoreCase(BillState.pick_process_check_close.getCode(), pickingBill.getProcessStage())) {
             throw OperationException.customException(ResultEnum.invoice_pick_close);
         }
+
         return pickingBill;
+    }
+
+    /**
+     * 拣货单加解锁处理
+     * @param pickNo 拣货单号
+     * @param lock 是否锁定
+     */
+    public void pickLockProcess(String pickNo, Boolean lock) {
+        PickingBill pickingBill = checkOutPickBill(pickNo);
+
+        if (lock && StringUtils.equalsIgnoreCase(BillState.pick_process_lock.getCode(), pickingBill.getProcessStage())) {
+            throw OperationException.customException(ResultEnum.invoice_pick_lock);
+        }
+
+        if (StringUtils.equalsIgnoreCase(BillState.pick_finish.getCode(), pickingBill.getBillState())) {
+            throw OperationException.customException(ResultEnum.invoice_pick_finish);
+        }
+
+        String setPickLock = String.format("process_stage = '%s'", lock ? BillState.pick_process_lock.getCode() : BillState.pick_process_unlock.getCode());
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("pick_no", pickNo).ne("state", StateEnum.delete.getCode());
+        updateForSet(setPickLock, wrapper);
     }
 }

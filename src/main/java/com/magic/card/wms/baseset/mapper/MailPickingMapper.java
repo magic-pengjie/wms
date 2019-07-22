@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.mapper;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 import org.apache.ibatis.annotations.Param;
@@ -52,10 +53,33 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
     Integer countOrderCommodityUnfinished(@Param("orderNo") String orderNo);
 
     /**
+     * 统计订单商品未拣货完成数
+     * @param mailNo 快递单号
+     * @return
+     */
+    @Select("SELECT COUNT(1) FROM wms_mail_picking_detail WHERE package_nums > pick_nums AND mail_no = #{mailNo}")
+    Integer countPackageCommodityUnfinished(@Param("mailNo") String mailNo);
+
+    /**
+     * 拣货单所有复检完毕的包裹快递单号
+     * @param pickNo 拣货单号
+     * @return
+     */
+    List<String> finishedPackage(@Param("pickNo") String pickNo);
+
+    /**
      * 获取拣货单所有漏检商品数据信息
      * @param pickNo
      * @param state
      * @return
      */
     List<Map> omitOrderCommodityList(@Param("pickNo") String pickNo, @Param("state") Integer state);
+
+    /**
+     * 获取拣货单中所有快递篮包裹基本信息
+     * @param wrapper
+     * @return
+     */
+    List<Map> pickBillMails(@Param("ew") EntityWrapper wrapper);
+
 }
