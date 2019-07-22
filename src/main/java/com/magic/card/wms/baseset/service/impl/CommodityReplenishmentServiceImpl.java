@@ -34,20 +34,39 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
 
 
     /**
-     * 处理相关商品零拣区库存不足
+     * 增加库存不足补货信息
+     * @param storeCode 零拣库位编号
+     * @param stockoutNums 商品缺少量
      */
     @Override
-    public void handleReplenishment(String storeCode, Integer stockoutNums) {
+    public void addReplenishmentNotice(String storeCode, Integer stockoutNums) {
         // 通过 storeCode 获取商品零拣区的基本配置信息
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("wsi.store_code", storeCode);
-        List<Map> storehouseConfig = storehouseConfigMapper.storehouseConfig(wrapper);
-        // TODO 处理相关商品零拣区库存不足
-//        Integer availableNums
-
+        List<Map> storehousesConfig = storehouseConfigMapper.storehouseConfig(wrapper);
         // 获取基本信息
-        if (CollectionUtils.isNotEmpty(storehouseConfig) && storehouseConfig.size() == 1) {
-//            storehouseConfigService.
+        if (CollectionUtils.isNotEmpty(storehousesConfig) && storehousesConfig.size() == 1) {
+            Map storehouseConfig = storehousesConfig.get(0);
+            String barCode = storehouseConfig.get("barCode").toString();
+            String customerCode = storehouseConfig.get("customerCode").toString();
+            // 商品
+            List<Map> ccStorehousesConfig = storehouseConfigService.replenishmentDataList(customerCode, barCode);
+            for (Map ccStorehouseConfig :
+                    ccStorehousesConfig) {
+                // TODO 补货提示具体库位
+                Integer availableNums = (Integer) ccStorehouseConfig.get("availableNums");
+
+            }
         }
+    }
+
+    /**
+     * 拣货区补货数据录入
+     * @param storeCode 库位编号
+     * @param commodityCode  商品code
+     * @param replenishementNums 补货数量
+     */
+    public void processReplenishment(String storeCode, String commodityCode, Integer replenishementNums) {
+
     }
 }

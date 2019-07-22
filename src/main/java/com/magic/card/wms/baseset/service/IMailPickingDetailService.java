@@ -44,4 +44,32 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
      * @return
      */
     BigDecimal mailPickingWeight(String virtualMail);
+
+    /**
+     * 获取拣货单复核商品数据列表
+     * @param pickNo 拣货单号
+     * @param commodityCode 商品二维码
+     * @return
+     */
+    List<Map> invoiceCheckCommodityList(String pickNo, String commodityCode);
+    /**
+     * 获取拣货完成包裹的清单
+     * @param mailNo 快递单号
+     * @return
+     */
+    List<Map> packageFinishedList(String mailNo);
+
+    /**
+     * 获取拣货未完成包裹清单
+     * @param mailNo 快递单号
+     * @return
+     */
+    List<Map> packageUnfinishedList(String mailNo);
+
+    /**
+     * 批量获取快递单商品
+     * @param mails 快递单号（多个）
+     * @return
+     */
+    Map<String, List> loadBatchPackageCommodity(List<String> mails);
 }

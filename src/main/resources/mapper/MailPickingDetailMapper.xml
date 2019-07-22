@@ -40,5 +40,31 @@
             LEFT JOIN wms_commodity_sku wcshc ON wccc.use_commodity_code = wcshc.bar_code
         WHERE wmpd.mail_no = #{virtualMail}
     </select>
+    <!--    获取拣货单复检商品清单列表   -->
+    <select id="invoiceCheckCommodityList" resultType="java.util.Map">
+        SELECT
+            *
+        FROM
+            v_wms_n_invoice_check
+        WHERE pickNo = #{pickNo} AND commodityCode = #{commodityCode}
+    </select>
+    <!--  批量加载包裹商品数据  -->
+    <select id="batchLoadMailCommodity" resultType="java.util.Map">
+        SELECT
+            wmpd.commodity_code commodityCode,
+            wcs.sku_name skuName,
+            wcs.spec,
+            wcs.model_no modelNo,
+            wcs.single_unit singleUnit,
+            wmpd.mail_no mailNo,
+            wmpd.package_nums packageNums,
+            wmpd.pick_nums pickNums
+        FROM
+            wms_mail_picking_detail wmpd
+            LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wmpd.commodity_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
 
 </mapper>

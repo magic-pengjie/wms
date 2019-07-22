@@ -78,11 +78,13 @@ public enum ResultEnum {
 	invoice_pick_commodity_omit(50004, "商品漏检"),
 	invoice_pick_finish(50003, "拣货单已完成"),
 	invoice_pick_close(50005, "复检已经结束，请勿重复操作"),
+	invoice_pick_lock(50012, "拣货单已锁定，请确认后解锁！"),
 	order_not_exist(50006, "当前订单不存在，请确认后在提交"),
 	order_cancel(50007, "当前订单已取消，请将商品放回库位"),
 	order_weight_warning(50008, "称重不在预定范围值内"),
 	order_package_no_hc(50009, "当前订单商品没有设置耗材"),
 	order_lock(50010, "订单超过15分钟已锁定"),
+	order_package_no_exist(50011, "订单包裹不存在，请核实包裹快递单号！"),
 
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),

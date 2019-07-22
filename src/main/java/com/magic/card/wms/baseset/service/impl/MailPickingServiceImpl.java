@@ -1,12 +1,19 @@
 package com.magic.card.wms.baseset.service.impl;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.baseset.model.po.MailPickingDetail;
+import com.magic.card.wms.baseset.service.ICommodityStockService;
+import com.magic.card.wms.baseset.service.IMailPickingDetailService;
+import com.magic.card.wms.common.model.enums.*;
+import com.magic.card.wms.common.utils.*;
+import com.magic.card.wms.report.service.ExpressFeeConfigService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +38,6 @@ import com.magic.card.wms.baseset.model.xml.ResponsesXml;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
-import com.magic.card.wms.common.model.enums.Constants;
-import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.common.utils.Digest;
-import com.magic.card.wms.common.utils.HttpUtil;
-import com.magic.card.wms.common.utils.PoUtil;
-import com.magic.card.wms.common.utils.XmlUtil;
-import com.magic.card.wms.foreign.util.DateConverter;
-import com.thoughtworks.xstream.XStream;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +55,15 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     @Autowired
     private IOrderCommodityService orderCommodityService;
     @Autowired
+	private ExpressFeeConfigService expressFeeConfigService;
+    @Autowired
+	private ICommodityStockService commodityStockService;
+    @Autowired
+	private IMailPickingDetailService mailPickingDetailService;
+    @Autowired(required = false)
     private OrderInfoMapper orderInfoMapper;
+    @Autowired
+    private WebUtil webUtil;
 
     /**
      * 获取拣货单所有漏检商品数据信息
@@ -79,30 +86,44 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     @Override
     public List<Map> loadMailPickings(String pickNo) {
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("pick_no", pickNo).
-                eq("state", StateEnum.normal.getCode()).
-                orderBy("basket_num");
-        List<Map> mailPickings = baseMapper.selectMaps(wrapper);
+        wrapper.eq("wmpi.pick_no", pickNo).
+                eq("wmpi.state", StateEnum.normal.getCode()).
+                orderBy("wmpi.basket_num");
+//		List<Map> mailPickings = baseMapper.selectMaps(wrapper);
+		List<Map> mailPickings = baseMapper.pickBillMails(wrapper);
 
-        if (CollectionUtils.isNotEmpty(mailPickings)){
-            List<String> orderNos = mailPickings.stream().map(
-                    map -> map.get("orderNo").toString()
-                ).collect(Collectors.toList());
+		if (CollectionUtils.isNotEmpty(mailPickings)) {
+			List<String> mails = mailPickings.stream().map(mailPicking ->
+																	mailPicking.get("mailNo").toString()
+															).collect(Collectors.toList());
+			//获取对应的包裹商品数据
+			Map<String, List> packageCommodities = mailPickingDetailService.loadBatchPackageCommodity(mails);
 
-            if (CollectionUtils.isNotEmpty(orderNos)) {
-                Map<String, List> orderCommodities = orderCommodityService.loadBatchOrderCommodityGrid(orderNos);
-                mailPickings.stream().forEach(mailPicking ->
-                        mailPicking.put(
-                                "orderCommodities",
-                                orderCommodities.get(
-                                    MapUtils.getString(mailPicking, "orderNo")
-                                )
-                        )
-                );
-            }
+			if (MapUtils.isNotEmpty(packageCommodities)) {
+				mailPickings.stream().forEach(map -> map.put("packageCommodities", packageCommodities.get("mailNo")));
+			}
+		}
 
-
-        }
+//        if (CollectionUtils.isNotEmpty(mailPickings)){
+//            List<String> orderNos = mailPickings.stream().map(
+//                    map -> map.get("orderNo").toString()
+//                ).collect(Collectors.toList());
+//
+//            if (CollectionUtils.isNotEmpty(orderNos)) {
+//                Map<String, List> orderCommodities = orderCommodityService.loadBatchOrderCommodityGrid(orderNos);
+//
+//                mailPickings.stream().forEach(mailPicking ->
+//                        mailPicking.put(
+//                                "orderCommodities",
+//                                orderCommodities.get(
+//                                    MapUtils.getString(mailPicking, "orderNo")
+//                                )
+//                        )
+//                );
+//            }
+//
+//
+//        }
 
         return mailPickings;
     }
@@ -136,8 +157,8 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
         //拣货区拿去货物
         List<Map> invoiceList = this.baseMapper.invoiceList(
                 pickNo,
-                Constants.BILL_STATE_CANCEL,
-                Constants.PICKING_AREA_CODE
+                BillState.order_cancel.getCode(),
+				StoreTypeEnum.JHQ.getCode()
         );
 
         if (invoiceList == null && invoiceList.isEmpty()) {
@@ -171,33 +192,43 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     /**
      * 自动更新拣货篮所有订单完成状态
      *
-     * @param pickNo
+     * @param pickNo 拣货单号
      */
     @Override @Transactional
-    public void autoUpdatePickingFinishState(String pickNo, String operator) {
-        // TODO 自动更新拣货篮所有订单完成状态
-    }
+    public void autoUpdatePickingFinishState(String pickNo) {
+		List<String> mailNos = baseMapper.finishedPackage(pickNo);
+
+		if (CollectionUtils.isEmpty(mailNos)) return;
+
+		MailPicking mailPicking = new MailPicking();
+		mailPicking.setIsFinish(1);
+		PoUtil.update(mailPicking, webUtil.operator());
+		EntityWrapper wrapper = new EntityWrapper();
+		wrapper.in("mail_no", mailNos).
+				ne("state", StateEnum.delete.getCode());
+		update(mailPicking, wrapper);
+	}
 
     /**
      * 更新拣货篮指定订单 -> 完成状态
      *
-     * @param pickNo
-     * @param orderNo
+     * @param mailNo 快递单号
      */
     @Override @Transactional
-    public void updatePickingFinishState(String pickNo, String orderNo, String operator) {
+    public void updatePickingFinishState(String mailNo) {
         // 获取对应的拣货篮信息
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("pick_no", pickNo).
-                eq("order_no", orderNo);
+        wrapper.eq("mail_no", mailNo).
+				ne("is_finish", true).
+                ne("state", StateEnum.delete.getCode());
         MailPicking mailPicking = selectOne(wrapper);
 
-        if (mailPicking == null && mailPicking.getIsFinish() == 1) return;
+        if (mailPicking == null) return;
 
-        if (baseMapper.countOrderCommodityUnfinished(orderNo) == 0) {
+        if (baseMapper.countPackageCommodityUnfinished(mailNo) == 0) {
             // 设置状态
             mailPicking.setIsFinish(1);
-            PoUtil.update(mailPicking, operator);
+            PoUtil.update(mailPicking, webUtil.operator());
             updateById(mailPicking);
         }
 
@@ -268,6 +299,59 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		}
 		
 	}
+
+	/**
+	 * 包裹称重
+	 *
+	 * @param mailNo     快递单号
+	 * @param realWeight 称重重量（kg）
+	 * @param ignore 是否忽略称重异常
+	 */
+	@Override
+	public void packageWeigh(String mailNo, BigDecimal realWeight, Boolean ignore) {
+		EntityWrapper wrapper = new EntityWrapper();
+		wrapper.eq("mail_no", mailNo).ne("state", StateEnum.delete.getCode());
+		// 获取包裹信息
+		MailPicking mailPicking = selectOne(wrapper);
+
+		if (mailPicking == null) {
+			throw OperationException.customException(ResultEnum.order_package_no_exist);
+		}
+
+		//先校验包裹重量
+		BigDecimal differenceValue = mailPicking.getPresetWeight().subtract(realWeight).abs();
+		BigDecimal maxDifferenceValue = mailPicking.getPresetWeight().multiply(new BigDecimal("0.10"));
+		mailPicking.setRealWeight(realWeight);
+
+		if (maxDifferenceValue.compareTo(differenceValue) < 0 && !ignore) {
+			throw OperationException.customException(ResultEnum.order_weight_warning);
+		}
+
+		//判断当前订单是否已经取消
+		EntityWrapper<Order> orderWrapper = new EntityWrapper<Order>();
+		orderWrapper.eq("system_order_no", mailPicking.getOrderNo()).
+				ne("state", StateEnum.delete.getCode()).
+				ne("bill_state", BillState.order_cancel.getCode());
+		Order order = orderInfoMapper.selectOne(orderWrapper.getEntity());
+
+		if (order == null) {
+			throw OperationException.customException(ResultEnum.order_cancel);
+		}
+
+		PoUtil.update(mailPicking, webUtil.operator());
+		// 统计包裹快递费
+		BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(mailPicking.getOrderNo(), realWeight, mailPicking.getWeightUnit());
+
+		if (orderExpressFree != null) {
+			mailPicking.setExpressFee(orderExpressFree);
+		}
+
+		updateById(mailPicking);
+		// 释放库存
+		releaseStock(mailNo, order.getCustomerCode());
+		// TODO 推送订单信息到邮政
+	}
+
 	public String getXmlBaseInfo(OrderInfoDTO orderInfoDTO) {
 		//订单基础信息
 		RequestOrderXml requestOrderXml = new RequestOrderXml();
@@ -304,7 +388,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	
 	/**
 	 * 订单签名
-	 * @param request
+	 * @param order
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
@@ -331,5 +415,28 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		mailPicking.setSendNums(orderInfoDTO.getSendNums()+1);
 		mailPicking.setUpdateTime(new Date());
 		this.updateById(mailPicking);
+	}
+
+	/**
+	 * 称重完成释放库存
+	 * @param mailNo 快递单号
+	 * @param customerCode 商家编码
+	 */
+	private void releaseStock(String mailNo, String customerCode){
+		EntityWrapper wrapper = new EntityWrapper();
+		wrapper.eq("mail_no", mailNo).ne("state", StateEnum.delete.getCode());
+		List<MailPickingDetail> mailCommodities = mailPickingDetailService.selectList(wrapper);
+
+		if (CollectionUtils.isNotEmpty(mailCommodities)) {
+			mailCommodities.stream().forEach(mailCommodity ->
+				commodityStockService.releaseCommodityStock(
+						customerCode,
+						mailCommodity.getCommodityCode(),
+						mailCommodity.getPackageNums().longValue(),
+						webUtil.operator()
+				)
+			);
+		}
+
 	}
 }

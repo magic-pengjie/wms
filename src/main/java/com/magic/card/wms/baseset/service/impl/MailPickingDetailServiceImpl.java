@@ -4,9 +4,12 @@ import com.alibaba.excel.util.ObjectUtils;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.MailPickingDetailMapper;
 import com.magic.card.wms.baseset.model.po.MailPickingDetail;
 import com.magic.card.wms.baseset.service.IMailPickingDetailService;
+import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.CommodityUtil;
@@ -21,9 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -77,6 +78,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
                 // 加载 已锁定（导入系统15分钟默认锁定）的订单生成
                 lt("woi.create_time", DateTime.now().minusMinutes(15).toDate()).
                 eq("woi.state", StateEnum.normal.getCode()).
+                ne("woi.bill_state", BillState.order_cancel).
                 groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
                 // TODO 后期添加 快递公司、区域优先生成拣货单
                 orderBy("woi.create_time");
@@ -130,5 +132,68 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
         }
 
         return weightTotal.divide(new BigDecimal("1000"));
+    }
+
+    /**
+     * 获取拣货单复核商品数据列表
+     *
+     * @param pickNo        拣货单号
+     * @param commodityCode 商品二维码
+     * @return
+     */
+    @Override
+    public List<Map> invoiceCheckCommodityList(String pickNo, String commodityCode) {
+        return baseMapper.invoiceCheckCommodityList(pickNo, commodityCode);
+    }
+
+    /**
+     * 获取拣货完成包裹的清单
+     *
+     * @param mailNo 快递单号
+     * @return
+     */
+    @Override
+    public List<Map> packageFinishedList(String mailNo) {
+        return null;
+    }
+
+    /**
+     * 获取拣货未完成包裹清单
+     *
+     * @param mailNo 快递单号
+     * @return
+     */
+    @Override
+    public List<Map> packageUnfinishedList(String mailNo) {
+        return null;
+    }
+
+    /**
+     * 批量获取快递单商品
+     *
+     * @param mails 快递单号（多个）
+     * @return
+     */
+    @Override
+    public Map<String, List> loadBatchPackageCommodity(List<String> mails) {
+        List<Map> mailCommodities = baseMapper.batchLoadMailCommodity(new EntityWrapper());
+
+        if (CollectionUtils.isNotEmpty(mailCommodities)) {
+            HashMap<String, List> packageCommodities = Maps.newHashMap();
+            mailCommodities.stream().forEach(map -> {
+                String mailNo = MapUtils.getString(map, "mailNo");
+
+                if (packageCommodities.containsKey(mailNo)) {
+                    packageCommodities.get(mailNo).add(map);
+                } else {
+                    LinkedList<Object> commodities = Lists.newLinkedList();
+                    commodities.add(map);
+                    packageCommodities.put(mailNo, commodities);
+                }
+            });
+            return packageCommodities;
+        }
+
+        return null;
     }
 }
