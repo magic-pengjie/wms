@@ -198,7 +198,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public boolean updateRecordInfo(List<CheckRecord> checkRecordList) throws BusinessException {
-		log.info("===>> 修改盘点记录开始..");
+		log.info("===>> 修改盘点记录开始..parmas:{}", checkRecordList);
 		//修改盘点记录
 		if(!CollectionUtils.isEmpty(checkRecordList)) {
 			//获取当前登录人信息
@@ -206,6 +206,14 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			Date date = new Date();
 			boolean checkUpdate = false;
 			for (CheckRecord checkRecord : checkRecordList) {
+				//计算盘点差异值
+				if(!StringUtils.isEmpty(checkRecord.getThirdCheckNums())){
+					checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getThirdCheckNums());
+				}else if(!StringUtils.isEmpty(checkRecord.getSecondCheckNums())){
+					checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getSecondCheckNums());
+				}else if(!StringUtils.isEmpty(checkRecord.getFirstCheckNums())){
+					checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getFirstCheckNums());
+				}
 				checkRecord.setBillState(BillState.checker_approving.getCode());//审批中
 				checkRecord.setUpdateTime(date);
 				checkRecord.setUpdateUser(userSession.getName());

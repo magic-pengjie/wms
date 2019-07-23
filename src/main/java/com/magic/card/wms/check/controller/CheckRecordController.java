@@ -108,6 +108,7 @@ public class CheckRecordController {
 	@ApiOperation(value="盘点结束，更新盘点记录,修改审批状态为：审批中")
 	@RequestMapping(value = "/updCheckRecord", method = RequestMethod.POST)
 	public ResponseData updateCheckRecordInfo(@RequestBody @Valid CheckRecordUpdateDto CheckRecordUpdateDto, BindingResult bindingResult) {
+
 		try {
 			checkRecordService.updateRecordInfo(CheckRecordUpdateDto.getCheckRecordList());
 		} catch (BusinessException e) {
