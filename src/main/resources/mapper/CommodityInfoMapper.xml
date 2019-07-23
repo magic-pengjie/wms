@@ -2,9 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.magic.card.wms.baseset.mapper.CommodityInfoMapper">
 
-    <!-- 开启二级缓存 -->
-<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
-
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.Commodity">
         <id column="id" property="id" />
@@ -29,5 +26,20 @@
     <sql id="Base_Column_List">
         id, commodity_code, customer_id, commodity_name, packing_num, packing_unit, packing_weight, packing_weight_unit, packing_volume, packing_volume_unit, state, create_time, create_user, update_time, update_user, remark
     </sql>
+
+	<select id="selectCommodity" resultType="com.magic.card.wms.baseset.model.po.Commodity">
+		select t1.id, t1.commodity_code, t1.customer_id, t1.commodity_name, t1.packing_num, t1.packing_unit, 
+				t1.packing_weight, t1.packing_weight_unit, t1.packing_volume, 
+				t1.packing_volume_unit, t1.state, t1.create_time, t1.create_user, t1.update_time, t1.update_user, t1.remark
+		 from  wms_commodity_info t1
+		 	   inner join wms_customer_base_info t2 on t1.customer_id=t2.id
+		 <where>
+		 	  t1.commodity_code=#{commodityCode}
+		 	  and t2.customer_code =#{customerCode}
+		 	  and t1.state=1
+		 	  and t2.state=1
+		 </where>
+		
+	</select>
 
 </mapper>

@@ -54,7 +54,7 @@ public class PurchaseBillDTO {
      * 是否为食品
      */
 	@ApiModelProperty("是否为食品")
-	private boolean isFood;
+	private String isFood;
     /**
      * 采购日期
      */

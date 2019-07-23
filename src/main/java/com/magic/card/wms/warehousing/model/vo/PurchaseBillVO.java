@@ -58,7 +58,7 @@ public class PurchaseBillVO{
      * 是否食品
      */
 	@ApiModelProperty("是否食品")
-	private boolean isFood;
+	private Integer isFood;
     /**
      * 采购日期
      */

@@ -40,6 +40,14 @@ public class ResponseData<T> {
 	@ApiModelProperty("业务对象数据")
 	private T data;
 	
+	public static ResponseData ok(int code ,String msg) {
+		ResponseData result = new ResponseData();
+		result.setCode(code);
+		result.setMsg(msg);
+		return result;
+	}
+	
+	
 	public static ResponseData ok() {
 		ResponseData result = new ResponseData();
 		result.setCode(ResultEnum.success.getCode());

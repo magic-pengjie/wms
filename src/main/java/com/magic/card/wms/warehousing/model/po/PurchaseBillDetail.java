@@ -120,6 +120,14 @@ public class PurchaseBillDetail extends BasePo implements Serializable {
      */
     @ApiModelProperty("入库说明")
     private Integer warehousingRemark;
-
-
+    /**
+     * 入库库位信息
+     */
+    @ApiModelProperty("入库库位信息格式：库位编码1:数量1;库位编码2:数量2")
+    private String storehouseInfo;
+    /**
+     * 商品id
+     */
+    @ApiModelProperty("商品id")
+    private String commodityId;
 }

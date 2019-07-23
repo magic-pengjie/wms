@@ -71,6 +71,10 @@ public enum ResultEnum {
 	purchase_comfirm_failed(400008,"状态为待收货才允许确认收货"),
 	purchase_in_failed(400009,"状态为待收货才允许确认收货"),
 	purchase_approve_failed(400010,"状态已入库才允许审核"),
+	purchase_commodity_repeat(400011,"采购单商品重复"),
+	purchase_commodity_notexist(400012,"此商品未在本系统维护，请联系管理员添加{desc}"),
+	purchase_food_error(400013,"商品为食品,则生产日期和保质期必填"),
+	
 
 	invoice_pick_no(500000, "拣货单号不可为空"),
 	invoice_pick_commodity_exist(50001, "该清单不需要此类商品，检错了呦！"),

@@ -13,10 +13,10 @@ import lombok.EqualsAndHashCode;
  */
 public class PurchaseBillExcelVO extends BaseRowModel {
 	 /**
-     * 采购单号
+     * 商家编码
      */
-	@ExcelProperty(value = "采购订单号", index = 0)
-    private String purchaseNo;
+	@ExcelProperty(value = "商家编码", index = 0)
+    private String customerCode;
     /**
      * 商家名称
      */
@@ -115,11 +115,12 @@ public class PurchaseBillExcelVO extends BaseRowModel {
      */
 	@ExcelProperty(value = "制单时间", index = 19)
     private String makeDate;
-	public String getPurchaseNo() {
-		return purchaseNo;
+	
+	public String getCustomerCode() {
+		return customerCode;
 	}
-	public void setPurchaseNo(String purchaseNo) {
-		this.purchaseNo = purchaseNo;
+	public void setCustomerCode(String customerCode) {
+		this.customerCode = customerCode;
 	}
 	public String getCustomerName() {
 		return customerName;

@@ -1,6 +1,7 @@
 package com.magic.card.wms.warehousing.service.impl;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,10 +18,16 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.magic.card.wms.baseset.mapper.CommodityInfoMapper;
+import com.magic.card.wms.baseset.model.po.Commodity;
+import com.magic.card.wms.baseset.model.po.WarningAgentInfo;
 import com.magic.card.wms.baseset.service.ICommodityStockService;
+import com.magic.card.wms.baseset.service.IStorehouseConfigService;
+import com.magic.card.wms.baseset.service.IWarningAgentInfoService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
+import com.magic.card.wms.common.model.enums.AgentTypeEnum;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.po.CodeProduct;
@@ -61,6 +69,10 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	private ICodeProductService codeProductService;
 	@Autowired
 	private ICommodityStockService commodityStockService;
+	@Autowired
+	private IStorehouseConfigService storehouseConfigService;
+	@Autowired
+	private CommodityInfoMapper commodityInfoMapper;
 
 	@Override
 	public Page<PurchaseBillVO> selectPurchaseBillList(BillQueryDTO dto, PageInfo pageInfo) {
@@ -77,6 +89,9 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	@Override
 	@Transactional
 	public void update(PurchaseBillDTO dto) {
+		if(checkRepeat(dto.getDetailList())) {
+			throw new OperationException(ResultEnum.purchase_commodity_repeat);
+		}
 		// 根据id修改采购单数据
 		PurchaseBill bill = new PurchaseBill();
 		BeanUtils.copyProperties(dto, bill);
@@ -94,6 +109,13 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			w1.eq("purchase_id", dto.getId());
 			purchaseBillDetailService.delete(w1);
 			detailList.forEach(detail -> {
+				Commodity commodity = commodityInfoMapper.selectCommodity(detail.getBarCode(), bill.getCustomerCode());
+				if(ObjectUtils.isEmpty(commodity)) {
+					throw new OperationException(ResultEnum.purchase_commodity_notexist.getCode(),
+							ResultEnum.purchase_commodity_notexist.getMsg().replace("{desc}", detail.getBarCode())) ;
+				}
+				detail.setCommodityId(String.valueOf(commodity.getId()));
+				detail.setPurchaseId(bill.getId());
 				detail.setUpdateUser(Constants.DEFAULT_USER);
 				detail.setUpdateTime(date);
 			});
@@ -118,27 +140,23 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	 * @param detailList
 	 */
 	private void add(PurchaseBill bill,List<PurchaseBillDetail> detailList) {
+		//采购商品验重
+		if(checkRepeat(detailList)) {
+			throw new OperationException(ResultEnum.purchase_commodity_repeat);
+		}
+		
 		Date date = new Date();
 		bill.setBillState(BillStateEnum.save.getCode());
 		bill.setCreateUser(Constants.DEFAULT_USER);
 		bill.setCreateTime(date);
 		//生成采购单编码
-		if(StringUtils.isEmpty(bill.getPurchaseNo())) {
-			CodeProduct codeProduct = new CodeProduct();
-			codeProduct.setType("cg");
-			codeProduct.setTypeName("采购单编码");
-			codeProduct.setProductDate(DateUtil.getTodayShort());
-			codeProduct.setLength(3);
-			String code = codeProductService.getCode(codeProduct);
-			bill.setPurchaseNo(code);
-			
-		}else {
-			//如果客户系统传了采购单号，则判断是否重复
-			if(checkRepeat(bill, detailList)) {
-				throw new OperationException(ResultEnum.data_repeat);
-			}
-		}
-		
+		CodeProduct codeProduct = new CodeProduct();
+		codeProduct.setType("cg");
+		codeProduct.setTypeName("采购单编码");
+		codeProduct.setProductDate(DateUtil.getTodayShort());
+		codeProduct.setLength(3);
+		String code = codeProductService.getCode(codeProduct);
+		bill.setPurchaseNo(code);
 		bill.setName(bill.getCustomerName()+bill.getPurchaseNo()+"采购单");
 		if(StringUtils.isEmpty(bill.getMaker())) {
 			bill.setMaker(Constants.DEFAULT_USER);
@@ -151,6 +169,12 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		
 		if (!StringUtils.isEmpty(detailList)) {
 			detailList.forEach(detail -> {
+				Commodity commodity = commodityInfoMapper.selectCommodity(detail.getBarCode(), bill.getCustomerCode());
+				if(ObjectUtils.isEmpty(commodity)) {
+					throw new OperationException(ResultEnum.purchase_commodity_notexist.getCode(),
+							ResultEnum.purchase_commodity_notexist.getMsg().replace("{desc}", detail.getBarCode())) ;
+				}
+				detail.setCommodityId(String.valueOf(commodity.getId()));
 				detail.setPurchaseId(bill.getId());
 				detail.setCreateUser(Constants.DEFAULT_USER);
 				detail.setCreateTime(date);
@@ -161,19 +185,13 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	}
 	
 	/**
-	 * 采购单验重
-	 * @param bill 单据表
+	 * 采购商品验重
 	 * @param detailList 商品明细表
 	 * @return
 	 */
-	public boolean checkRepeat(PurchaseBill bill,List<PurchaseBillDetail> detailList) {
-		Wrapper<PurchaseBill> w = new EntityWrapper<>();
-		w.eq("purchase_no", bill.getPurchaseNo());
-		w.eq("customer_code", bill.getCustomerCode());
-		w.eq("state", Constants.STATE_1);
-		int count = this.selectCount(w);
-		log.info("select PurchaseBill by customer_code:{},purchase_no:{},count={}", bill.getCustomerCode(),bill.getPurchaseNo(),count);
-		if(count>0) {
+	public boolean checkRepeat(List<PurchaseBillDetail> detailList) {
+		Long count = detailList.stream().map(PurchaseBillDetail::getBarCode).distinct().count();
+		if(count<detailList.size()) {
 			return true;
 		}
 		return false;
@@ -221,12 +239,13 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 
 	@Override
 	@Transactional
-	public void confirm(ComfirmReqDTO dto) {
+	public String confirm(ComfirmReqDTO dto) {
 		PurchaseBill bill = this.selectById(dto.getId());
 		Date now = new Date();
 		if(StringUtils.isEmpty(bill)) {
 			throw new OperationException(ResultEnum.select_purchase_failed);
 		}
+		String warningStr = null;
 		if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
 				throw new OperationException(ResultEnum.purchase_recevie_failed);
@@ -241,21 +260,32 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			bill.setReceivDate(DateUtil.getStringDateShort());
 			//修改收货商品数量
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
+			warning(bill, detailList);
 			purchaseBillDetailService.updateBatchById(detailList);
 		}else if(BillStateEnum.recevied.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
 				throw new OperationException(ResultEnum.purchase_in_failed);
 			}
 			bill.setBillState(BillStateEnum.stored.getCode());
-			bill.setPurchaseDate(DateUtil.getStringDateShort());
-			//修改入库商品数量
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
-			purchaseBillDetailService.updateBatchById(detailList);
 			//入库后修改商品库存
-			detailList.forEach(detail->{
-				commodityStockService.addCommodityStock(bill.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getPurchaseNums()),Constants.DEFAULT_USER);
-			});
-			//修改
+			for (PurchaseBillDetail detail : detailList) {
+				if(!ObjectUtils.isEmpty(detail.getStorehouseInfo())) {
+					//增加商品对应库位库存
+					String storehouseInfo = detail.getStorehouseInfo();
+					String[] houses = storehouseInfo.split(";");
+					for(int i=0;i<houses.length;i++) {
+						if( houses[i].indexOf(":")>-1) {
+							String storehouseId = houses[i].split(":")[0];
+							int numbers = Integer.parseInt(houses[i].split(":")[1]);
+							storehouseConfigService.save(String.valueOf(detail.getCommodityId()), storehouseId, numbers);
+						}
+					}
+				}
+				//增加总库存
+				commodityStockService.addCommodityStock(bill.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getReceivNums()),Constants.DEFAULT_USER);
+				
+			}
 			
 		}else if(BillStateEnum.stored.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
@@ -271,11 +301,49 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			throw new OperationException(ResultEnum.opr_type_error); 
 		}
 		
-		//修改单据状态为已收货
 		bill.setUpdateUser(Constants.DEFAULT_USER);
 		bill.setUpdateTime(now);
 		this.updateById(bill);
 		log.info("recevied confirm PurchaseBill  success id:{}",dto.getId());
+		return warningStr;
 	}
-
+	
+	/**
+	 * 如果为食品则校验是否需要预警
+	 * 当前日期减去生产日期，所得天数大于保质期天数一半时预警提示
+	 * @param bill
+	 * @param detail
+	 * @throws ParseException 
+	 */
+	public String warning(PurchaseBill bill ,List<PurchaseBillDetail> detailList){
+		String warningStr = null;
+		for (PurchaseBillDetail detail : detailList) {
+			if(Constants.ONE.equals(bill.getIsFood())) {
+				if(ObjectUtils.isEmpty(detail.getProductionDate()) || ObjectUtils.isEmpty(detail.getShilfLife())) {
+					throw new OperationException(ResultEnum.purchase_food_error);
+				}
+				if(null==warningStr) {
+					try {
+						long date = DateUtil.getTwoDays(DateUtil.getStringDateShort(), detail.getProductionDate());
+						if(date>(detail.getShilfLife()/2)) {
+							//生成预警信息
+							WarningAgentInfo warningAgentInfo = new WarningAgentInfo();
+							warningAgentInfo.setFid(String.valueOf(bill.getId()));
+							warningAgentInfo.setTypeCode(AgentTypeEnum.food.getCode());
+							warningAgentInfo.setTypeName(AgentTypeEnum.food.getName());
+							warningAgentInfo.setAgentName("采购单:"+bill.getPurchaseNo()+"食品保质期预警");
+							warningAgentInfo.setAgentState(Constants.STATE_0);
+							warningAgentInfo.insert();
+							return "生产日期至今已超过保质期天数一半";
+						}
+					} catch (ParseException e) {
+						log.error("食品预警日期格式转换错误:{}",e);
+					}	
+				}
+				
+			}
+		}
+		return null;
+	}
+	
 }

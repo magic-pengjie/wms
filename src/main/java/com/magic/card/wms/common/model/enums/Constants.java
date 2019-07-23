@@ -41,6 +41,15 @@ public class Constants {
 	public static final Integer STATE_1 = 1;
 	
 	/**
+	 * 常量0
+	 */
+	public static final Integer ZERO = 0;
+	/**
+	 * 常量0
+	 */
+	public static final Integer ONE = 1;
+	
+	/**
 	 * 电商标识
 	 */
 	public static final String ECCOMPANY_ID = "TAOBAO";

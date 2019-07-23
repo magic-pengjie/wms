@@ -11,6 +11,9 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Random;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class DateUtil {
 	 public static String pattern = "yyyy-MM-dd";
 	    public static SimpleDateFormat formatter = new SimpleDateFormat(pattern);
@@ -301,6 +304,17 @@ public class DateUtil {
 	            return "";
 	        }
 	        return day + "";
+	    }
+	    /**
+	     * 得到二个日期间的间隔天数
+	     * @throws ParseException 
+	     */
+	    public static long getTwoDays(String sj1, String sj2) throws ParseException {
+	        long day = 0;
+			java.util.Date date = formatter.parse(sj1);
+			java.util.Date mydate = formatter.parse(sj2);
+	        day = (date.getTime() - mydate.getTime()) / (24 * 60 * 60 * 1000);
+	        return day;
 	    }
 
 	    /**
