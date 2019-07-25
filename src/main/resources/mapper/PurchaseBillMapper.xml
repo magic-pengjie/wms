@@ -49,6 +49,8 @@
 	        <result column="production_date" property="productionDate" />
 	        <result column="shilf_life" property="shilfLife" />
 	        <result column="bd.remark" property="remark" />
+	        <result column="storehouse_info" property="storehouseInfo" />
+	        <result column="commodity_id" property="commodityId" />
         </collection>
     </resultMap>
     
@@ -60,14 +62,15 @@
          bill_state,wb.remark
     </sql>
     
-     <sql id="detail_Column_List">
-        bd.id, purchase_id, commodity_name, model_no, spec, unit, bar_code, weight, volume, 
-        purchase_nums, arrival_date, production_date, shilf_life,receiv_nums,warehousing_nums,  bd.remark
-    </sql>
-
 	<select id="selectPurchaseBillList" resultMap="BaseResultMap" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
-		select   <include refid="bill_Column_List"/>,<include refid="detail_Column_List"/>
-		from wms_purchase_bill wb left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id
+		select   <include refid="bill_Column_List"/>,
+				bd.id, bd.purchase_id, bd.bar_code,  bd.purchase_nums,bd.arrival_date, bd.commodity_id,
+				production_date, shilf_life,receiv_nums,warehousing_nums, storehouse_info, bd.remark,
+				sku.sku_name, sku.model_no, sku.spec, sku.single_unit unit, 
+				sku.single_weight*bd.purchase_nums weight, sku.single_volume*bd.purchase_nums volume
+		from wms_purchase_bill wb 
+			left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and bd.state=1
+			left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and sku.state=1
 		<where>
 			<if test="id != null and id != '' ">
 					and wb.id = #{id}
@@ -94,20 +97,24 @@
 				and	wb.warehousing_date = #{warehousingDate}
 			</if>
 			<if test="commodityName != null and commodityName != '' ">
-				and bd.commodity_name like concat(concat("%",#{commodityName}),"%")
+				and sku.sku_name like concat(concat("%",#{commodityName}),"%")
 			</if>
 			<if test="billState != null and billState != '' ">
 				and	wb.billState = #{billState}
 			</if>
+			<if test="makeDate != null and makeDate != '' ">
+				and	wb.make_date = #{makeDate}
+			</if>
 			and wb.state=1
-			and bd.state=1
 			order by wb.create_time,wb.update_time,wb.customer_code,wb.customer_name
 		</where>
 	</select>
 	
 	<select id="selectPurchaseBillListCount" resultType="java.lang.Long" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
 		select  count(distinct wb.purchase_no)
-		from wms_purchase_bill wb left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id
+		from wms_purchase_bill wb 
+			left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and bd.state=1
+			left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and sku.state=1
 		<where>
 			<if test="id != null and id != '' ">
 					and wb.id = #{id}
@@ -134,13 +141,15 @@
 				and	wb.warehousing_date = #{warehousingDate}
 			</if>
 			<if test="commodityName != null and commodityName != '' ">
-				and bd.commodity_name like concat(concat("%",#{commodityName}),"%")
+				and sku.sku_name like concat(concat("%",#{commodityName}),"%")
 			</if>
 			<if test="billState != null and billState != '' ">
 				and	wb.billState = #{billState}
 			</if>
+			<if test="makeDate != null and makeDate != '' ">
+				and	wb.make_date = #{makeDate}
+			</if>
 			and wb.state=1
-			and bd.state=1
 		</where>
 	</select>
 	

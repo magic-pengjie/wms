@@ -61,8 +61,8 @@ public class PurchaseBill extends BasePo implements Serializable {
 	 /**
      * 是否食品
      */
-	@ApiModelProperty("是否食品")
-	private boolean isFood;
+	@ApiModelProperty("是否食品0:否 1:是")
+	private Integer isFood;
     /**
      * 采购日期
      */
@@ -129,6 +129,6 @@ public class PurchaseBill extends BasePo implements Serializable {
      */
 	@ApiModelProperty("单据状态(保存:save 待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
     private String billState;
-
+	
 
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.magic.card.wms.check.model.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,12 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.magic.card.wms.check.model.dto.AuditCheckRecordDto;
-import com.magic.card.wms.check.model.dto.CheckCountDto;
-import com.magic.card.wms.check.model.dto.CheckRecordCanellDto;
-import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
-import com.magic.card.wms.check.model.dto.CheckRecordStartDto;
-import com.magic.card.wms.check.model.dto.QueryAuditCheckRecordDto;
 import com.magic.card.wms.check.model.po.CheckRecord;
 import com.magic.card.wms.check.service.ICheckRecordService;
 import com.magic.card.wms.common.exception.BusinessException;
@@ -112,9 +107,10 @@ public class CheckRecordController {
 	 */
 	@ApiOperation(value="盘点结束，更新盘点记录,修改审批状态为：审批中")
 	@RequestMapping(value = "/updCheckRecord", method = RequestMethod.POST)
-	public ResponseData updateCheckRecordInfo(@RequestBody @Valid List<CheckRecord> checkRecordList, BindingResult bindingResult) {
+	public ResponseData updateCheckRecordInfo(@RequestBody @Valid CheckRecordUpdateDto CheckRecordUpdateDto, BindingResult bindingResult) {
+
 		try {
-			checkRecordService.updateRecordInfo(checkRecordList);
+			checkRecordService.updateRecordInfo(CheckRecordUpdateDto.getCheckRecordList());
 		} catch (BusinessException e) {
 			log.info("===>> 取消盘点失败：{}",e);
 			return ResponseData.error(e.getErrCode(), e.getErrMsg());

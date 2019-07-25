@@ -64,6 +64,6 @@ public interface IPurchaseBillService extends IService<PurchaseBill> {
 	 * 确认操作
 	 * @param dto
 	 */
-	void confirm(ComfirmReqDTO dto);
+	String confirm(ComfirmReqDTO dto);
 	
 }

@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
@@ -76,9 +78,9 @@ public class PurchaseBillController {
 		try {
 			purchaseBillService.add(dto);
 			return ResponseData.ok();
-		}catch (BusinessException b) {
-			log.error("新增采购单据失败:{}",b);
-			return ResponseData.error(b.getErrCode(),b.getErrMsg());
+		}catch (OperationException o) {
+			log.error("新增采购单据失败:{}",o);
+			return ResponseData.error(o.getErrCode(),o.getErrMsg());
 		}catch (Exception e) {
 			log.error("新增采购单据失败:{}",e);
 			return ResponseData.error(ResultEnum.add_error);
@@ -92,7 +94,10 @@ public class PurchaseBillController {
 		try {
 			purchaseBillService.update(dto);
 			return ResponseData.ok();
-		} catch (Exception e) {
+		}catch (OperationException b) {
+			log.error("修改采购单据失败:{}",b);
+			return ResponseData.error(b.getErrCode(),b.getErrMsg());
+		}catch (Exception e) {
 			log.error("修改采购单据失败:{}",e);
 			return ResponseData.error(ResultEnum.update_error);
 		}
@@ -104,7 +109,7 @@ public class PurchaseBillController {
 		try {
 			purchaseBillService.delete(id);
 			return ResponseData.ok();
-		}catch (BusinessException b) {
+		}catch (OperationException b) {
 			log.error("删除采购单据失败:{}",b);
 			return ResponseData.error(b.getErrCode(),b.getErrMsg());
 		}catch (Exception e) {
@@ -161,7 +166,7 @@ public class PurchaseBillController {
 			}
 			purchaseBillService.importPurchase(file);
 			return ResponseData.ok();
-		}catch (BusinessException b) {
+		}catch (OperationException b) {
 			log.error("采购单据导入失败:{}",b);
 			return ResponseData.error(b.getErrCode(),b.getErrMsg());
 		}catch (Exception e) {
@@ -174,8 +179,12 @@ public class PurchaseBillController {
 	@ApiOperation(value = "开始收货操作", notes = "开始收货操作")
 	@RequestMapping(value = "/confirm", method = RequestMethod.POST)
 	public ResponseData confirm(@RequestBody @Valid ComfirmReqDTO dto,BindingResult bindingResult) {
+		String warningStr = null;
 		try {
-			purchaseBillService.confirm(dto);
+			warningStr = purchaseBillService.confirm(dto);
+			if(!ObjectUtils.isEmpty(warningStr)) {
+				return ResponseData.ok(00,warningStr);
+			}
 			return ResponseData.ok();
 		} catch (Exception e) {
 			log.error("采购单据失败:{}",e);

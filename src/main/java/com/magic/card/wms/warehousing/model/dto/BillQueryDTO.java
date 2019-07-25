@@ -63,10 +63,15 @@ public class BillQueryDTO {
      */
 	@ApiModelProperty("入库日期")
     private String warehousingDate;
+	 /**
+     * 制单日期
+     */
+	@ApiModelProperty("制单日期")
+    private String makeDate;
     
     /**
-     * 单据状态(保存:save 待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )
+     * 单据状态(待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )
      */
-	@ApiModelProperty("单据状态(保存:save 待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
+	@ApiModelProperty("单据状态(待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
     private String billState;
 }

@@ -1,6 +1,8 @@
 package com.magic.card.wms.baseset.mapper;
 
 
+import org.apache.ibatis.annotations.Param;
+
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.magic.card.wms.baseset.model.po.Commodity;
 
@@ -14,4 +16,12 @@ import com.magic.card.wms.baseset.model.po.Commodity;
  */
 public interface CommodityInfoMapper extends BaseMapper<Commodity> {
 
+
+    /**
+     * 查询商品信息
+     * @param commodityCode 商品条形码
+     * @param customerCode  客户编码
+     * @return
+     */
+    Commodity selectCommodity(@Param("commodityCode")String commodityCode,@Param("customerCode")String customerCode);
 }
