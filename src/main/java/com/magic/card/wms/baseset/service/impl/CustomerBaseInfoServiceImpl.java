@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.collect.Maps;
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
+import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
+import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.OperationException;
@@ -18,6 +21,7 @@ import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -26,7 +30,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -56,7 +65,6 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         defaultColumns.put("contactPerson", "cbf.contact_person");
         defaultColumns.put("brandId", "cbf.brand_id");
         defaultColumns.put("brandName", "name");
-        defaultColumns.put("brandName", "bi.`name`");
 
         customerCommodityColumns.put("id", "wci.id");
         customerCommodityColumns.put("customerId", "wcbi.id");
@@ -75,6 +83,8 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         customerCommodityColumns.put("packingUnit", "wci.packing_unit");
         customerCommodityColumns.put("customerCommodityId", "wci.id ");
     }
+    @Autowired
+    private ICommodityInfoService commodityInfoService;
 
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
@@ -144,6 +154,86 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     }
 
     /**
+     * 获取商家未关联的商品信息
+     *
+     * @param customerCode
+     * @return
+     */
+    @Override
+    public List<Map> comboGridNotBindCommodities(String customerCode) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("wcbi.customer_code", customerCode).
+                eq("wcs.state", StateEnum.normal.getCode()).
+                isNull("wci.id");
+
+        return baseMapper.comboGridCommodities(new Page(1, 100), wrapper);
+    }
+
+    /**
+     * 批量解绑
+     *
+     * @param ids ids
+     */
+    @Override
+    public void batchUnbindCommodity(List<String> ids) {
+
+        if (CollectionUtils.isNotEmpty(ids)) {
+            commodityInfoService.deleteBatchIds(ids);
+        }
+
+    }
+
+    /**
+     * 检测客户ID是否存在
+     *
+     * @param customerId
+     */
+    @Override
+    public CustomerBaseInfo checkoutCustomerById(String customerId) {
+        CustomerBaseInfo customerBaseInfo = selectById(customerId);
+
+        if (customerBaseInfo == null) {
+            throw OperationException.customException(ResultEnum.customer_no_exist);
+        }
+
+        return customerBaseInfo;
+    }
+
+    /**
+     * 批量绑定商品
+     *
+     * @param batchBindCommodity
+     */
+    @Override
+    public void batchBindCommodity(BatchBindCommodity batchBindCommodity) {
+        // 判断商家是否存在
+        CustomerBaseInfo customerBaseInfo = selectById(batchBindCommodity.getCustomerId());
+
+        if (customerBaseInfo == null) {
+            throw OperationException.customException(ResultEnum.customer_no_exist);
+        }
+
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.eq("customer_id", batchBindCommodity.getCustomerId()).
+                in("commodity_code", batchBindCommodity.getCommodityCodes());
+
+        if (commodityInfoService.selectCount(entityWrapper) > 0) {
+            throw OperationException.customException(ResultEnum.customer_bind_commodity);
+        }
+
+        Commodity baseCommodity = new Commodity();
+        baseCommodity.setCustomerId(batchBindCommodity.getCustomerId());
+        PoUtil.add(baseCommodity, webUtil.operator());
+        List<Commodity> commodities = batchBindCommodity.getCommodityCodes().stream().map(commodityCode -> {
+            Commodity commodity = new Commodity();
+            commodity.setCommodityCode(commodityCode);
+            BeanUtils.copyProperties(baseCommodity, commodity);
+            return commodity;
+        }).collect(Collectors.toList());
+        commodityInfoService.insertBatch(commodities);
+    }
+
+    /**
      * 加载商家产品列表（可分页搜索查询）
      *
      * @param loadGrid
@@ -167,7 +257,6 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
                 loadGrid.getOrder(),
                 defaultSettingOrder -> defaultSettingOrder.orderBy("wcbi.id")
         );
-
         loadGrid.finallyResult(page, baseMapper.loadCustomerCommodities(page, wrapper));
         return loadGrid;
     }

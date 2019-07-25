@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.mapper;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
@@ -48,4 +49,13 @@ public interface CustomerBaseInfoMapper extends BaseMapper<CustomerBaseInfo> {
      * @return
      */
     List<Map> loadCustomerCommodities(Page<CustomerBaseInfo> page, @Param("ew") Wrapper wrapper);
+
+    /**
+     * 商品商家全量数据
+     * @param page 分页
+     * @param entityWrapper 筛选
+     * @return
+     */
+    List<Map> comboGridCommodities(Page page, @Param("ew") EntityWrapper entityWrapper);
+
 }

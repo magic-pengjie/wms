@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.annotations.TableName;
 import com.magic.card.wms.common.model.po.BasePo;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * <p>

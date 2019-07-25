@@ -98,20 +98,23 @@
     <select id="omitOrderCommodityList" resultType="java.util.Map">
         SELECT
             wmpi.pick_no pickNo,
-            woc.order_no orderNo,
-            woc.bar_code barCode,
-            SUM( woc.numbers - woc.pick_numbers ) omitNum
+            wmpd.order_no orderNo,
+            wmpd.mail_no mailNo,
+            wmpd.commodity_code commodityCode,
+            SUM( wmpd.package_nums - wmpd.pick_nums ) omitNums
         FROM
             wms_mail_picking_info wmpi
-            LEFT JOIN wms_order_commodity woc ON wmpi.order_no = woc.order_no
+            LEFT JOIN wms_mail_picking_detail wmpd ON wmpd.mail_no = wmpi.mail_no
         WHERE
             wmpi.is_finish = 0
+            AND wmpd.package_nums - wmpd.pick_nums > 0
             AND wmpi.state = #{state}
             AND wmpi.pick_no = #{pickNo}
         GROUP BY
             wmpi.pick_no,
-            woc.order_no,
-            woc.bar_code
+            wmpd.order_no,
+            wmpd.mail_no,
+            wmpd.commodity_code
     </select>
     <!--   拣货单所有复检完毕的包裹快递单号 -->
     <select id="finishedPackage" resultType="java.lang.String">

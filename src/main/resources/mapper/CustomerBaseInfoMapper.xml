@@ -74,14 +74,31 @@
             wcs.single_volume_unit	singleVolumeUnit,
             wcs.single_weight singleWeight,
             wcs.single_weight_unit singleWeightUnit,
-            wci.packing_num packingNum,
             wcs.single_unit singleUnit,
-            wci.packing_unit packingUnit,
             wci.id customerCommodityId
         FROM
             wms_customer_base_info wcbi
             LEFT JOIN wms_commodity_info wci ON wcbi.id = wci.customer_id
             LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+    <!--  商品商家全量数据  -->
+    <select id="comboGridCommodities" resultType="java.util.Map">
+        SELECT
+            wcs.id,
+            wcs.bar_code barCode,
+            wcs.sku_name,
+            wcs.banner,
+            wcs.spec,
+            wcs.model_no modelNo,
+            wcs.is_foodstuff isFoodstuff
+        FROM
+            wms_commodity_sku wcs
+            INNER JOIN wms_customer_base_info wcbi
+            LEFT JOIN wms_commodity_info wci ON wci.customer_id = wcbi.id
+            AND wci.commodity_code = wcs.bar_code
         <where>
             ${ew.sqlSegment}
         </where>

@@ -29,6 +29,10 @@ public class CommoditySku extends BasePo implements Serializable {
      * sku名称
      */
     private String skuName;
+    /**
+     * 商品品牌
+     */
+    private String banner;
 
     /**
      * 规格
@@ -67,4 +71,8 @@ public class CommoditySku extends BasePo implements Serializable {
      * 单体单位
      */
     private String singleVolumeUnit;
+
+    public Boolean getFoodstuff() {
+        return isFoodstuff;
+    }
 }

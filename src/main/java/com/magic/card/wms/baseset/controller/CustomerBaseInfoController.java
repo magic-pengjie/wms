@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.magic.card.wms.common.model.LoadGrid;
@@ -15,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -77,5 +79,24 @@ public class CustomerBaseInfoController {
 
         // 搜索信息 可改进
         return ResponseData.ok(customerBaseInfoService.loadCustomerCommodities(loadGrid, customerId));
+    }
+
+    @ApiOperation("加载客户未关联的商品数据")
+    @GetMapping("notBindCommodities")
+    public ResponseData comboGridNotBindCommodities(@ApiParam("客户Code") @RequestParam String customerCode) {
+        return ResponseData.ok(customerBaseInfoService.comboGridNotBindCommodities(customerCode));
+    }
+
+    @ApiOperation("批量绑定商品")
+    @PostMapping("batchBindCommodities")
+    public ResponseData batchBindCommodities(@Valid @RequestBody BatchBindCommodity batchBindCommodity, BindingResult bindingResult) {
+        customerBaseInfoService.batchBindCommodity(batchBindCommodity);
+        return ResponseData.ok();
+    }
+    @ApiOperation("批量解除绑定")
+    @GetMapping("batchUnbindCommodities")
+    public ResponseData batchUnbindCommodities(@RequestParam List<String> ids) {
+        customerBaseInfoService.batchUnbindCommodity(ids);
+        return ResponseData.ok();
     }
 }

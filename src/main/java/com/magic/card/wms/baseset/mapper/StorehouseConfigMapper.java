@@ -3,6 +3,8 @@ package com.magic.card.wms.baseset.mapper;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
@@ -32,4 +34,12 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
 	 * @return
 	 */
 	List<Map> storehouseConfig(@Param("ew")Wrapper wrapper);
+
+	/**
+	 * 加载库位配置信息
+	 * @param page
+	 * @param entityWrapper
+	 * @return
+	 */
+    List<Map> loadGrid(Page page, @Param("ew") EntityWrapper entityWrapper);
 }

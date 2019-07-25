@@ -32,5 +32,18 @@
             ${ew.sqlSegment}
         </where>
     </select>
+    <!--  库位的信息  -->
+    <select id="comboGrid" resultType="java.util.Map">
+        SELECT
+            wsi.id, wsi.area_code areaCode, wsi.house_code houseCode, wsi.store_code storeCode, wsi.state
+        FROM
+            wms_storehouse_info wsi
+            INNER JOIN wms_customer_base_info wcbi
+            LEFT JOIN wms_storehouse_config wsc ON wsc.storehouse_id = wsi.id
+            AND wsc.customer_id = wcbi.id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
 
 </mapper>

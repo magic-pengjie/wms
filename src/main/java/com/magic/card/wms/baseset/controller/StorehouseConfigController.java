@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
+import com.magic.card.wms.baseset.model.xml.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -86,5 +88,12 @@ public class StorehouseConfigController {
 		}
         
         return ResponseData.ok(result);
+    }
+
+    @ApiOperation("批量绑定客户")
+    @PostMapping("batchBind")
+    public ResponseData batchBind(@RequestBody BatchBindStorehouseDTO batchBindStorehouseDTO, BindingResult bindingResult) {
+        storehouseConfigService.batchBind(batchBindStorehouseDTO);
+        return ResponseData.ok();
     }
 }

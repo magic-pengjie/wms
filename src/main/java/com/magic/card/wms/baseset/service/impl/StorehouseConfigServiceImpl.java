@@ -2,12 +2,17 @@ package com.magic.card.wms.baseset.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
+import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
+import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
+import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
 import com.magic.card.wms.common.exception.OperationException;
@@ -21,7 +26,10 @@ import com.magic.card.wms.common.utils.PoUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.magic.card.wms.common.utils.WebUtil;
+import com.magic.card.wms.common.utils.WrapperUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +47,23 @@ import org.springframework.util.ObjectUtils;
  */
 @Service
 public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMapper, StorehouseConfig> implements IStorehouseConfigService {
+    private static final Map<String, String> DEFAULT_COLUMNS = Maps.newConcurrentMap();
+    static {
+        DEFAULT_COLUMNS.put("id", "wsc.id");
+        DEFAULT_COLUMNS.put("state", "wsc.state");
+        DEFAULT_COLUMNS.put("houseCode", "wsi.house_code");
+        DEFAULT_COLUMNS.put("storeCode", "wsi.store_code");
+        DEFAULT_COLUMNS.put("customerCode", "wcbi.customer_code");
+        DEFAULT_COLUMNS.put("customerName", "wcbi.customer_name");
+    }
+
+    @Autowired
+    private ICustomerBaseInfoService customerService;
     @Autowired
     private IStorehouseInfoService storehouseInfoService;
+
+    @Autowired
+    private WebUtil webUtil;
     /**
      * 查询仓库配置信息
      *
@@ -49,7 +72,12 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
      */
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
-        // TODO 仓库信息配置查询 待确定
+        Page page = loadGrid.generatorPage();
+        EntityWrapper wrapper = new EntityWrapper();
+        WrapperUtil.autoSettingSearch(wrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
+        WrapperUtil.autoSettingOrder(wrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder ->
+            defaultSetOrder.orderBy("wsc.create_time", false));
+        loadGrid.finallyResult(page, baseMapper.loadGrid(page, wrapper));
 
         return loadGrid;
     }
@@ -216,5 +244,37 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
                 .orderBy("wsc.end_time");
 
         return baseMapper.storehouseConfig(wrapper);
+    }
+
+    /**
+     * 库位批量绑定
+     *
+     * @param batchBindStorehouseDTO
+     */
+    @Override
+    public void batchBind(BatchBindStorehouseDTO batchBindStorehouseDTO) {
+        // 检测商家数据是否有误
+        customerService.checkoutCustomerById(batchBindStorehouseDTO.getCustomerId());
+       // 检测库位是否已经绑定
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.in("storehouse_id", batchBindStorehouseDTO.getStorehouseIds()).
+                eq("state", StateEnum.normal.getCode());
+
+        if (selectCount(wrapper) > 0) {
+           throw OperationException.customException(ResultEnum.store_house_config_exist);
+        }
+
+        StorehouseConfig baseStorehouseConfig = new StorehouseConfig();
+        baseStorehouseConfig.setCustomerId(batchBindStorehouseDTO.getCustomerId());
+        PoUtil.add(baseStorehouseConfig, webUtil.operator());
+
+        List<StorehouseConfig> storehouseConfigs = batchBindStorehouseDTO.getStorehouseIds().stream().map(storehouseId -> {
+            StorehouseConfig storehouseConfig = new StorehouseConfig();
+            storehouseConfig.setStorehouseId(storehouseId);
+            BeanUtils.copyProperties(baseStorehouseConfig, storehouseConfig);
+            return storehouseConfig;
+        }).collect(Collectors.toList());
+
+        insertBatch(storehouseConfigs);
     }
 }

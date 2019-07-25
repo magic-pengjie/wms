@@ -2,6 +2,7 @@ package com.magic.card.wms.baseset.service;
 
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.baomidou.mybatisplus.service.IService;
@@ -74,4 +75,29 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
      * @return
      */
     CustomerBaseInfo checkoutCustomer(String customerCode);
+
+    /**
+     * 获取商家未关联的商品信息
+     * @param customerCode
+     * @return
+     */
+    List<Map> comboGridNotBindCommodities(String customerCode);
+
+    /**
+     * 批量绑定商品
+     * @param batchBindCommodity
+     */
+    void batchBindCommodity(BatchBindCommodity batchBindCommodity);
+
+    /**
+     * 批量解绑
+     * @param ids
+     */
+    void batchUnbindCommodity(List<String> ids);
+
+    /**
+     * 检出客户ID是否存在
+     * @param customerId
+     */
+    CustomerBaseInfo checkoutCustomerById(String customerId);
 }

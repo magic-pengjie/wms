@@ -66,6 +66,6 @@ public class PickBillController {
     @ApiOperation("配货复核手动关闭")
     @GetMapping("invoiceCheckClose")
     public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
-        return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo, Constants.DEFAULT_USER));
+        return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo));
     }
 }

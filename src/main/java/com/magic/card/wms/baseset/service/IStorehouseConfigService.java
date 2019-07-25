@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.service.IService;
+import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
@@ -70,5 +71,10 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      * @return
      */
     List<Map> replenishmentDataList(String customerCode, String commodityCode);
-    
+
+    /**
+     * 库位批量绑定
+     * @param batchBindStorehouseDTO
+     */
+    void batchBind(BatchBindStorehouseDTO batchBindStorehouseDTO);
 }

@@ -32,9 +32,13 @@ public class PickingBillException extends BasePo implements Serializable {
      */
     private String pickNo;
     /**
-     * 订单商品不足时记录订单号
+     * 包裹商品不足时记录订单号
      */
     private String orderNo;
+    /**
+     * 包裹商品不足时记录快递单号
+     */
+    private String mailNo;
     /**
      * 检错/多少拣商品条形码
      */

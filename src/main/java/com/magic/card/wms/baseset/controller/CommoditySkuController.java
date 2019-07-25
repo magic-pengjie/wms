@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 
@@ -56,6 +57,12 @@ public class CommoditySkuController {
     @ApiOperation(value = "删除商品SKU基本信息（物理删除）")
     @GetMapping("delete")
     public ResponseData delete(@ApiParam("主键ID")@RequestParam Long id) {
+        return ResponseData.ok();
+    }
+
+    @PostMapping("excelImport")
+    public ResponseData excelImport(@RequestParam MultipartFile[] commodityExcelFiles) {
+        commoditySkuService.excelImport(commodityExcelFiles);
         return ResponseData.ok();
     }
 }

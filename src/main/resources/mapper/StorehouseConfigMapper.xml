@@ -103,6 +103,23 @@
 		</where>
 
 	</select>
+	<!--	加载库位配置信息	-->
+    <select id="loadGrid" resultType="java.util.Map">
+		SELECT
+			wsc.id,
+			wsc.state,
+			wsi.house_code houseCode,
+			wsi.store_code storeCode,
+			wcbi.customer_code customerCode,
+			wcbi.customer_name customerName
+		FROM
+			wms_storehouse_config wsc
+			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
 
 
 </mapper>

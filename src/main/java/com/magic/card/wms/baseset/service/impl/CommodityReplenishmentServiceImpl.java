@@ -64,9 +64,9 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
      * 拣货区补货数据录入
      * @param storeCode 库位编号
      * @param commodityCode  商品code
-     * @param replenishementNums 补货数量
+     * @param replenishmentNums 补货数量
      */
-    public void processReplenishment(String storeCode, String commodityCode, Integer replenishementNums) {
+    public void processReplenishment(String storeCode, String commodityCode, Integer replenishmentNums) {
 
     }
 }

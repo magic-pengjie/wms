@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 @Service
 public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, PickingBill> implements IPickingBillService {
     private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
-
     @Autowired
     private IOrderService orderService;
     @Autowired
@@ -75,7 +74,8 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     /**
      * 触发生成
      *
-     * @param customerCode
+     * @param customerCode 客户编码
+     * @param executeSize
      */
     @Override @Transactional
     public void triggerGenerator(String customerCode, Integer executeSize) {
@@ -94,12 +94,14 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      */
     @Override @Transactional
     public Object checkInvoiceClose(String pickNo) {
+        //region  此处逻辑将重写 2019.7.23 - 10:27处理完成
         String operator = webUtil.operator();
         // 检出拣货单基本信息
         PickingBill pickingBill = checkOutPickBill(pickNo);
 
         // 统计拣货单所有订单商品未分拣完成
         List<Map> omitOrderCommodities = mailPickingService.omitOrderCommodityList(pickNo, StateEnum.normal.getCode());
+
         BillState exceptionFlag = BillState.pick_finish;
 
         if (CollectionUtils.isNotEmpty(omitOrderCommodities)) {
@@ -112,12 +114,13 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
                                     StringUtils.joinWith(
                                             "&&",
                                             MapUtils.getString(omitOrderCommodity, "pickNo"),
-                                            MapUtils.getString(omitOrderCommodity, "orderNo"))
+                                            MapUtils.getString(omitOrderCommodity, "orderNo"),
+                                            MapUtils.getString(omitOrderCommodity, "mailNo"))
                                     ,
                                     StringUtils.joinWith(
                                             "&&",
-                                            MapUtils.getString(omitOrderCommodity, "barCode"),
-                                            MapUtils.getString(omitOrderCommodity, "omitNum")
+                                            MapUtils.getString(omitOrderCommodity, "commodityCode"),
+                                            MapUtils.getString(omitOrderCommodity, "omitNums")
                                     )
                                     ,
                                     BillState.pick_exception_omit
@@ -144,6 +147,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         pickingBill.setProcessStage(BillState.pick_process_check_close.getCode());
         PoUtil.update(pickingBill, operator);
         updateById(pickingBill);
+        //endregion
         return exceptionFlag;
     }
 

@@ -41,6 +41,7 @@ public enum ResultEnum {
 	data_delete_failed(10012, "数据删除失败"),
 	upload_file_inexistence(10013, "上传文件不存在"),
 	upload_file_suffix_err(10014, "上传文件格式有误"),
+	upload_file_resolve_err(10015, "上传文件解析异常"),
 	system_busy(11111, "系统繁忙请稍后再试"),
 
 	commodity_stock_setting_deficiency(10013, "当前商品库存不存在！"),
@@ -59,6 +60,10 @@ public enum ResultEnum {
 
 
 	excel_import_storehouse(300000,"Excel导入仓库库位信息失败！"),
+	customer_no_exist(300001, "商家不存在！"),
+	customer_bind_commodity(300002, "当前商家已绑定商品条码"),
+	store_house_config_exist(300003, "当前库位已经配置，请勿重复配置"),
+
 
 	select_purchase_failed(400000,"查询单据失败"),
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),

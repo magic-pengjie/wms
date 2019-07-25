@@ -8,6 +8,9 @@ import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.LoadGrid;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * <p>
  * 仓库表 服务类
@@ -63,4 +66,11 @@ public interface IStorehouseInfoService extends IService<StorehouseInfo> {
      * @param excelFile
      */
     void excelImport(MultipartFile excelFile);
+
+    /**
+     * 加载未绑定商家的可用库位
+     * @param loadGrid 加载数据条件
+     * @return
+     */
+    LoadGrid comboGridNotBind(LoadGrid loadGrid);
 }

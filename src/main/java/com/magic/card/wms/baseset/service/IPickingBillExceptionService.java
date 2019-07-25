@@ -16,10 +16,10 @@ public interface IPickingBillExceptionService extends IService<PickingBillExcept
 
     /**
      * 检验配货单时异常处理
-     * @param pickNo 拣货单号/拣货单号&&订单号
-     * @param commodityCode 商品条形码/商品条形码&&数量
+     * @param uniteBillNo 联合票据单号 （拣货单号/拣货单号&&订单号&&快递单号）
+     * @param commodityInfo 商品信息 （商品条形码/商品条形码&&数量）
      * @param type 拣货异常类型
      * @param operator 操作人
      */
-    void handleException(String pickNo, String commodityCode, BillState type, String operator);
+    void handleException(String uniteBillNo, String commodityInfo, BillState type, String operator);
 }

@@ -4,6 +4,7 @@ import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.StorehouseInfoMapper;
 import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
@@ -19,11 +20,14 @@ import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.EasyExcelUtil;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WebUtil;
+import com.magic.card.wms.common.utils.WrapperUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -42,7 +47,16 @@ import java.util.List;
  */
 @Service
 public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper, StorehouseInfo> implements IStorehouseInfoService {
-
+    public static final Map<String, String> DEFAULT_COLUMNS = Maps.newConcurrentMap();
+    static {
+        DEFAULT_COLUMNS.put("areaCode", "wsi.area_code");
+        DEFAULT_COLUMNS.put("houseCode", "wsi.house_code");
+        DEFAULT_COLUMNS.put("storeCode", "wsi.store_code");
+        DEFAULT_COLUMNS.put("state", "wsi.state");
+        DEFAULT_COLUMNS.put("id", "wsi.id");
+    }
+    @Autowired
+    private WebUtil webUtil;
     /**
      * 加载库位信息列表
      *
@@ -134,7 +148,12 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
      */
     @Override
     public void stop(String... ids) {
-
+        StorehouseInfo storehouseInfo = new StorehouseInfo();
+        storehouseInfo.setState(3); // 停用库位
+        PoUtil.update(storehouseInfo, webUtil.operator());
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.in("id", ids).eq("state", StateEnum.normal.getCode());
+        update(storehouseInfo, wrapper);
     }
 
     @Override @Transactional
@@ -159,6 +178,26 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         if (this.baseMapper.deleteById(id) < 1) {
             throw OperationException.DATA_OPERATION_DELETE;
         }
+    }
+
+    /**
+     * 加载未绑定商家的可用库位
+     *
+     * @param loadGrid 加载数据条件
+     * @return
+     */
+    @Override
+    public LoadGrid comboGridNotBind(LoadGrid loadGrid) {
+        Page page = loadGrid.generatorPage();
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.isNull("wsc.id").eq("wsi.state", StateEnum.normal.getCode());
+        // region 添加排序和查询条件
+        WrapperUtil.autoSettingSearch(wrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
+        WrapperUtil.autoSettingOrder(wrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder ->
+                defaultSetOrder.orderBy("wsi.store_code"));
+        // endregion
+        loadGrid.finallyResult(page, baseMapper.comboGrid(page, wrapper));
+        return loadGrid;
     }
 
     /**

@@ -35,6 +35,11 @@ public class CommoditySkuDTO implements Serializable {
     @NotNull(message = "sku商品名称不可为空")
     @ApiModelProperty("SKU名称， 不可为空")
     private String skuName;
+    /**
+     * 商品品牌
+     */
+    @ApiModelProperty("商品品牌")
+    private String banner;
 
     /**
      * 规格

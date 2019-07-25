@@ -81,4 +81,10 @@ public class StorehouseInfoController {
         storehouseInfoService.delete(id);
         return ResponseData.ok();
     }
+
+    @ApiOperation(value = "获取所有没有绑定商家的库位信息(分页搜索查询)")
+    @PostMapping("comboGridNotBind")
+    public ResponseData comboGridNotBind(@RequestBody LoadGrid loadGrid) {
+        return ResponseData.ok(storehouseInfoService.comboGridNotBind(loadGrid));
+    }
 }

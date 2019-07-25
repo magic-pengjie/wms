@@ -6,6 +6,7 @@ import com.magic.card.wms.baseset.model.po.CommoditySku;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.LoadGrid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -47,4 +48,10 @@ public interface ICommoditySkuService extends IService<CommoditySku> {
      * @param id
      */
     void delete(Long id);
+
+    /**
+     * Excel 导入 商品信息
+     * @param commodityExcelFiles
+     */
+    void excelImport(MultipartFile[] commodityExcelFiles);
 }

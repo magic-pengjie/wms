@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.mapper;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
@@ -26,4 +27,12 @@ public interface StorehouseInfoMapper extends BaseMapper<StorehouseInfo> {
      * @return
      */
     List<Map> loadGrid(Page page, @Param("ew") Wrapper wrapper);
+
+    /**
+     * 库位的信息
+     * @param page
+     * @param entityWrapper
+     * @return
+     */
+    List<Map> comboGrid(Page page, @Param("ew") EntityWrapper entityWrapper);
 }
