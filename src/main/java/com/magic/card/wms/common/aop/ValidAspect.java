@@ -1,8 +1,11 @@
 package com.magic.card.wms.common.aop;
 
+import com.magic.card.wms.common.annotation.RequestJsonParam;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 
@@ -10,6 +13,9 @@ import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 /***
  * 必输字段校验
@@ -31,5 +37,4 @@ public class ValidAspect {
 			return pjp.proceed();
 		}
 	}
-
 }

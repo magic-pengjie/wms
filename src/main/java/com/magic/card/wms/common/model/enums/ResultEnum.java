@@ -42,6 +42,10 @@ public enum ResultEnum {
 	upload_file_inexistence(10013, "上传文件不存在"),
 	upload_file_suffix_err(10014, "上传文件格式有误"),
 	upload_file_resolve_err(10015, "上传文件解析异常"),
+	req_body_json_null(10016, "请求body json数据不可为空！"),
+	req_body_json_resolve(10017, "请求body json数据解析错误！"),
+	req_body_json_param_requrie(10018, "请求参数 %s 是必须提供的！"),
+
 	system_busy(11111, "系统繁忙请稍后再试"),
 
 	commodity_stock_setting_deficiency(10013, "当前商品库存不存在！"),

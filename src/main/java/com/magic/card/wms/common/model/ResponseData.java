@@ -56,7 +56,7 @@ public class ResponseData<T> {
 	}
 	
 	public static <T> ResponseData ok(T data) {
-		ResponseData result = new ResponseData();
+		ResponseData<T> result = new ResponseData();
 		result.setCode(ResultEnum.success.getCode());
 		result.setMsg(ResultEnum.success.getMsg());
 		if(StringUtils.isEmpty(data)) {

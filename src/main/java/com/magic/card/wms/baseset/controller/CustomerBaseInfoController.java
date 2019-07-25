@@ -3,10 +3,10 @@ package com.magic.card.wms.baseset.controller;
 import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
-import com.magic.card.wms.common.model.enums.ResultEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -76,15 +76,13 @@ public class CustomerBaseInfoController {
     public ResponseData loadCustomerCommodities(
             @ApiParam("客户ID") @PathVariable(required = false) String customerId,
             @ApiParam("搜索信息")@RequestBody LoadGrid loadGrid) {
-
-        // 搜索信息 可改进
         return ResponseData.ok(customerBaseInfoService.loadCustomerCommodities(loadGrid, customerId));
     }
 
     @ApiOperation("加载客户未关联的商品数据")
-    @GetMapping("notBindCommodities")
-    public ResponseData comboGridNotBindCommodities(@ApiParam("客户Code") @RequestParam String customerCode) {
-        return ResponseData.ok(customerBaseInfoService.comboGridNotBindCommodities(customerCode));
+    @PostMapping("notBindCommodities")
+    public ResponseData comboGridNotBindCommodities(@ApiParam("客户Code") @RequestJsonParam String customerCode, @RequestJsonParam LoadGrid loadGrid) {
+        return ResponseData.ok(customerBaseInfoService.comboGridNotBindCommodities(customerCode, loadGrid));
     }
 
     @ApiOperation("批量绑定商品")

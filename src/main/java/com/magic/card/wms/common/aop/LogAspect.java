@@ -2,7 +2,7 @@ package com.magic.card.wms.common.aop;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;

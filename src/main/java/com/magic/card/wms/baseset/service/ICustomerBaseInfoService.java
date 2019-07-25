@@ -1,7 +1,5 @@
 package com.magic.card.wms.baseset.service;
 
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
@@ -63,25 +61,26 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
 
     /**
      * 加载商家产品列表（可分页搜索查询）
-     * @param loadGrid
-     * @param customerId
-     * @return
+     * @param loadGrid 分页信息
+     * @param customerId 商家ID
+     * @return LoadGrid
      */
     LoadGrid loadCustomerCommodities(LoadGrid loadGrid, String customerId);
 
     /**
      * 检出客户是否存在，存在则返回客户信息
      * @param customerCode 客户编码
-     * @return
+     * @return CustomerBaseInfo
      */
     CustomerBaseInfo checkoutCustomer(String customerCode);
 
     /**
      * 获取商家未关联的商品信息
-     * @param customerCode
-     * @return
+     * @param customerCode 商家CODE
+     * @param loadGrid 分页信息
+     * @return LoadGrid
      */
-    List<Map> comboGridNotBindCommodities(String customerCode);
+    LoadGrid comboGridNotBindCommodities(String customerCode, LoadGrid loadGrid);
 
     /**
      * 批量绑定商品

@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.magic.card.wms.common.resolver.RequestJsonParamResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -30,6 +31,7 @@ public class WebMvcConfiguartion extends WebMvcConfigurationSupport{
 	@Override
 	protected void addArgumentResolvers(List<HandlerMethodArgumentResolver> addArgumentResolvers) {
 		addArgumentResolvers.add(new PageInfoArgumentResolver());
+		addArgumentResolvers.add(new RequestJsonParamResolver());
 	}
 	
 	/**

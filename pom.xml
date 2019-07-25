@@ -244,6 +244,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>magic-wms</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

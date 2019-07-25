@@ -32,9 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -156,17 +153,20 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     /**
      * 获取商家未关联的商品信息
      *
-     * @param customerCode
+     * @param customerCode 客户code
+     * @param loadGrid 分页信息
      * @return
      */
     @Override
-    public List<Map> comboGridNotBindCommodities(String customerCode) {
+    public LoadGrid comboGridNotBindCommodities(String customerCode, LoadGrid loadGrid) {
+        Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("wcbi.customer_code", customerCode).
                 eq("wcs.state", StateEnum.normal.getCode()).
                 isNull("wci.id");
 
-        return baseMapper.comboGridCommodities(new Page(1, 100), wrapper);
+        loadGrid.finallyResult(page, baseMapper.comboGridCommodities(page, wrapper));
+        return loadGrid;
     }
 
     /**

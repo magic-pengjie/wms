@@ -7,7 +7,9 @@ import com.magic.card.wms.config.WmsBaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
@@ -35,28 +37,28 @@ public class PackageController extends WmsBaseController {
      * @return
      */
     @ApiOperation("包裹称重")
-    @RequestMapping("weigh")
-    public ResponseData weigh(String mailNo, BigDecimal realWeight) {
+    @GetMapping("weigh")
+    public ResponseData weigh(@RequestParam String mailNo, @RequestParam BigDecimal realWeight) {
         mailPickingService.packageWeigh(mailNo, realWeight, false);
         return ResponseData.ok();
     }
 
     @ApiOperation("忽略称重异常")
-    @RequestMapping("ignore")
-    public ResponseData ignore(String mailNo, BigDecimal realWeight) {
+    @GetMapping("ignore")
+    public ResponseData ignore(@RequestParam String mailNo, @RequestParam BigDecimal realWeight) {
         mailPickingService.packageWeigh(mailNo, realWeight, true);
         return ResponseData.ok();
     }
 
     @ApiOperation("包裹清单(完成)")
-    @RequestMapping("finishedList")
-    public ResponseData finishedList(String mailNo) {
+    @GetMapping("finishedList")
+    public ResponseData finishedList(@RequestParam String mailNo) {
         return ResponseData.ok(mailPickingDetailService.packageFinishedList(mailNo));
     }
 
     @ApiOperation("未完成的包裹清单")
-    @RequestMapping("unfinishedList")
-    public ResponseData unfinishedList(String mailNo) {
+    @GetMapping("unfinishedList")
+    public ResponseData unfinishedList(@RequestParam String mailNo) {
         return ResponseData.ok(mailPickingDetailService.packageUnfinishedList(mailNo));
     }
 }
