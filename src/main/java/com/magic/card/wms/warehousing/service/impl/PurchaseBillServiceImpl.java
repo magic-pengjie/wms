@@ -73,7 +73,9 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	private IStorehouseConfigService storehouseConfigService;
 	@Autowired
 	private CommodityInfoMapper commodityInfoMapper;
-
+	@Autowired
+	private IWarningAgentInfoService warningAgentInfoService;
+	
 	@Override
 	public Page<PurchaseBillVO> selectPurchaseBillList(BillQueryDTO dto, PageInfo pageInfo) {
 		long total = purchaseBillMapper.selectPurchaseBillListCount(dto);
@@ -225,8 +227,15 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		if(StringUtils.isEmpty(dataList)) {
 			throw new BusinessException(ResultEnum.purchase_file_size_zero);
 		}
+		String isFoodStr = ((PurchaseBillExcelVO)dataList.get(0)).getIsFoodStr();
 		PurchaseBill bill = new PurchaseBill();
 		BeanUtils.copyProperties(dataList.get(0),bill);
+		if("是".equals(isFoodStr)) {
+			bill.setIsFood(Constants.ONE);
+		}else {
+			bill.setIsFood(Constants.ZERO);
+		}
+		
 		List<PurchaseBillDetail> detailList = new ArrayList<PurchaseBillDetail>();
 		dataList.forEach(data->{
 			PurchaseBillDetail detail = new PurchaseBillDetail();
@@ -327,12 +336,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 						long date = DateUtil.getTwoDays(DateUtil.getStringDateShort(), detail.getProductionDate());
 						if(date>(detail.getShilfLife()/2)) {
 							//生成预警信息
-							WarningAgentInfo warningAgentInfo = new WarningAgentInfo();
-							warningAgentInfo.setFid(String.valueOf(bill.getId()));
-							warningAgentInfo.setTypeCode(AgentTypeEnum.food.getCode());
-							warningAgentInfo.setTypeName(AgentTypeEnum.food.getName());
-							warningAgentInfo.setAgentName("采购单:"+bill.getPurchaseNo()+"食品保质期预警");
-							warningAgentInfo.setAgentState(Constants.STATE_0);
+							WarningAgentInfo warningAgentInfo = warningAgentInfo(bill);
 							warningAgentInfo.insert();
 							return "生产日期至今已超过保质期天数一半";
 						}
@@ -345,5 +349,52 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		}
 		return null;
 	}
+
+	/**
+	 * 生成预警信息
+	 * @param bill
+	 * @return
+	 */
+	public WarningAgentInfo warningAgentInfo(PurchaseBill bill) {
+		WarningAgentInfo warningAgentInfo = new WarningAgentInfo();
+		warningAgentInfo.setFid(String.valueOf(bill.getId()));
+		warningAgentInfo.setTypeCode(AgentTypeEnum.food.getCode());
+		warningAgentInfo.setTypeName(AgentTypeEnum.food.getName());
+		warningAgentInfo.setAgentName("采购单:"+bill.getPurchaseNo()+"生产日期至今已超过保质期天数一半");
+		warningAgentInfo.setAgentState(Constants.STATE_0);
+		return warningAgentInfo;
+	}
+	
+	/**
+	 * 食品预警 每次查询100条采购单
+	 */
+	@Override
+	public void FoodWarningTask() {
+		PageInfo pageInfo = new PageInfo<>();
+		pageInfo.setPageSize(100);
+		Page<PurchaseBillVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
+		List<PurchaseBill> list = purchaseBillMapper.getFoodWarningList(page);
+		int current = 1;
+		while(!ObjectUtils.isEmpty(list)) {
+			try {
+				log.info("FoodWarningTask select size:{}",list.size());
+				List<WarningAgentInfo> warningList = new ArrayList<WarningAgentInfo>(list.size()<100?list.size():100);
+				list.forEach(bill->{
+					warningList.add(warningAgentInfo(bill));
+				});
+				warningAgentInfoService.insertBatch(warningList);
+				if(list.size()<100) {
+					break;
+				}
+				current++;
+				page.setCurrent(current);
+				list = purchaseBillMapper.getFoodWarningList(page);
+			} catch (Exception e) {
+				log.error("FoodWarningTask error:{}",e);
+			}
+		}
+		
+	}
+	
 	
 }

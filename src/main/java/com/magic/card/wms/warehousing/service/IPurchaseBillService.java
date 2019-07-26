@@ -66,4 +66,9 @@ public interface IPurchaseBillService extends IService<PurchaseBill> {
 	 */
 	String confirm(ComfirmReqDTO dto);
 	
+	/**
+	 * 食品预警任务
+	 */
+	void FoodWarningTask();
+	
 }

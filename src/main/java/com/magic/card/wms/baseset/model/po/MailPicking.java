@@ -85,4 +85,8 @@ public class MailPicking extends BasePo implements Serializable {
      * 发送失败原因
      */
     private String failReason;
+    /**
+     * 物流状态0:无 1:有 9完成
+     */
+    private Integer logisticsState;
 }

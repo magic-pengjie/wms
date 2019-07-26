@@ -41,5 +41,16 @@
 		 </where>
 		
 	</select>
+	
+	<select id="selectUnsalableGood" resultType="com.magic.card.wms.baseset.model.vo.UnsalableGoodVO">
+		select distinct ci.id,ci.commodity_code,ci.commodity_name,ci.customer_id,
+		cbi.customer_code,cbi.customer_name,DATE_FORMAT(woc.create_time,'%Y-%m-%d') last_date
+		 from  wms_commodity_info ci
+		 	   left join wms_customer_base_info cbi on ci.customer_id=cbi.id
+		 	   left join wms_order_commodity woc on ci.commodity_code=woc.bar_code and woc.state=1
+		 where woc.id is  null 
+		 	   or woc.create_time &gt;= (SELECT DATE_ADD(now(), INTERVAL ${month} MONTH))
+		 	  order by ci.commodity_code 
+	</select>
 
 </mapper>
