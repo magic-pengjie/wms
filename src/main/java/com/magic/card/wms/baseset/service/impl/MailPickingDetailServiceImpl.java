@@ -7,24 +7,30 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.MailPickingDetailMapper;
+import com.magic.card.wms.baseset.model.po.CommodityReplenishment;
 import com.magic.card.wms.baseset.model.po.MailPickingDetail;
+import com.magic.card.wms.baseset.model.po.StorehouseConfig;
+import com.magic.card.wms.baseset.service.ICommodityReplenishmentService;
 import com.magic.card.wms.baseset.service.IMailPickingDetailService;
+import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.common.utils.CommodityUtil;
-import com.magic.card.wms.common.utils.PoUtil;
-import com.magic.card.wms.common.utils.WebUtil;
+import com.magic.card.wms.common.model.enums.StoreTypeEnum;
+import com.magic.card.wms.common.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -37,6 +43,10 @@ import java.util.*;
 @Slf4j
 @Service
 public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailMapper, MailPickingDetail> implements IMailPickingDetailService {
+    @Autowired
+    private IStorehouseConfigService storehouseConfigService;
+    @Autowired
+    private ICommodityReplenishmentService commodityReplenishmentService;
     @Autowired
     private WebUtil webUtil;
 
@@ -195,5 +205,60 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
         }
 
         return null;
+    }
+
+    /**
+     * 拣货单商品数据对应库存不足时通知处理
+     *
+     * @param pickNo
+     */
+    @Override
+    public void needNoticeReplenishment(String pickNo) {
+        List<Map> noticeReplenishments = baseMapper.needNoticeReplenishment(pickNo, BillState.order_cancel.getCode(), StoreTypeEnum.JHQ.getCode());
+
+        if (CollectionUtils.isNotEmpty(noticeReplenishments)) {
+//            Map<String, List> commodityReplenishmentInfos = Maps.newLinkedHashMap();
+//            List<String> commodityIds = Lists.newArrayList();
+            CommodityReplenishment baseCommodityReplenishment = new CommodityReplenishment();
+            PoUtil.add(baseCommodityReplenishment, webUtil.operator());
+            List<StorehouseConfig> updateStorehouseConfigs = Lists.newArrayList();
+            StorehouseConfig baseUpdateStorehouseConfig = new StorehouseConfig();
+            PoUtil.update(baseUpdateStorehouseConfig, webUtil.operator());
+            List<CommodityReplenishment> commodityReplenishments = noticeReplenishments.
+                    stream().
+                    filter(noticeReplenishment -> {
+                        // 减库存
+                        StorehouseConfig storehouseConfig = new StorehouseConfig();
+                        BeanUtils.copyProperties(baseUpdateStorehouseConfig, storehouseConfig);
+                        storehouseConfig.setId(MapUtils.getLong(noticeReplenishment, "id"));
+                        storehouseConfig.setAvailableNums(MapUtils.getInteger(noticeReplenishment, "omitNums") * -1);
+                        updateStorehouseConfigs.add(storehouseConfig);
+                        return MapUtils.getInteger(noticeReplenishment, "omitNums") > 0;
+                    }).
+                    map(noticeReplenishment -> {
+                        // commodityIds.add(MapUtils.getString(noticeReplenishment, "commodityId"));
+                        CommodityReplenishment commodityReplenishment = new CommodityReplenishment();
+                        BeanUtils.copyProperties(baseCommodityReplenishment, commodityReplenishment);
+
+                        commodityReplenishment.setReplenishmentNo(GeneratorCodeUtil.dataTime(5));
+                        commodityReplenishment.setCommodityId(MapUtils.getString(noticeReplenishment, "commodityId"));
+                        commodityReplenishment.setCheckoutId(MapUtils.getString(noticeReplenishment, "storehouseId"));
+                        commodityReplenishment.setStockoutNums(MapUtils.getInteger(noticeReplenishment, "omitNums"));
+                        commodityReplenishment.setReplenishmentNums(MapUtils.getInteger(noticeReplenishment, "omitNums"));
+                        return commodityReplenishment;
+                    }).
+                    collect(Collectors.toList());
+
+            commodityReplenishmentService.insertBatch(commodityReplenishments);
+            storehouseConfigService.updateBatchById(updateStorehouseConfigs);
+
+//            List<Map> commodityStorage = storehouseConfigService.recommendCustomerCommodityStorage(commodityIds);
+//
+//            EntityWrapper<CommodityReplenishment> entityWrapper = new EntityWrapper();
+//            entityWrapper.in("commodity_id", commodityIds).
+//                    eq("state", StateEnum.normal.getCode()).
+//                    ne("process_stage", BillState.replenishment_processing.getCode());
+//            List<CommodityReplenishment> list = commodityReplenishmentService.selectList(entityWrapper);
+        }
     }
 }

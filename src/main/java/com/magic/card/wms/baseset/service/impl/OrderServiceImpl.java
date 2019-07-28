@@ -140,12 +140,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     /**
      * 导入其他系统订单
      *
-     * @param orderInfoDTO
+     * @param orderInfoDTO 订单信息
      */
     @Override @Transactional
     public void importOrder(OrderInfoDTO orderInfoDTO) {
-//        String operator = webUtil.operator();
-        String operator = Constants.DEFAULT_USER;
+        String operator = webUtil.operator();
 
         // 订单取消
         if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
@@ -169,7 +168,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         processOrderCommodities(orderInfoDTO.getCommodities(), order, customerBaseInfo.getId());
         // 触发生成拣货单 同检验拣货区商品是否充足
         new Thread(() ->
-            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 1)
+            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 20)
         ).start();
     }
 

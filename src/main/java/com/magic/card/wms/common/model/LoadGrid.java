@@ -33,7 +33,7 @@ public class LoadGrid {
      * 每页显示条数，默认 10
      */
     @ApiModelProperty("每页数据，默认 10 条")
-    private int size = 10;
+    private int pageSize = 10;
 
     /**
      * 当前页
@@ -62,7 +62,7 @@ public class LoadGrid {
     private List rows = Collections.emptyList();
 
     public Page generatorPage() {
-        return new Page<>(this.current, this.size);
+        return new Page<>(this.current, this.pageSize);
     }
 
     /**

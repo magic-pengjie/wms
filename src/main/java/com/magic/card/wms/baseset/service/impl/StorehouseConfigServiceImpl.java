@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
 import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
+import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
@@ -51,6 +53,9 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     static {
         DEFAULT_COLUMNS.put("id", "wsc.id");
         DEFAULT_COLUMNS.put("state", "wsc.state");
+        DEFAULT_COLUMNS.put("skuName", "wcs.sku_name");
+        DEFAULT_COLUMNS.put("commodityCode", "wcs.bar_code");
+
         DEFAULT_COLUMNS.put("houseCode", "wsi.house_code");
         DEFAULT_COLUMNS.put("storeCode", "wsi.store_code");
         DEFAULT_COLUMNS.put("customerCode", "wcbi.customer_code");
@@ -102,6 +107,38 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     }
 
     /**
+     * 批量配置库位信息
+     *
+     * @param batchStorehouseConfig
+     */
+    @Override
+    public void batchConfig(BatchStorehouseConfigDTO batchStorehouseConfig) {
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.in("storehouse_id", batchStorehouseConfig.getStorehouseIds()).
+                eq("state", StateEnum.normal.getCode());
+
+        if (selectCount(entityWrapper) > 0) {
+            throw OperationException.customException(ResultEnum.data_check_exist, "库位已经被配置");
+        }
+
+        // todo 拣货区商品库位限制
+        StorehouseConfig baseConfig = new StorehouseConfig();
+        BeanUtils.copyProperties(batchStorehouseConfig, baseConfig);
+        PoUtil.add(baseConfig, webUtil.operator());
+        List<StorehouseConfig> storehouseConfigs = Lists.newArrayList();
+
+        for (String storehouseId :
+                batchStorehouseConfig.getStorehouseIds()) {
+            StorehouseConfig storehouseConfig = new StorehouseConfig();
+            BeanUtils.copyProperties(baseConfig, storehouseConfig);
+            storehouseConfig.setStorehouseId(storehouseId);
+            storehouseConfigs.add(storehouseConfig);
+        }
+
+        insertBatch(storehouseConfigs);
+    }
+
+    /**
      * 修改库位配置
      *
      * @param storehouseConfigDTO
@@ -117,6 +154,8 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         if (this.baseMapper.updateById(config) < 1) {
             throw OperationException.DATA_OPERATION_UPDATE;
         }
+
+
 
     }
 
@@ -276,5 +315,23 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         }).collect(Collectors.toList());
 
         insertBatch(storehouseConfigs);
+    }
+
+    /**
+     * 推荐存储库位信息
+     *
+     * @param commodityIds 客户关系商品IDs
+     * @return
+     */
+    @Override
+    public List<Map> recommendCustomerCommodityStorage(List<String> commodityIds) {
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.
+                in("wsc.commodity_id", commodityIds).
+                eq("wsi.house_code", StoreTypeEnum.CCQ.getCode()).
+                eq("wsi.state", StateEnum.normal.getCode()).
+                gt("wsc.available_nums", 0).
+                orderBy("wsc.entry_time, wsc.end_time, wsc.available_nums");
+        return baseMapper.loadGrid(null, entityWrapper);
     }
 }

@@ -72,4 +72,10 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
      * @return
      */
     Map<String, List> loadBatchPackageCommodity(List<String> mails);
+
+    /**
+     * 拣货单商品数据对应库存不足时通知处理
+     * @param pickNo
+     */
+    void needNoticeReplenishment(String pickNo);
 }

@@ -31,7 +31,7 @@ public class PickingBill extends BasePo implements Serializable {
      * 是否B2B
      */
     @TableField("is_B2B")
-    private Boolean isB2b;
+    private int isB2b;
     /**
      * 流程阶段
      */
@@ -40,12 +40,4 @@ public class PickingBill extends BasePo implements Serializable {
      * 创建:save  拣货中:picking 拣货完成finish ;拣货异常:exception ;作废 cancel
      */
     private String billState;
-
-    public Boolean getB2b() {
-        return isB2b;
-    }
-
-    public void setB2b(Boolean b2b) {
-        isB2b = b2b;
-    }
 }

@@ -108,6 +108,10 @@
 		SELECT
 			wsc.id,
 			wsc.state,
+			wsc.customer_id customerId,
+			wsc.store_nums storeNums,
+			wcs.sku_name skuName,
+			wcs.bar_code commodityCode,
 			wsi.house_code houseCode,
 			wsi.store_code storeCode,
 			wcbi.customer_code customerCode,
@@ -115,7 +119,10 @@
 		FROM
 			wms_storehouse_config wsc
 			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+			LEFT JOIN wms_commodity_info wci ON wsc.commodity_id = wci.id
+			LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code
 			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
+
 		<where>
 			${ew.sqlSegment}
 		</where>

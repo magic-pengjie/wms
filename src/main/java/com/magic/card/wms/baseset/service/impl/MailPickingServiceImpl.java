@@ -219,7 +219,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
         // 获取对应的拣货篮信息
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("mail_no", mailNo).
-				ne("is_finish", true).
+				ne("is_finish", 1).
                 ne("state", StateEnum.delete.getCode());
         MailPicking mailPicking = selectOne(wrapper);
 

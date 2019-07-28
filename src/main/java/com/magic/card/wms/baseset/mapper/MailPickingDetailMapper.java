@@ -48,4 +48,13 @@ public interface MailPickingDetailMapper extends BaseMapper<MailPickingDetail> {
      * @return
      */
     List<Map> batchLoadMailCommodity(@Param("ew") EntityWrapper entityWrapper);
+
+    /**
+     * 获取需要提示补货的数据清单
+     * @param pickNo 拣货单号
+     * @param billState 订单状态
+     * @param houseCode 库位性质
+     * @return
+     */
+    List<Map> needNoticeReplenishment(@Param("pickNo") String pickNo, @Param("billState") String billState, @Param("houseCode") String houseCode);
 }

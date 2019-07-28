@@ -67,7 +67,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     public LoadGrid loadGrid(LoadGrid loadGrid) {
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper<>();
-        wrapper.eq("wsi.state", Constants.ACTIVITY_STATE);
+        wrapper.ne("wsi.state", StateEnum.delete.getCode());
 
         if (MapUtils.isNotEmpty(loadGrid.getSearch())) {
 
@@ -104,7 +104,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         LinkedList<StorehouseInfo> storehouses = Lists.newLinkedList();
         LinkedList<String> storeCodes = Lists.newLinkedList();
         checkStoreArea(batchStorehouseDTO.getHouseCode(), batchStorehouseDTO.getAreaCode());
-        for (int storeNo = batchStorehouseDTO.getStoreMaxNo(); storeNo <= batchStorehouseDTO.getStoreMaxNo(); storeNo++) {
+        for (int storeNo = batchStorehouseDTO.getStoreMinNo(); storeNo <= batchStorehouseDTO.getStoreMaxNo(); storeNo++) {
 
             String number = RandomStringUtils.random(
                     batchStorehouseDTO.getStoreMaxNo().toString().length() - ("" + storeNo).length(),
@@ -149,10 +149,41 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     @Override
     public void stop(String... ids) {
         StorehouseInfo storehouseInfo = new StorehouseInfo();
-        storehouseInfo.setState(3); // 停用库位
+        storehouseInfo.setState(StateEnum.storehouse_stop.getCode()); // 停用库位
         PoUtil.update(storehouseInfo, webUtil.operator());
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.in("id", ids).eq("state", StateEnum.normal.getCode());
+        update(storehouseInfo, wrapper);
+    }
+
+    /**
+     * 加载商家绑定的库位
+     *
+     * @param loadGrid
+     * @param customerCode
+     * @return
+     */
+    @Override
+    public LoadGrid comboGridBind(LoadGrid loadGrid, String customerCode) {
+        Page page = loadGrid.generatorPage();
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.eq("wcbi.customer_code", customerCode).eq("wsi.state", StateEnum.normal.getCode());
+        loadGrid.finallyResult(page, baseMapper.comboGridBind(page, entityWrapper));
+        return loadGrid;
+    }
+
+    /**
+     * 批量激活庫位
+     *
+     * @param ids
+     */
+    @Override
+    public void batchActivate(String[] ids) {
+        StorehouseInfo storehouseInfo = new StorehouseInfo();
+        storehouseInfo.setState(StateEnum.normal.getCode()); // 停用库位
+        PoUtil.update(storehouseInfo, webUtil.operator());
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.in("id", ids).eq("state", StateEnum.storehouse_stop.getCode());
         update(storehouseInfo, wrapper);
     }
 

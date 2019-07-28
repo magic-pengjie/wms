@@ -251,7 +251,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         // 获取系统中所有满足要求的订单(订单客户)
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("state", StateEnum.normal.getCode()).
-                eq("is_b2b", false).
+                eq("is_b2b", 0).
                 // 15分钟锁定订单
                 gt("create_time", DateTime.now().minusMinutes(15)).
                 groupBy("customer_code").
@@ -340,7 +340,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
             );
             String realMail = expressProviderManager.useExpressNo(order.getExpressKey());
             MailPicking mailPicking = new MailPicking();
-            mailPicking.setOrderNo(order.getOrderNo());
+            mailPicking.setOrderNo(order.getSystemOrderNo());
             mailPicking.setPickNo(pickingBill.getPickNo());
             mailPicking.setBasketNum(basketNum);
             //获取快递单号
@@ -371,6 +371,9 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
             orderService.updateById(order);
             // endregion
         }
+
+        // TODO 拣货区库存对应减少，若拣货区库存小于拣货单所需值怎已负值形式展现，同时库存是否充足，若不足则通知补货
+        mailPickingDetailService.needNoticeReplenishment(pickNo);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.magic.card.wms.baseset.controller;
 import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
@@ -64,7 +65,24 @@ public class StorehouseInfoController {
         return ResponseData.ok();
     }
 
+    @ApiOperation("庫位批量停用")
+    @PostMapping("batchStop")
+    public ResponseData batchStop(@RequestJsonParam String[] ids) {
+        storehouseInfoService.stop(ids);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("庫位批量停用")
+    @PostMapping("batchActivate")
+    public ResponseData batchActivate(@RequestJsonParam String[] ids) {
+        storehouseInfoService.batchActivate(ids);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("批量添加")
+    @PostMapping("batchAdd")
     public ResponseData batchAdd(@RequestBody @Valid BatchStorehouseDTO batchStorehouseDTO, BindingResult result) {
+        storehouseInfoService.batchAdd(batchStorehouseDTO);
         return ResponseData.ok();
     }
 
@@ -86,5 +104,11 @@ public class StorehouseInfoController {
     @PostMapping("comboGridNotBind")
     public ResponseData comboGridNotBind(@RequestBody LoadGrid loadGrid) {
         return ResponseData.ok(storehouseInfoService.comboGridNotBind(loadGrid));
+    }
+
+    @ApiOperation(value = "获取所有绑定商家的库位信息(分页搜索查询)")
+    @PostMapping("comboGridBind")
+    public ResponseData comboGridBind(@RequestJsonParam LoadGrid loadGrid, @RequestJsonParam String customerCode) {
+        return ResponseData.ok(storehouseInfoService.comboGridBind(loadGrid, customerCode));
     }
 }

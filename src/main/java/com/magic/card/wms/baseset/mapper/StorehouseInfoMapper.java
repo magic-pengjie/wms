@@ -35,4 +35,12 @@ public interface StorehouseInfoMapper extends BaseMapper<StorehouseInfo> {
      * @return
      */
     List<Map> comboGrid(Page page, @Param("ew") EntityWrapper entityWrapper);
+
+    /**
+     * 加载商家未绑定商品的库位数据
+     * @param page 分页
+     * @param entityWrapper 查询信息
+     * @return
+     */
+    List<Map> comboGridBind(Page page, @Param("ew") EntityWrapper entityWrapper);
 }

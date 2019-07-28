@@ -1,13 +1,12 @@
 package com.magic.card.wms.baseset.service;
 
-import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.common.model.LoadGrid;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -86,7 +85,7 @@ public interface ICustomerBaseInfoService extends IService<CustomerBaseInfo> {
      * 批量绑定商品
      * @param batchBindCommodity
      */
-    void batchBindCommodity(BatchBindCommodity batchBindCommodity);
+    void batchBindCommodity(BatchBindCommodityDTO batchBindCommodity);
 
     /**
      * 批量解绑

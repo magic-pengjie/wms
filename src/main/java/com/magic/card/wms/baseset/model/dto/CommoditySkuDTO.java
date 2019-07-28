@@ -59,11 +59,16 @@ public class CommoditySkuDTO implements Serializable {
     private String modelNo;
 
     /**
+     *是否是耗材
+     */
+    @ApiModelProperty("是否是耗材")
+    private int isConsumable;
+
+    /**
      * 是否是食品
      */
     @ApiModelProperty("是否是食品")
-    @NotNull
-    private Boolean isFoodstuff;
+    private int isFoodstuff;
 
     /**
      * 商品单位
@@ -95,12 +100,4 @@ public class CommoditySkuDTO implements Serializable {
 
     @ApiModelProperty("备注")
     private String remark;
-
-    public Boolean getFoodstuff() {
-        return isFoodstuff;
-    }
-
-    public void setFoodstuff(Boolean foodstuff) {
-        isFoodstuff = foodstuff;
-    }
 }

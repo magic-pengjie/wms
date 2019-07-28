@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Data
 @ApiModel("批量绑定商品")
-public class BatchBindCommodity implements Serializable {
+public class BatchBindCommodityDTO implements Serializable {
     private static final long serialVersionUID = 41456295728821164L;
     /**
      * 商家ID

@@ -24,11 +24,11 @@ public class CommodityReplenishment extends BasePo implements Serializable {
     /**
      * 补货单号
      */
-    private Long replenishmentNo;
+    private String replenishmentNo;
     /**
      * 客户商品ID
      */
-    private Long commodityId;
+    private String commodityId;
     /**
      * 存储库位ID
      */
@@ -48,9 +48,13 @@ public class CommodityReplenishment extends BasePo implements Serializable {
     /**
      * 是否清库
      */
-    private Boolean isFinally;
+    private int isFinally;
     /**
      * 流程状态
      */
     private String processStage;
+
+    public int getFinally() {
+        return isFinally;
+    }
 }

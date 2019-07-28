@@ -4,20 +4,19 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.CustomerBaseInfo">
-        <id column="id" property="id" />
-        <result column="customer_code" property="customerCode" />
-        <result column="customer_name" property="customerName" />
-        <result column="brand_id" property="brandId" />
-        <result column="address" property="address" />
-        <result column="contact_person" property="contactPerson" />
-        <result column="state" property="state" />
-        <result column="create_time" property="createTime" />
-        <result column="create_user" property="createUser" />
-        <result column="update_time" property="updateTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="remark" property="remark" />
+        <id column="id" property="id"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="brand_id" property="brandId"/>
+        <result column="address" property="address"/>
+        <result column="contact_person" property="contactPerson"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="remark" property="remark"/>
     </resultMap>
-
 
 
     <!-- 通用查询结果列 -->
@@ -36,9 +35,9 @@
     </sql>
 
     <select id="loadGrid" resultType="java.util.Map">
-        select
-            <include refid="select_cbf"></include>
-        from <include refid="table_cbf"></include>
+        select cbf.id, cbf.customer_name customerName, cbf.customer_code customerCode, cbf.address, cbf.phone,
+        cbf.contact_person contactPerson, cbf.store_area storeArea, cbf.unit_price unitPrice
+        from wms_customer_base_info cbf
         <where>
             ${ew.sqlSegment}
         </where>
@@ -62,24 +61,24 @@
     -->
     <select id="loadCustomerCommodities" resultType="java.util.Map">
         SELECT
-            wci.id,
-            wcbi.id customerId,
-            wcbi.customer_name customerName,
-            wcs.sku_name skuName,
-            wcs.sku_code skuCode,
-            wcs.spec,
-            wcs.model_no modelNo,
-            wcs.bar_code barCode,
-            wcs.single_volume singleVolume,
-            wcs.single_volume_unit	singleVolumeUnit,
-            wcs.single_weight singleWeight,
-            wcs.single_weight_unit singleWeightUnit,
-            wcs.single_unit singleUnit,
-            wci.id customerCommodityId
+        wci.id,
+        wcbi.id customerId,
+        wcbi.customer_name customerName,
+        wcs.sku_name skuName,
+        wcs.sku_code skuCode,
+        wcs.spec,
+        wcs.model_no modelNo,
+        wcs.bar_code barCode,
+        wcs.single_volume singleVolume,
+        wcs.single_volume_unit singleVolumeUnit,
+        wcs.single_weight singleWeight,
+        wcs.single_weight_unit singleWeightUnit,
+        wcs.single_unit singleUnit,
+        wci.id customerCommodityId
         FROM
-            wms_customer_base_info wcbi
-            LEFT JOIN wms_commodity_info wci ON wcbi.id = wci.customer_id
-            LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
+        wms_customer_base_info wcbi
+        LEFT JOIN wms_commodity_info wci ON wcbi.id = wci.customer_id
+        LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
         <where>
             ${ew.sqlSegment}
         </where>
@@ -87,18 +86,19 @@
     <!--  商品商家全量数据  -->
     <select id="comboGridCommodities" resultType="java.util.Map">
         SELECT
-            wcs.id,
-            wcs.bar_code barCode,
-            wcs.sku_name,
-            wcs.banner,
-            wcs.spec,
-            wcs.model_no modelNo,
-            wcs.is_foodstuff isFoodstuff
+        DISTINCT
+        wcs.id,
+        wcs.bar_code barCode,
+        wcs.sku_name skuName,
+        wcs.banner,
+        wcs.spec,
+        wcs.model_no modelNo,
+        wcs.is_foodstuff isFoodstuff
         FROM
-            wms_commodity_sku wcs
-            INNER JOIN wms_customer_base_info wcbi
-            LEFT JOIN wms_commodity_info wci ON wci.customer_id = wcbi.id
-            AND wci.commodity_code = wcs.bar_code
+        wms_commodity_sku wcs
+        INNER JOIN wms_customer_base_info wcbi
+        LEFT JOIN wms_commodity_info wci ON wci.customer_id = wcbi.id
+        AND wci.commodity_code = wcs.bar_code
         <where>
             ${ew.sqlSegment}
         </where>

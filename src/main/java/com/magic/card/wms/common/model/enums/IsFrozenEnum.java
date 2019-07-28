@@ -9,18 +9,18 @@ import lombok.Getter;
 @Getter
 public enum IsFrozenEnum {
 
-	UNFROZEN("N","未冻结"),
-	FROZEN("Y","正常");
+	UNFROZEN(0,"未冻结"),
+	FROZEN(1,"正常");
 	
-	private String code;
+	private int code;
 	private String desc;
 	
-	private IsFrozenEnum(String code, String desc) {
+	private IsFrozenEnum(int code, String desc) {
 		this.code = code;
 		this.desc = desc;
 	}
 	
-	public static String getDescByCode(String code) {
+	public static String getDescByCode(int code) {
 		for (IsFrozenEnum e : IsFrozenEnum.values()) {
 			if(e.getCode() == code) {
 				return e.getDesc();

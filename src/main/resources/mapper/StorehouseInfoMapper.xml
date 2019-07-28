@@ -4,18 +4,18 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.StorehouseInfo">
-        <id column="id" property="id" />
-        <result column="store_code" property="storeCode" />
-        <result column="house_code" property="houseCode" />
-        <result column="area_code" property="areaCode" />
-        <result column="is_frozen" property="isFrozen" />
-        <result column="priority_value" property="priorityValue" />
-        <result column="state" property="state" />
-        <result column="create_time" property="createTime" />
-        <result column="create_user" property="createUser" />
-        <result column="update_time" property="updateTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="remark" property="remark" />
+        <id column="id" property="id"/>
+        <result column="store_code" property="storeCode"/>
+        <result column="house_code" property="houseCode"/>
+        <result column="area_code" property="areaCode"/>
+        <result column="is_frozen" property="isFrozen"/>
+        <result column="priority_value" property="priorityValue"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="remark" property="remark"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
@@ -24,10 +24,11 @@
     </sql>
     <select id="loadGrid" resultType="java.util.Map">
         SELECT
-            wsi.id, wsi.house_code houseCode, wdi.dict_name houseName, wsi.area_code areaCode, wsi.store_code storeCode
+        wsi.id, wsi.house_code houseCode, wdi.dict_name houseName, wsi.area_code areaCode, wsi.store_code storeCode,
+        wsi.state
         FROM
-            wms_storehouse_info wsi
-            LEFT JOIN wms_dict_info wdi ON wsi.house_code = wdi.dict_code
+        wms_storehouse_info wsi
+        LEFT JOIN wms_dict_info wdi ON wsi.house_code = wdi.dict_code
         <where>
             ${ew.sqlSegment}
         </where>
@@ -35,15 +36,22 @@
     <!--  库位的信息  -->
     <select id="comboGrid" resultType="java.util.Map">
         SELECT
-            wsi.id, wsi.area_code areaCode, wsi.house_code houseCode, wsi.store_code storeCode, wsi.state
+        DISTINCT wsi.id, wsi.area_code areaCode, wsi.house_code houseCode, wsi.store_code storeCode, wsi.state
         FROM
-            wms_storehouse_info wsi
-            INNER JOIN wms_customer_base_info wcbi
-            LEFT JOIN wms_storehouse_config wsc ON wsc.storehouse_id = wsi.id
-            AND wsc.customer_id = wcbi.id
+        wms_storehouse_info wsi
+        INNER JOIN wms_customer_base_info wcbi
+        LEFT JOIN wms_storehouse_config wsc ON wsc.storehouse_id = wsi.id
+        AND wsc.customer_id = wcbi.id
         <where>
             ${ew.sqlSegment}
         </where>
+    </select>
+    <select id="comboGridBind" resultType="java.util.Map">
+        select wsi.id, wsi.store_code storeCode, wsi.house_code houseCode, wsi.area_code areaCode from wms_storehouse_config wsc
+        left join wms_customer_base_info wcbi on wcbi.id = wsc.customer_id
+        left join wms_storehouse_info wsi on wsc.storehouse_id = wsi.id
+        left join wms_commodity_info wci on wsc.commodity_id = wci.id
+        <where>${ew.sqlSegment}</where>
     </select>
 
 </mapper>

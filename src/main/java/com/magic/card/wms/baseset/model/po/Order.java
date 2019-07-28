@@ -82,12 +82,12 @@ public class Order extends BasePo implements Serializable {
     /**
      * 是否是批量订单
      */
-    private boolean isBatch;
+    private int isBatch;
 
     /**
      * 是否B2B
      */
-    private boolean isB2b;
+    private int isB2b;
     /**
      * 商品金额
      */
@@ -96,12 +96,4 @@ public class Order extends BasePo implements Serializable {
      * 单据状态(保存:save确认:confirm 作废及退单:cancel )
      */
     private String billState;
-
-    public boolean getB2b() {
-        return isB2b;
-    }
-
-    public boolean getBatch() {
-        return isBatch;
-    }
 }

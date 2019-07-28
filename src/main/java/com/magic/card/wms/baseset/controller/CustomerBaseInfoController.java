@@ -1,6 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
-import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.magic.card.wms.common.annotation.RequestJsonParam;
@@ -45,7 +45,7 @@ public class CustomerBaseInfoController {
     public ResponseData comboGrid() {
         LoadGrid loadGrid = new LoadGrid();
         loadGrid.setCurrent(1);
-        loadGrid.setSize(1000);
+        loadGrid.setPageSize(1000);
         customerBaseInfoService.loadGrid(loadGrid);
         return ResponseData.ok(loadGrid.getRows());
     }
@@ -87,13 +87,13 @@ public class CustomerBaseInfoController {
 
     @ApiOperation("批量绑定商品")
     @PostMapping("batchBindCommodities")
-    public ResponseData batchBindCommodities(@Valid @RequestBody BatchBindCommodity batchBindCommodity, BindingResult bindingResult) {
+    public ResponseData batchBindCommodities(@Valid @RequestBody BatchBindCommodityDTO batchBindCommodity, BindingResult bindingResult) {
         customerBaseInfoService.batchBindCommodity(batchBindCommodity);
         return ResponseData.ok();
     }
     @ApiOperation("批量解除绑定")
-    @GetMapping("batchUnbindCommodities")
-    public ResponseData batchUnbindCommodities(@RequestParam List<String> ids) {
+    @PostMapping("batchUnbindCommodities")
+    public ResponseData batchUnbindCommodities(@RequestJsonParam List<String> ids) {
         customerBaseInfoService.batchUnbindCommodity(ids);
         return ResponseData.ok();
     }

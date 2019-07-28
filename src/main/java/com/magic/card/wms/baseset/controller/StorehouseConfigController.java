@@ -5,9 +5,12 @@ import java.util.List;
 import javax.validation.Valid;
 
 import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
+import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.xml.Response;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.BindingResultUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,14 +56,21 @@ public class StorehouseConfigController {
 
     @ApiOperation(value = "新增库位配置数据基本信息")
     @PostMapping("add")
-    public ResponseData add(@RequestBody @Valid StorehouseConfigDTO dto, BindingResult result) {
+    public ResponseData add(@RequestBody @Valid StorehouseConfigDTO dto, BindingResult bindingResult) {
         storehouseConfigService.add(dto, Constants.DEFAULT_USER);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation(value = "批量新增库位配置数据基本信息")
+    @PostMapping("batchConfig")
+    public ResponseData batchConfig(@RequestBody @Valid BatchStorehouseConfigDTO batchStorehouseConfig, BindingResult bindingResult) {
+        storehouseConfigService.batchConfig(batchStorehouseConfig);
         return ResponseData.ok();
     }
 
     @ApiOperation(value = "修改库位配置数据基本信息")
     @PostMapping("update")
-    public ResponseData update(@RequestBody @Valid StorehouseConfigDTO dto, BindingResult result) {
+    public ResponseData update(@RequestBody @Valid StorehouseConfigDTO dto, BindingResult bindingResult) {
         storehouseConfigService.update(dto, Constants.DEFAULT_USER);
         return ResponseData.ok();
     }

@@ -23,7 +23,7 @@ public enum StoreTypeEnum {
 		this.desc = desc;
 	}
 	
-	public static String getDescByCode(String code) {
+	public static String getDescByCode(int code) {
 		for (IsFrozenEnum e : IsFrozenEnum.values()) {
 			if(e.getCode() == code) {
 				return e.getDesc();

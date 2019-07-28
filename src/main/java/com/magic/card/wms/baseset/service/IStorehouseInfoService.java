@@ -73,4 +73,18 @@ public interface IStorehouseInfoService extends IService<StorehouseInfo> {
      * @return
      */
     LoadGrid comboGridNotBind(LoadGrid loadGrid);
+
+    /**
+     * 批量激活庫位
+     * @param ids
+     */
+    void batchActivate(String[] ids);
+
+    /**
+     * 加载商家绑定的库位
+     * @param loadGrid
+     * @param customerCode
+     * @return
+     */
+    LoadGrid comboGridBind(LoadGrid loadGrid, String customerCode);
 }

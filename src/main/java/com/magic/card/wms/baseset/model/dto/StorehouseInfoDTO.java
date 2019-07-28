@@ -49,7 +49,7 @@ public class StorehouseInfoDTO implements Serializable {
     /**
      * 是否冻结库存(否:N 是:Y)
      */
-    private String isFrozen;
+    private int isFrozen;
     /**
      * 备注
      */

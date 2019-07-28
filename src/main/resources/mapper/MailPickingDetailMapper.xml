@@ -66,5 +66,31 @@
             ${ew.sqlSegment}
         </where>
     </select>
+    <select id="needNoticeReplenishment" resultType="java.util.Map">
+        SELECT
+            wsc.id,
+            wsc.commodity_id commodityId,
+            wmpd.commodity_code commodityCode,
+            wsc.storehouse_id storehouseId,
+            wsi.store_code storehouseCode,
+            wsc.available_nums availableNums,
+            sum( wmpd.package_nums ) - wsc.available_nums omitNums
+        FROM
+            wms_mail_picking_info wmpi
+            LEFT JOIN wms_mail_picking_detail wmpd ON wmpd.mail_no = wmpi.mail_no
+            LEFT JOIN wms_order_info woi ON woi.system_order_no = wmpi.order_no
+            LEFT JOIN wms_commodity_info wci ON wci.commodity_code = wmpd.commodity_code
+            LEFT JOIN wms_customer_base_info wcbi ON wcbi.customer_code = woi.customer_code
+            LEFT JOIN wms_storehouse_config wsc ON wsc.commodity_id = wci.id
+            LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+        WHERE
+            wsi.house_code = #{houseCode}  AND wmpi.pick_no = #{pickNo} AND woi.bill_state != #{billState}
+        GROUP BY
+            wsc.id,
+            wmpd.commodity_code,
+            wsc.storehouse_id,
+            wsi.store_code,
+            wsc.commodity_id
+    </select>
 
 </mapper>

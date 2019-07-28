@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.google.common.collect.Maps;
-import com.magic.card.wms.baseset.model.dto.BatchBindCommodity;
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.CustomerBaseInfoDTO;
 import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
@@ -163,6 +163,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("wcbi.customer_code", customerCode).
                 eq("wcs.state", StateEnum.normal.getCode()).
+                eq("wcs.is_consumable", 0).
                 isNull("wci.id");
 
         loadGrid.finallyResult(page, baseMapper.comboGridCommodities(page, wrapper));
@@ -205,7 +206,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
      * @param batchBindCommodity
      */
     @Override
-    public void batchBindCommodity(BatchBindCommodity batchBindCommodity) {
+    public void batchBindCommodity(BatchBindCommodityDTO batchBindCommodity) {
         // 判断商家是否存在
         CustomerBaseInfo customerBaseInfo = selectById(batchBindCommodity.getCustomerId());
 
@@ -226,8 +227,9 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         PoUtil.add(baseCommodity, webUtil.operator());
         List<Commodity> commodities = batchBindCommodity.getCommodityCodes().stream().map(commodityCode -> {
             Commodity commodity = new Commodity();
-            commodity.setCommodityCode(commodityCode);
             BeanUtils.copyProperties(baseCommodity, commodity);
+
+            commodity.setCommodityCode(commodityCode);
             return commodity;
         }).collect(Collectors.toList());
         commodityInfoService.insertBatch(commodities);
@@ -244,7 +246,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     public LoadGrid loadCustomerCommodities(LoadGrid loadGrid, String customerId) {
         Page page = loadGrid.generatorPage();
         Wrapper wrapper = new EntityWrapper<>();
-        wrapper.eq("state", StateEnum.normal.getCode());
+        wrapper.eq("wcs.state", StateEnum.normal.getCode());
 
         if (!StringUtils.equalsIgnoreCase("all", customerId)) {
             wrapper.eq("wcbi.id", customerId);

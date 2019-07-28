@@ -12,7 +12,8 @@ public enum StateEnum {
 
 	delete(0,"删除"),
 	normal(1,"正常"),
-	order_pick(3, "订单已生成拣货单");
+	order_pick(3, "订单已生成拣货单"),
+	storehouse_stop(3, "庫位停用");
 	
 	private Integer code;
 	private String desc;

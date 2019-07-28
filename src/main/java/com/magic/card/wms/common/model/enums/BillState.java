@@ -11,6 +11,7 @@ import lombok.Getter;
  * @since : 1.0.0
  */
 public enum BillState {
+    //region 拣货单相关状态
     pick_save("save", "拣货单创建"),
     pick_ing("picking", "拣货单拣货中"),
     pick_finish("finish", "拣货单拣货完成"),
@@ -22,10 +23,17 @@ public enum BillState {
     pick_exception_error("error", "错拣货物"),
     pick_exception_omit("omit", "漏拣货物"),
     pick_exception_overflow("overflow", "多拣货物"),
-
+    //endregion
+    //region 订单相关状态
     order_save("save", "订单导入创建"),
     order_confirm("confirm", "订单确认"),
     order_cancel("cancel", "订单取消或退订"),
+    //endregion
+    //region 补货单相关状态
+    replenishment_process_create("save", "创建补货单"),
+    replenishment_processing("ing", "正在补货"),
+    replenishment_process_finished("finished", "补货完成"),
+    //endregion
     
     //盘点单据状态
     checker_save("save", "初始化"),

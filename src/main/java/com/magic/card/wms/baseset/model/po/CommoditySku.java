@@ -5,6 +5,7 @@ import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.magic.card.wms.common.model.po.BasePo;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -48,9 +49,14 @@ public class CommoditySku extends BasePo implements Serializable {
     private String modelNo;
 
     /**
+     *是否是耗材
+     */
+    private int isConsumable;
+
+    /**
      * 是否是食品
      */
-    private Boolean isFoodstuff;
+    private int isFoodstuff;
     /**
      * 商品单位
      */
@@ -72,7 +78,7 @@ public class CommoditySku extends BasePo implements Serializable {
      */
     private String singleVolumeUnit;
 
-    public Boolean getFoodstuff() {
+    public int getFoodstuff() {
         return isFoodstuff;
     }
 }

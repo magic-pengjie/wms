@@ -87,13 +87,13 @@ public class OrderInfoDTO implements Serializable {
      * 是否B2B
      */
     @ApiModelProperty("是否为B2B订单")
-    private boolean isB2b;
+    private int isB2b;
 
     /**
      * 是否B2B
      */
     @ApiModelProperty("是否为批量订单")
-    private boolean isBatch;
+    private int isBatch;
     /**
      * 商品金额
      */
