@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.ObjectUtils;
@@ -54,6 +55,9 @@ import lombok.extern.slf4j.Slf4j;
 @Api(value = "采购单据", description = "采购单据")
 @Slf4j
 public class PurchaseBillController {
+	
+	@Value("${purchase.template}")
+	private String loadPath;
 
 	@Autowired
 	private IPurchaseBillService purchaseBillService;
@@ -126,7 +130,7 @@ public class PurchaseBillController {
 		OutputStream out = null;
 		try {
 			String fileName = "采购单导入模版";
-			String path = "templates/"+fileName+".xlsx";
+			String path = "/templates/"+fileName+".xlsx";
 			Resource resource = resourceLoader.getResource("classPath:"+path);
 			EasyExcelUtil.prepareResponds(request, response, fileName, ExcelTypeEnum.XLSX);
 			in = resource.getInputStream();

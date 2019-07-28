@@ -54,7 +54,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 
 	private static String food_warning_time=" 16:00:00";
 	
-	@Value("post.query.trackingInfo.url")
+	@Value("${post.query.trackingInfo.url}")
 	private String postUrl;
 	@Autowired
 	private IMailPickingService mailPickingService;
