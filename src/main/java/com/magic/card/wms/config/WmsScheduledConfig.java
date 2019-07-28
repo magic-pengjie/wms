@@ -1,6 +1,9 @@
 package com.magic.card.wms.config;
 
+import com.magic.card.wms.baseset.service.ILogisticsTrackingInfoService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.warehousing.service.IPurchaseBillService;
+
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,26 +25,70 @@ import org.springframework.scheduling.annotation.Scheduled;
 public class WmsScheduledConfig {
     @Autowired
     private IPickingBillService pickingBillService;
+    @Autowired
+    private IPurchaseBillService purchaseBillService;
+    @Autowired
+    private ILogisticsTrackingInfoService logisticsTrackingInfoService;
 
 //    @Scheduled(cron = "0 0/30 * * * *")
     public void generatorPickingBill() {
         pickingBillService.timingGenerator();
     }
 
-//    @Scheduled(cron = "*/5 * * * * *")
-    public void run1() {
-        execute("run1");
+    /**
+     * 食品预警任务
+     **/
+    //@Scheduled(cron = "* */2 * * * *")
+    public void runFoodWarning() {
+        log.info("==>runFoodWarning start..");
+        try {
+        	 purchaseBillService.FoodWarningTask();
+             log.info("==>runFoodWarning end..");
+		} catch (Exception e) {
+			log.error("runFoodWarning error:{}",e);
+		}
+       
+    }
+    /**
+     * 滞销品预警
+     **/
+    //@Scheduled(cron = "* * */1 * * *")
+    public void runUnsalableGoodsWarning() {
+    	log.info("==>runUnsalableGoodsWarning start..");
+        try {
+             log.info("==>runUnsalableGoodsWarning end..");
+		} catch (Exception e) {
+			log.error("runUnsalableGoodsWarning error:{}",e);
+		}
     }
 
-//    @Scheduled(cron = "*/5 * * * * *")
-    public void run2() {
-        execute("run2");
+    /**
+     * 定时批量查询物流跟踪信息
+     **/
+    //@Scheduled(cron = "* */2 * * * *")
+    public void runLogisticsTrackingInfo() {
+    	log.info("==>runLogisticsTrackingInfo start..");
+        try {
+        	logisticsTrackingInfoService.runLogisticsInfo();
+             log.info("==>runLogisticsTrackingInfo end..");
+		} catch (Exception e) {
+			log.error("runLogisticsTrackingInfo error:{}",e);
+		}
+    }
+    /**
+     * 物流信息预警
+     **/
+    //@Scheduled(cron = "* */2 * * * *")
+    public void runLogisticsTrackingInfoWarning() {
+    	log.info("==>runLogisticsTrackingInfoWarning start..");
+        try {
+        	logisticsTrackingInfoService.runLogisticsInfoWarning();
+             log.info("==>runLogisticsTrackingInfoWarning end..");
+		} catch (Exception e) {
+			log.error("runLogisticsTrackingInfoWarning error:{}",e);
+		}
     }
 
-//    @Scheduled(cron = "*/5 * * * * *")
-    public void run3() {
-        execute("run3");
-    }
 
 //    @Synchronized
     public void execute(String taskName) {

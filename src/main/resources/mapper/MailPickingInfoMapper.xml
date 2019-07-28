@@ -19,6 +19,8 @@
         <result column="merge_mail_no" property="mergeMailNo" />
         <result column="send_state" property="sendState" />
         <result column="send_nums" property="sendNums" />
+        <result column="fail_reason" property="failReason" />
+        <result column="logistics_state" property="logisticsState" />
         <result column="state" property="state" />
         <result column="create_time" property="createTime" />
         <result column="create_user" property="createUser" />
@@ -29,7 +31,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, order_no, mail_no, pick_no, basket_num, preset_weight, real_weight, is_finish, merge_state, merge_mail_no, send_state, send_nums, state, create_time, create_user, update_time, update_user, remark
+        id, order_no, mail_no, pick_no, basket_num, preset_weight, real_weight, is_finish, merge_state, merge_mail_no, send_state, send_nums,fail_reason,logistics_state, state, create_time, create_user, update_time, update_user, remark
     </sql>
 
     <select id="invoiceList" resultType="java.util.Map">
@@ -150,5 +152,21 @@
             ${ew.sqlSegment}
         </where>
     </select>
+    
+    <select id="getLogisticsInfoWarningList" resultMap="BaseResultMap">
+	    select  mp.* 
+	    	from wms_mail_picking_info mp 
+			left join wms_order_info oi
+			on mp.order_no = oi.system_order_no and oi.state=1
+			where 
+				mp.state=1
+				and mp.logistics_state=0
+				<if test="startDate!=null and endDate!=null">
+				 and (oi.create_time BETWEEN ${startDate} AND ${endDate})
+				</if>
+				<if test="startDate!=null and endDate==null">
+				 and oi.create_time &lt;${startDate}
+				</if>
+	</select>
 
 </mapper>

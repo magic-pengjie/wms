@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
  * @author PENGJIE
  * @date 2019年6月22日
  */
+@Data
 public class PurchaseBillExcelVO extends BaseRowModel {
 	 /**
      * 商家编码
@@ -28,92 +29,101 @@ public class PurchaseBillExcelVO extends BaseRowModel {
      */
 	@ExcelProperty(value = "商品名称", index = 2)
     private String commodityName;
+	/**
+     * 是否食品
+     */
+	@ExcelProperty(value = "是否食品", index = 3)
+    private String isFoodStr;
+	/**
+     * 是否食品
+     */
+    private Integer isFood;
     /**
      * 商品型号
      */
-	@ExcelProperty(value = "型号", index = 3)
+	@ExcelProperty(value = "型号", index = 4)
     private String modelNo;
     /**
      * 规格
      */
-	@ExcelProperty(value = "规格", index = 4)
+	@ExcelProperty(value = "规格", index = 5)
     private String spec;
     /**
      * 单位
      */
-	@ExcelProperty(value = "单位", index = 5)
+	@ExcelProperty(value = "单位", index = 6)
     private String unit;
     /**
      * 商品条码
      */
-	@ExcelProperty(value = "商品条码", index = 6)
+	@ExcelProperty(value = "商品条码", index = 7)
     private String barCode;
     /**
      * 体积m3
      */
-	@ExcelProperty(value = "体积", index = 7)
+	@ExcelProperty(value = "体积", index = 8)
     private Double volume;
 	 /**
      * 重量KG
      */
-	@ExcelProperty(value = "重量", index = 8)
+	@ExcelProperty(value = "重量", index = 9)
     private Double weight;
     /**
      * 采购数量
      */
-	@ExcelProperty(value = "采购数量", index = 9)
+	@ExcelProperty(value = "采购数量", index = 10)
     private Integer purchaseNums;
 	  /**
      * 采购日期
      */
-	@ExcelProperty(value = "采购日期", index = 10)
+	@ExcelProperty(value = "采购日期", index = 11)
     private String purchaseDate;
     /**
      * 到货日期
      */
-	@ExcelProperty(value = "到货日期", index = 11)
+	@ExcelProperty(value = "到货日期", index = 12)
     private String arrivalDate;
     /**
      * 生产日期
      */
-	@ExcelProperty(value = "生产日期", index = 12)
+	@ExcelProperty(value = "生产日期", index = 13)
     private String productionDate;
     /**
      * 保质期值
      */
-	@ExcelProperty(value = "保质期", index = 13)
+	@ExcelProperty(value = "保质期", index = 14)
     private Double shilfLife;
     
     /**
      * 备注
      */
-	@ExcelProperty(value = "备注", index = 14)
+	@ExcelProperty(value = "备注", index = 15)
     private String remark;
     
     /**
      * 联系人
      */
-	@ExcelProperty(value = "联系人", index = 15)
+	@ExcelProperty(value = "联系人", index = 16)
     private String contacts;
     /**
      * 联系电话
      */
-	@ExcelProperty(value = "联系电话", index = 16)
+	@ExcelProperty(value = "联系电话", index = 17)
     private String contactsTel;
     /**
      * 地址
      */
-	@ExcelProperty(value = "地址", index = 17)
+	@ExcelProperty(value = "地址", index = 18)
     private String address;
     /**
      * 制单人
      */
-	@ExcelProperty(value = "制单人", index = 18)
+	@ExcelProperty(value = "制单人", index = 19)
     private String maker;
     /**
      * 制单时间
      */
-	@ExcelProperty(value = "制单时间", index = 19)
+	@ExcelProperty(value = "制单时间", index = 20)
     private String makeDate;
 	
 	public String getCustomerCode() {
@@ -236,6 +246,22 @@ public class PurchaseBillExcelVO extends BaseRowModel {
 	public void setMakeDate(String makeDate) {
 		this.makeDate = makeDate;
 	}
-	
+	public String getIsFoodStr() {
+		return isFoodStr;
+	}
+	public void setIsFoodStr(String isFoodStr) {
+		this.isFoodStr = isFoodStr;
+	}
+	public Integer getIsFood() {
+		return isFood;
+	}
+	public void setIsFood(Integer isFood) {
+		if("是".equals(this.isFoodStr)) {
+			this.isFood=1;
+		}else {
+			this.isFood = 0;
+		}
+		
+	}
 	
 }

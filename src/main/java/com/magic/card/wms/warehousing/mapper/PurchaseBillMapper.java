@@ -36,4 +36,11 @@ public interface PurchaseBillMapper extends BaseMapper<PurchaseBill> {
 	 * @return 大于0表示重复
 	 */
 	int checkRepeat(Map map);
+	
+	/***
+	 * 获取需要预警的采购单数据
+	 * @param page
+	 * @return
+	 */
+	List<PurchaseBill> getFoodWarningList(Pagination page);
 }

@@ -8,12 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.magic.card.wms.baseset.model.po.MailPickingDetail;
-import com.magic.card.wms.baseset.service.ICommodityStockService;
-import com.magic.card.wms.baseset.service.IMailPickingDetailService;
-import com.magic.card.wms.common.model.enums.*;
-import com.magic.card.wms.common.utils.*;
-import com.magic.card.wms.report.service.ExpressFeeConfigService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.magic.card.wms.baseset.mapper.MailPickingMapper;
@@ -29,15 +25,30 @@ import com.magic.card.wms.baseset.mapper.OrderInfoMapper;
 import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.MailPicking;
+import com.magic.card.wms.baseset.model.po.MailPickingDetail;
 import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.baseset.model.xml.OrderCommodityXml;
 import com.magic.card.wms.baseset.model.xml.OrderDTO;
 import com.magic.card.wms.baseset.model.xml.PersionXml;
 import com.magic.card.wms.baseset.model.xml.RequestOrderXml;
 import com.magic.card.wms.baseset.model.xml.ResponsesXml;
+import com.magic.card.wms.baseset.service.ICommodityStockService;
+import com.magic.card.wms.baseset.service.IMailPickingDetailService;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.PageInfo;
+import com.magic.card.wms.common.model.enums.BillState;
+import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.model.enums.StoreTypeEnum;
+import com.magic.card.wms.common.utils.Digest;
+import com.magic.card.wms.common.utils.HttpUtil;
+import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WebUtil;
+import com.magic.card.wms.common.utils.XmlUtil;
+import com.magic.card.wms.report.service.ExpressFeeConfigService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -439,4 +450,5 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		}
 
 	}
+
 }

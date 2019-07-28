@@ -1,5 +1,7 @@
 package com.magic.card.wms.baseset.service;
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.magic.card.wms.baseset.model.dto.CommodityInfoDTO;
 import com.magic.card.wms.baseset.model.po.Commodity;
@@ -37,6 +39,12 @@ public interface ICommodityInfoService extends IService<Commodity> {
      * @param id
      */
     void delete(Long id);
+    
+    /**
+     * 查询滞销品
+     * @return
+     */
+    List<Commodity> selectUnsalableGood();
 
 
 }

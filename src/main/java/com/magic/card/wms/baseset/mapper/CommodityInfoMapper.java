@@ -1,6 +1,8 @@
 package com.magic.card.wms.baseset.mapper;
 
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
@@ -24,4 +26,10 @@ public interface CommodityInfoMapper extends BaseMapper<Commodity> {
      * @return
      */
     Commodity selectCommodity(@Param("commodityCode")String commodityCode,@Param("customerCode")String customerCode);
+    
+    /**
+     * 查询滞销品
+     * @return
+     */
+    List<Commodity> selectUnsalableGood(@Param("month")int month);
 }

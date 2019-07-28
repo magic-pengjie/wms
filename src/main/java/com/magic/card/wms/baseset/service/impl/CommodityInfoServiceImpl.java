@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -113,4 +114,10 @@ public class CommodityInfoServiceImpl extends ServiceImpl<CommodityInfoMapper, C
             throw OperationException.customException(ResultEnum.data_check_exist, "当前商品已关联客户");
         }
     }
+
+	@Override
+	public List<Commodity> selectUnsalableGood() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

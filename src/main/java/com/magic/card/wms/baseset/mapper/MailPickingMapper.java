@@ -7,6 +7,7 @@ import com.magic.card.wms.baseset.model.po.MailPicking;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -81,5 +82,13 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
      * @return
      */
     List<Map> pickBillMails(@Param("ew") EntityWrapper wrapper);
+    
+    /**
+     * 查询当天无物流信息的包裹  昨天16点后 到 今天16点之前
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<MailPicking> getLogisticsInfoWarningList(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 }
