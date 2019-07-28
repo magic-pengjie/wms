@@ -28,6 +28,27 @@
         <result column="update_user" property="updateUser" />
         <result column="remark" property="remark" />
     </resultMap>
+    
+    <resultMap id="MailResultMap" type="com.magic.card.wms.baseset.model.vo.MailDetailVO">
+        <id column="id" property="id" />
+        <result column="mail_no" property="mailNo" />
+        <result column="order_no" property="orderNo" />
+        <result column="system_order_no" property="systemOrderNo" />
+        <result column="send_state" property="sendState" />
+        <result column="is_finish" property="isFinish" />
+        <result column="logistics_state" property="logisticsState" />
+        <result column="fail_reason" property="failReason" />
+        <result column="send_state" property="sendState" />
+        <result column="mail_date" property="mailDate" />
+        <result column="order_date" property="orderDate" />
+        <collection property="detailList" ofType="com.magic.card.wms.baseset.model.vo.MailCommodityDetail" column="mail_no">
+         	<result column="bar_code" property="barCode" />
+        	<result column="sku_name" property="commodityName" />
+	        <result column="model_no" property="modelNo" />
+	        <result column="spec" property="spec" />
+	        <result column="package_nums" property="packageNums" />
+        </collection>
+    </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
@@ -167,6 +188,78 @@
 				<if test="startDate!=null and endDate==null">
 				 and oi.create_time &lt;${startDate}
 				</if>
+	</select>
+	
+	 <select id="getLogisticsInfoWarningList" resultMap="BaseResultMap">
+	    select  mp.* 
+	    	from wms_mail_picking_info mp 
+			left join wms_order_info oi
+			on mp.order_no = oi.system_order_no and oi.state=1
+			where 
+				mp.state=1
+				and mp.logistics_state=0
+				<if test="startDate!=null and endDate!=null">
+				 and (oi.create_time BETWEEN ${startDate} AND ${endDate})
+				</if>
+				<if test="startDate!=null and endDate==null">
+				 and oi.create_time &lt;${startDate}
+				</if>
+	</select>
+	
+	<select id="getNonLogisticsInfoList" resultMap="MailResultMap" parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
+   		select mpi.mail_no,mpi.is_finish,mpi.logistics_state,mpi.send_state,mpi.fail_reason,mpi.create_time mail_date,
+	       woi.system_order_no, woi.order_no,woi.create_time order_date,
+	       wcs.sku_name, wcs.bar_code,wcs.spec,wcs.model_no,
+	       wmpd.package_nums
+		 from wms_mail_picking_info mpi 
+		 left join wms_mail_picking_detail wmpd on mpi.mail_no=wmpd.mail_no and wmpd.state=1
+         left join wms_order_info woi on woi.system_order_no = wmpd.order_no and woi.state!=0
+         left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code and wcs.state=1
+         where mpi.state=1
+         	<if test="isFinish !=null and isFinish !='' ">
+         		and mpi.is_finish=#{isFinish}
+         	</if>
+         	<if test="logisticsState !=null and logisticsState !='' ">
+         		and mpi.logistics_state=#{logisticsState}
+         	</if>
+         	<if test="mailNo !=null and mailNo !='' ">
+         		and mpi.mail_no=#{mailNo}
+         	</if>
+         	<if test="orderNo !=null and orderNo !='' ">
+         		and woi.order_no=#{orderNo}
+         	</if>
+         	<if test="isHistory ==1 ">
+         		 and woi.create_time &lt;${startDate}
+         	</if>
+         	<if test="isHistory !=1 ">
+         		 and (oi.create_time BETWEEN ${startDate} AND ${endDate})
+         	</if>
+	</select>
+	<select id="getNonLogisticsInfoCounts" resultType="java.lang.Integer" parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
+   		select count(distinct mpi.mail_no)
+		 from wms_mail_picking_info mpi 
+		 left join wms_mail_picking_detail wmpd on mpi.mail_no=wmpd.mail_no and wmpd.state=1
+         left join wms_order_info woi on woi.system_order_no = wmpd.order_no and woi.state!=0
+         left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code and wcs.state=1
+         where mpi.state=1
+         	<if test="isFinish !=null and isFinish !='' ">
+         		and mpi.is_finish=#{isFinish}
+         	</if>
+         	<if test="logisticsState !=null and logisticsState !='' ">
+         		and mpi.logistics_state=#{logisticsState}
+         	</if>
+         	<if test="mailNo !=null and mailNo !='' ">
+         		and mpi.mail_no=#{mailNo}
+         	</if>
+         	<if test="orderNo !=null and orderNo !='' ">
+         		and woi.order_no=#{orderNo}
+         	</if>
+         	<if test="isHistory ==1 ">
+         		 and woi.create_time &lt;${startDate}
+         	</if>
+         	<if test="isHistory !=1 ">
+         		 and (oi.create_time BETWEEN ${startDate} AND ${endDate})
+         	</if>
 	</select>
 
 </mapper>

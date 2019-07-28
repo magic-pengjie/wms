@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.MailDTO;
 import com.magic.card.wms.baseset.model.po.LogisticsTrackingInfo;
 import com.magic.card.wms.baseset.model.po.MailPicking;
+import com.magic.card.wms.baseset.model.vo.MailDetailVO;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.ResponseData;
 
@@ -32,9 +33,10 @@ public interface ILogisticsTrackingInfoService extends IService<LogisticsTrackin
      * 查询无物流信息的快递单
      * @param pageInfo
      * @param dto
+     * @param isSend  是否发送邮政
      * @return
      */
-    Page<MailPicking> selectNonLogisticsInfoList(MailDTO dto,PageInfo pageInfo,boolean sort);
+	Page<MailDetailVO> selectNonLogisticsInfoList(MailDTO dto,PageInfo pageInfo);
     /**
      * 快递单物流信息批量查询
      */

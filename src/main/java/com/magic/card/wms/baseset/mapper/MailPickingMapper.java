@@ -1,15 +1,18 @@
 package com.magic.card.wms.baseset.mapper;
 
-import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
-import com.magic.card.wms.baseset.model.po.MailPicking;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+import com.magic.card.wms.baseset.model.dto.MailDTO;
+import com.magic.card.wms.baseset.model.po.MailPicking;
+import com.magic.card.wms.baseset.model.vo.MailDetailVO;
 
 /**
  * com.magic.card.wms.baseset.mapper
@@ -90,5 +93,16 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
      * @return
      */
     List<MailPicking> getLogisticsInfoWarningList(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    
+    /**
+     * 包裹单列表展示
+     * @return
+     */
+    Page<MailDetailVO> getNonLogisticsInfoList(Page page,MailDTO dto);
+    /**
+     * 包裹单列表展示条数
+     * @return
+     */
+    Integer getNonLogisticsInfoCounts(MailDTO dto);
 
 }

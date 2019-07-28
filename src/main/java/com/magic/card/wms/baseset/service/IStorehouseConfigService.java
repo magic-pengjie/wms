@@ -58,12 +58,11 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      */
     void save(String commodityId,String storehouseId,int numbers);
     /**
-     * 入库时推荐库位：优先推荐已使用过的库位
-     * @param customerId
-     * @param commodityId
+     * 入库时推荐库位
+     * @param customerCode 客户编码
      * @return
      */
-    List<StorehouseConfigVO> recommendStore(String customerId,String  commodityId);
+    List<StorehouseConfigVO> recommendStore(String customerCode);
 
     /**
      * 客户商品补货推荐数据

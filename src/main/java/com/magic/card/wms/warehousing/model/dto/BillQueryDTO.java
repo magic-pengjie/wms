@@ -72,6 +72,12 @@ public class BillQueryDTO {
     /**
      * 单据状态(待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )
      */
-	@ApiModelProperty("单据状态(待收货recevieing已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
+	@ApiModelProperty("单据状态(保存 save 已收货:recevied ,已审核approved;审批失败 approve_fail 作废:cancel )")
     private String billState;
+	/**
+	 * 
+     * 单据类型1:采购  2:上架
+     */
+	@ApiModelProperty("单据类型1:采购  2:上架")
+	private Integer billType;
 }

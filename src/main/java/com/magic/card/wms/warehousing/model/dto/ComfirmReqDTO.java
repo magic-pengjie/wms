@@ -3,6 +3,7 @@ package com.magic.card.wms.warehousing.model.dto;
 import java.util.List;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import com.magic.card.wms.warehousing.model.po.PurchaseBillDetail;
 
@@ -23,7 +24,7 @@ public class ComfirmReqDTO {
      * 采购单id
      */
 	@ApiModelProperty("采购单id")
-	@NotBlank(message = "采购单id不能为空")
+	@NotNull(message = "采购单id不能为空")
 	private Long id;
 	/**
      * 采购单状态

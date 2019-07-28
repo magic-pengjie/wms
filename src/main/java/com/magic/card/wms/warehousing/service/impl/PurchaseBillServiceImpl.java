@@ -20,8 +20,10 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.baseset.mapper.CommodityInfoMapper;
 import com.magic.card.wms.baseset.model.po.Commodity;
+import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.model.po.WarningAgentInfo;
 import com.magic.card.wms.baseset.service.ICommodityStockService;
+import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.baseset.service.IWarningAgentInfoService;
 import com.magic.card.wms.common.exception.BusinessException;
@@ -75,6 +77,8 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	private CommodityInfoMapper commodityInfoMapper;
 	@Autowired
 	private IWarningAgentInfoService warningAgentInfoService;
+	@Autowired
+	private ICustomerBaseInfoService customerBaseInfoService;
 	
 	@Override
 	public Page<PurchaseBillVO> selectPurchaseBillList(BillQueryDTO dto, PageInfo pageInfo) {
@@ -91,6 +95,9 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 	@Override
 	@Transactional
 	public void update(PurchaseBillDTO dto) {
+		if(!BillStateEnum.save.getCode().equals(dto.getBillState())) {
+			throw new OperationException(ResultEnum.purchase_update_failed);
+		}
 		if(checkRepeat(dto.getDetailList())) {
 			throw new OperationException(ResultEnum.purchase_commodity_repeat);
 		}
@@ -146,7 +153,8 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		if(checkRepeat(detailList)) {
 			throw new OperationException(ResultEnum.purchase_commodity_repeat);
 		}
-		
+		//根据客户名称查询客户编码
+		bill.setCustomerCode(getCustomerCode(bill.getCustomerName()));
 		Date date = new Date();
 		bill.setBillState(BillStateEnum.save.getCode());
 		bill.setCreateUser(Constants.DEFAULT_USER);
@@ -158,7 +166,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		codeProduct.setProductDate(DateUtil.getTodayShort());
 		codeProduct.setLength(3);
 		String code = codeProductService.getCode(codeProduct);
-		bill.setPurchaseNo(code);
+		bill.setPurchaseNo(bill.getCustomerCode()+codeProduct.getType()+code);
 		bill.setName(bill.getCustomerName()+bill.getPurchaseNo()+"采购单");
 		if(StringUtils.isEmpty(bill.getMaker())) {
 			bill.setMaker(Constants.DEFAULT_USER);
@@ -199,6 +207,14 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		return false;
 	}
 
+	public String getCustomerCode(String CustomerName) {
+		Wrapper<CustomerBaseInfo> w = new EntityWrapper<>();
+		w.eq("state", Constants.STATE_1);
+		w.eq("customer_name", CustomerName);
+		CustomerBaseInfo c= customerBaseInfoService.selectOne(w);
+		return  ObjectUtils.isEmpty(c)?"":c.getCustomerCode();
+	}
+	
 	@Override
 	@Transactional
 	public void delete(long id) throws BusinessException {
@@ -255,33 +271,37 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			throw new OperationException(ResultEnum.select_purchase_failed);
 		}
 		String warningStr = null;
-		if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
-			if(!bill.getBillState().equals(dto.getBillState())) {
-				throw new OperationException(ResultEnum.purchase_recevie_failed);
-			}
-			bill.setBillState(BillStateEnum.recevieing.getCode());
-		}else if(BillStateEnum.recevieing.getCode().equals(dto.getBillState())) {
+		/*
+		 * if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
+		 * if(!bill.getBillState().equals(dto.getBillState())) { throw new
+		 * OperationException(ResultEnum.purchase_recevie_failed); }
+		 * bill.setBillState(BillStateEnum.recevieing.getCode()); }else
+		 */if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
 				throw new OperationException(ResultEnum.purchase_comfirm_failed);
 			}
 			bill.setBillState(BillStateEnum.recevied.getCode());
 			bill.setReceivUser(Constants.DEFAULT_USER);
 			bill.setReceivDate(DateUtil.getStringDateShort());
+			bill.setReceivNo(bill.getPurchaseNo().replace("cg", "sh"));
 			//修改收货商品数量
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
-			warning(bill, detailList);
 			purchaseBillDetailService.updateBatchById(detailList);
 		}else if(BillStateEnum.recevied.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
 				throw new OperationException(ResultEnum.purchase_in_failed);
 			}
 			bill.setBillState(BillStateEnum.stored.getCode());
+			//生成入口单
+			bill.setWarehousingNo(bill.getPurchaseNo().replace("cg", "rk"));
+			bill.setWarehousingDate(new Date());
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
+			warning(bill, detailList);
 			//入库后修改商品库存
 			for (PurchaseBillDetail detail : detailList) {
 				if(!ObjectUtils.isEmpty(detail.getStorehouseInfo())) {
 					//增加商品对应库位库存
-					String storehouseInfo = detail.getStorehouseInfo();
+					String storehouseInfo = detail.getStorehouseInfoId();
 					String[] houses = storehouseInfo.split(";");
 					for(int i=0;i<houses.length;i++) {
 						if( houses[i].indexOf(":")>-1) {
@@ -295,12 +315,13 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 				commodityStockService.addCommodityStock(bill.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getReceivNums()),Constants.DEFAULT_USER);
 				
 			}
+			purchaseBillDetailService.updateBatchById(detailList);
 			
 		}else if(BillStateEnum.stored.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
 				throw new OperationException(ResultEnum.purchase_approve_failed);
 			}
-			bill.setBillState(BillStateEnum.stored.getCode());
+			bill.setBillState(BillStateEnum.approved.getCode());
 			if(!"1".equals(dto.getApproveResult())) {
 				bill.setBillState(BillStateEnum.approve_fail.getCode());
 			}

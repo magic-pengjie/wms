@@ -1,5 +1,16 @@
 package com.magic.card.wms.baseset.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
@@ -10,7 +21,6 @@ import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
 import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
-import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
@@ -24,20 +34,8 @@ import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.model.enums.StoreTypeEnum;
 import com.magic.card.wms.common.utils.PoUtil;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -66,6 +64,8 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     private ICustomerBaseInfoService customerService;
     @Autowired
     private IStorehouseInfoService storehouseInfoService;
+    @Autowired
+    private StorehouseConfigMapper storehouseConfigMapper;
 
     @Autowired
     private WebUtil webUtil;
@@ -214,54 +214,28 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
 
     }
 
-	@Override
-	@Transactional
-	public void save(String commodityId,String storehouseId, int numbers) {
-		Wrapper<StorehouseConfig> w = new EntityWrapper<>();
-		w.eq("storehouse_id", storehouseId);
-		w.eq("state",Constants.STATE_1);
-		StorehouseConfig config = this.selectOne(w);
-		if(null == config) {
-			config = new StorehouseConfig();
-			config.setStorehouseId(storehouseId);
-			config.setStoreNums(numbers);
-			config.setAvailableNums(numbers);
-			config.setOprType(1);
-			config.setCommodityId(commodityId);
-			PoUtil.add(config, Constants.DEFAULT_USER);
-			this.insert(config);
-		}else {
-			config.setStoreNums(numbers+config.getStoreNums());
-			config.setAvailableNums(numbers+config.getStoreNums());
-			config.setOprType(1);
-			config.setCommodityId(commodityId);
-			PoUtil.add(config, Constants.DEFAULT_USER);
-			this.update(config, w);
-		}
-		
-	}
+    @Override
+   	@Transactional
+   	public void save(String commodityId,String storehouseId, int numbers) {
+   		Wrapper<StorehouseConfig> w = new EntityWrapper<>();
+   		w.eq("storehouse_id", storehouseId);
+   		w.eq("state",Constants.STATE_1);
+   		StorehouseConfig config = this.selectOne(w);
+   		config.setAvailableNums(numbers+(ObjectUtils.isEmpty(config.getAvailableNums())?0:config.getAvailableNums()));
+   		config.setOprType(1);
+   		config.setCommodityId(commodityId);
+   		PoUtil.add(config, Constants.DEFAULT_USER);
+   		this.update(config, w);
+   		
+   	}
 
 	@Override
-	public List<StorehouseConfigVO> recommendStore(String customerId, String commodityId) {
-		Wrapper<StorehouseConfig> w = new EntityWrapper<>();
-		w.eq("customer_id", customerId);
-		if(!ObjectUtils.isEmpty(commodityId)) {
-			w.eq("commodity_id", commodityId);
-		}
-		w.eq("state",Constants.STATE_1);
-		w.eq("store_nums", 0);
-		List<StorehouseConfig> configList = this.selectList(w);
+	public List<StorehouseConfigVO> recommendStore(String customerCode) {
+		List<StorehouseConfigVO> configList = storehouseConfigMapper.recommendStore(customerCode);
 		if(ObjectUtils.isEmpty(configList)) {
-			//TODO 预警
 			throw new OperationException(-1,"该商品无可用库位");
 		}
-		List<StorehouseConfigVO> result = new ArrayList<>();
-		configList.forEach(config->{
-			StorehouseConfigVO vo = new StorehouseConfigVO();
-			BeanUtils.copyProperties(config, vo);
-			result.add(vo);
-		});
-		return result;
+		return configList;
 	}
 
     /**

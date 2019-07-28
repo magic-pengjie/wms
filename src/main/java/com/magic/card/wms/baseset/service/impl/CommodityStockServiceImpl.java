@@ -161,7 +161,7 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
             throw OperationException.customException(ResultEnum.commodity_stock_setting_deficiency);
         }
 
-        return selectOne(wrapper);
+        return stock;
     }
 
 	@Override
