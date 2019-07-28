@@ -309,8 +309,9 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
 
         List<StorehouseConfig> storehouseConfigs = batchBindStorehouseDTO.getStorehouseIds().stream().map(storehouseId -> {
             StorehouseConfig storehouseConfig = new StorehouseConfig();
-            storehouseConfig.setStorehouseId(storehouseId);
             BeanUtils.copyProperties(baseStorehouseConfig, storehouseConfig);
+
+            storehouseConfig.setStorehouseId(storehouseId);
             return storehouseConfig;
         }).collect(Collectors.toList());
 

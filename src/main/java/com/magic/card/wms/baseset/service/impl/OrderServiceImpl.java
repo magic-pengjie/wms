@@ -105,7 +105,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         if (CollectionUtils.isNotEmpty(grid)) {
             List<String> orderNos = Lists.newLinkedList();
             grid.stream().filter(map -> {
-                orderNos.add(map.get("orderNo").toString());
+                orderNos.add(map.get("systemOrderNo").toString());
                 return true;
             }).collect(Collectors.toList()).stream().forEach(map -> {
 
@@ -116,7 +116,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
                 if (!CollectionUtils.sizeIsEmpty(orderCommodities)) {
                     map.put(
                             "orderCommodities",
-                            orderCommodities.get(map.get("orderNo").toString())
+                            orderCommodities.get(map.get("systemOrderNo").toString())
                     );
                 }
 

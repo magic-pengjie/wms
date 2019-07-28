@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.model.dto.BatchBindCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.BatchStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseInfoDTO;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
