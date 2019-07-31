@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.magic.card.wms.common.model.po.BasePo;
 
@@ -107,7 +108,7 @@ public class PurchaseBillDetail extends BasePo implements Serializable {
      * 收货说明
      */
     @ApiModelProperty("收货说明")
-    private Integer receivRemark;
+    private String receivRemark;
     
     /**
      * 入库数量
@@ -119,15 +120,22 @@ public class PurchaseBillDetail extends BasePo implements Serializable {
      * 入库说明
      */
     @ApiModelProperty("入库说明")
-    private Integer warehousingRemark;
+    private String warehousingRemark;
     /**
      * 入库库位信息
      */
     @ApiModelProperty("入库库位信息格式：库位编码1:数量1;库位编码2:数量2")
     private String storehouseInfo;
+    
     /**
      * 商品id
      */
     @ApiModelProperty("商品id")
     private String commodityId;
+    /**
+     * 入库库位信息--修改库存表使用
+     */
+    @ApiModelProperty("入库库位信息格式：库位Id1:数量1;库位Id2:数量2")
+    @TableField(exist = false)
+    private String storehouseInfoId;
 }

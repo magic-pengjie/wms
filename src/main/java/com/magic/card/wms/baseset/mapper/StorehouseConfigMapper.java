@@ -10,6 +10,7 @@ import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
+import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
 import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
 import com.magic.card.wms.check.model.dto.QueryCheckRecordDto;
 
@@ -42,4 +43,11 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
 	 * @return
 	 */
     List<Map> loadGrid(Page page, @Param("ew") EntityWrapper entityWrapper);
+    
+    /**
+     * 入库推荐库位查询
+     * @param customerCode
+     * @return
+     */
+    List<StorehouseConfigVO> recommendStore( @Param("customerCode")String customerCode);
 }

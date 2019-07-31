@@ -30,10 +30,10 @@ public class LoadGrid {
     private long total;
 
     /**
-     * 每页显示条数，默认 10
+     * 每页显示条数，默认 15
      */
-    @ApiModelProperty("每页数据，默认 10 条")
-    private int pageSize = 10;
+    @ApiModelProperty("每页数据，默认 15 条")
+    private int pageSize = 15;
 
     /**
      * 当前页

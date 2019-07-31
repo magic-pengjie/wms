@@ -121,14 +121,11 @@ public class PurchaseBillController {
 	
 	@ApiOperation(value = "采购单据导入模版下载", notes = "采购单据导入模版下载")
 	@RequestMapping(value = "/downloadTemplate", method = RequestMethod.GET)
-	public ResponseData downloadTemplate(@RequestParam(value="isFood",required = true) boolean isFood,HttpServletRequest request,HttpServletResponse response) {
+	public ResponseData downloadTemplate(HttpServletRequest request,HttpServletResponse response) {
 		InputStream in = null;
 		OutputStream out = null;
 		try {
 			String fileName = "采购单导入模版";
-			if(isFood) {
-				fileName = "采购单导入模版-食品";
-			}
 			String path = "templates/"+fileName+".xlsx";
 			Resource resource = resourceLoader.getResource("classPath:"+path);
 			EasyExcelUtil.prepareResponds(request, response, fileName, ExcelTypeEnum.XLSX);
@@ -186,6 +183,9 @@ public class PurchaseBillController {
 				return ResponseData.ok(00,warningStr);
 			}
 			return ResponseData.ok();
+		}catch (OperationException b) {
+			log.error("采购单据操作失败:{}",b);
+			return ResponseData.error(b.getErrCode(),b.getErrMsg());
 		} catch (Exception e) {
 			log.error("采购单据失败:{}",e);
 			return ResponseData.error(ResultEnum.update_error);

@@ -26,6 +26,7 @@ import com.magic.card.wms.baseset.model.po.MailPicking;
 import com.magic.card.wms.baseset.model.po.WarningAgentInfo;
 import com.magic.card.wms.baseset.model.vo.LogisticsRepHeader;
 import com.magic.card.wms.baseset.model.vo.LogisticsReqHeader;
+import com.magic.card.wms.baseset.model.vo.MailDetailVO;
 import com.magic.card.wms.baseset.service.ILogisticsTrackingInfoService;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.common.model.PageInfo;
@@ -88,37 +89,18 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	 * 查询无物流信息的快递单
 	 */
 	@Override
-	public Page<MailPicking> selectNonLogisticsInfoList(MailDTO dto,PageInfo pageInfo,boolean sort) {
-		Page<MailPicking> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
-		//查询已发送邮政且无物流信息的快递单号
-		Wrapper<MailPicking> w = new EntityWrapper<>();
-		if(!ObjectUtils.isEmpty(dto.getLogisticsState())) {
-			w.eq("logistics_state",dto.getLogisticsState());
+	public Page<MailDetailVO> selectNonLogisticsInfoList(MailDTO dto,PageInfo pageInfo) {
+		if(ObjectUtils.isEmpty(dto.getIsFinish())) {
+			dto.setIsFinish(1);
 		}
-		if(!ObjectUtils.isEmpty(dto.getMailNo())) {
-			w.eq("mail_no",dto.getMailNo());
+		if(ObjectUtils.isEmpty(dto.getLogisticsState())) {
+			dto.setLogisticsState(0);
 		}
-		if(!ObjectUtils.isEmpty(dto.getOrderNo())) {
-			w.eq("order_no",dto.getOrderNo());
+		Page<MailDetailVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
+		Integer counts = mailPickingMapper.getNonLogisticsInfoCounts(dto);
+		if(counts>0) {
+			page = mailPickingMapper.getNonLogisticsInfoList(page, dto);
 		}
-		if(!ObjectUtils.isEmpty(dto.getOrderDate())) {
-			w.eq("order_date",dto.getOrderDate());
-		}
-		if(!ObjectUtils.isEmpty(dto.getMailDate())) {
-			w.ge("create_time",DateUtil.strToDateLong(dto.getMailDate()));
-		}
-		if(!ObjectUtils.isEmpty(dto.getIsFinish())) {
-			w.eq("is_finish",dto.getIsFinish());
-		}
-		w.eq("state",Constants.STATE_1);
-		if(sort) {
-			List<String> orderParam = new ArrayList<>();
-			orderParam.add("create_time");
-			orderParam.add("update_time");
-			orderParam.add("mail_no");
-			w.orderDesc(orderParam);
-		}
-		page = mailPickingService.selectPage(page, w);
 		return page;
 	}
 
@@ -132,7 +114,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		dto.setLogisticsState(Constants.ZERO);
 		PageInfo pageInfo = new PageInfo();
 		pageInfo.setPageSize(30);
-		List<MailPicking> list = selectNonLogisticsInfoList(dto, pageInfo, false).getRecords();
+		List<MailPicking> list = selectNonLogisticsInfoListToPost(pageInfo).getRecords();
 		int current = 1;
 		while(!ObjectUtils.isEmpty(list)) {
 			log.info("runLogisticsInfo select size:{}",list.size());
@@ -154,12 +136,33 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 					break;
 				}
 				pageInfo.setCurrent(++current);
-				list = selectNonLogisticsInfoList(dto, pageInfo, false).getRecords();
+				list = selectNonLogisticsInfoListToPost(pageInfo).getRecords();
 			} catch (Exception e) {
 				log.error("runLogisticsInfo getTrackingInfo error:{}",e);
 			}
 		}
 	}
+	
+	/***
+	 * 获取无物流信息的包裹，发送邮政获取物流信息
+	 * @return
+	 */
+	public Page<MailPicking> selectNonLogisticsInfoListToPost(PageInfo pageInfo) {
+		Page<MailPicking> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
+		//查询已发送邮政且无物流信息的快递单号
+		Wrapper<MailPicking> w = new EntityWrapper<>();
+		w.eq("logistics_state",Constants.ZERO);
+		w.eq("state",Constants.STATE_1);
+		w.eq("is_finish",Constants.ONE);
+		List<String> orderParam = new ArrayList<>();
+		orderParam.add("create_time");
+		orderParam.add("update_time");
+		orderParam.add("pick_no");
+		w.orderDesc(orderParam);
+		page = mailPickingService.selectPage(page, w);
+		return page;
+	}
+	
 	/***
 	 * 物流信息预警
 	 */

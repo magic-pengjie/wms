@@ -4,13 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
-import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
-import com.magic.card.wms.baseset.model.xml.Response;
-import com.magic.card.wms.common.annotation.RequestJsonParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.BindingResultUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
+import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
@@ -84,11 +81,10 @@ public class StorehouseConfigController {
     
     @ApiOperation(value = "推荐库位")
     @GetMapping("/recommendStore")
-    public ResponseData recommendStore(@RequestParam(required = true) String customerId,
-    									@RequestParam String commodityId) {
+    public ResponseData recommendStore(@RequestParam(required = true) String customerCode) {
     	 List<StorehouseConfigVO> result = null;
     	try {
-    		result = storehouseConfigService.recommendStore(customerId, commodityId);
+    		result = storehouseConfigService.recommendStore(customerCode);
 		} catch (OperationException o) {
 			log.error("库位查询失败OperationException:{}", o);
 			return ResponseData.error(o.getErrCode(), o.getErrMsg());

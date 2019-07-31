@@ -13,16 +13,21 @@ public class StorehouseConfigVO {
      * 库位id
      */
     private String storehouseId;
-    /**
-     * 客户id
+    /***
+     * 仓库类型
      */
-    private String customerId;
+    private String areaCode;
     /**
-     * 商品id
+     * 仓库编码
      */
-    private String commodityId;
+    private String houseCode;
     /**
-     * 库存量
+     * 库位编码
      */
-    private Integer storeNums;
+    private String storeCode;
+   
+    /**
+     * 可用库存量
+     */
+    private Integer availableNums;
 }

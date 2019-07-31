@@ -20,7 +20,7 @@
         <result column="make_date" property="makeDate" />
         <result column="receiv_date" property="receivDate" />
         <result column="receiv_user" property="receivUser" />
-        <result column="warehousing_date" property="warehousingdate" />
+        <result column="warehousing_date" property="warehousingDate" />
         <result column="storehouse_code" property="storehouseCode" />
         <result column="approver" property="approver" />
         <result column="approve_time" property="approveTime" />
@@ -31,9 +31,9 @@
         <result column="create_user" property="createUser" />
         <result column="update_time" property="updateTime" />
         <result column="update_user" property="updateUser" />
-        <result column="wb.remark" property="remark" />
+        <result column="premark" property="remark" />
         <collection property="detailList" ofType="com.magic.card.wms.warehousing.model.po.PurchaseBillDetail" column="id">
-        	<id column="bd.id" property="id" />
+        	<id column="sid" property="id" />
         	<result column="purchase_id" property="purchaseId" />
         	<result column="commodity_name" property="commodityName" />
 	        <result column="model_no" property="modelNo" />
@@ -44,11 +44,12 @@
 	        <result column="volume" property="volume" />
 	        <result column="purchase_nums" property="purchaseNums" />
 	        <result column="receiv_nums" property="receivNums" />
+	        <result column="receiv_remark" property="receivRemark" />
 	        <result column="warehousing_nums" property="warehousingNums" />
 	        <result column="arrival_date" property="arrivalDate" />
 	        <result column="production_date" property="productionDate" />
 	        <result column="shilf_life" property="shilfLife" />
-	        <result column="bd.remark" property="remark" />
+	        <result column="aremark" property="remark" />
 	        <result column="storehouse_info" property="storehouseInfo" />
 	        <result column="commodity_id" property="commodityId" />
         </collection>
@@ -58,15 +59,16 @@
     <sql id="bill_Column_List">
          wb.id as id, purchase_no,name,receiv_no,warehousing_no, 
          customer_code,customer_name, is_food,purchase_date, contacts, contacts_tel, address, maker, make_date,
-         receiv_date,receiv_user,warehousing_date,storehouse_code,approver,approve_time
-         bill_state,wb.remark
+         receiv_date,receiv_user,warehousing_date,storehouse_code,approver,approve_time,
+         bill_state,wb.remark premark
     </sql>
     
 	<select id="selectPurchaseBillList" resultMap="BaseResultMap" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
 		select   <include refid="bill_Column_List"/>,
-				bd.id, bd.purchase_id, bd.bar_code,  bd.purchase_nums,bd.arrival_date, bd.commodity_id,
-				production_date, shilf_life,receiv_nums,warehousing_nums, storehouse_info, bd.remark,
-				sku.sku_name, sku.model_no, sku.spec, sku.single_unit unit, 
+				bd.id sid, bd.purchase_id, bd.bar_code,  bd.purchase_nums,bd.arrival_date, bd.commodity_id,
+				bd.production_date, bd.shilf_life,bd.receiv_nums,bd.receiv_remark,bd.warehousing_nums,
+				bd.warehousing_remark, bd.storehouse_info, bd.remark sremark,
+				sku.sku_name as commodity_name, sku.model_no, sku.spec, sku.single_unit unit, 
 				sku.single_weight*bd.purchase_nums weight, sku.single_volume*bd.purchase_nums volume
 		from wms_purchase_bill wb 
 			left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and bd.state=1
@@ -100,10 +102,16 @@
 				and sku.sku_name like concat(concat("%",#{commodityName}),"%")
 			</if>
 			<if test="billState != null and billState != '' ">
-				and	wb.billState = #{billState}
+				and	wb.bill_state = #{billState}
 			</if>
 			<if test="makeDate != null and makeDate != '' ">
 				and	wb.make_date = #{makeDate}
+			</if>
+			<if test="billType==1">
+				and	wb.bill_state in ('save','cancel')
+			</if>
+			<if test="billType==2">
+				and	wb.bill_state in ('recevied','stored','approved','approve_fail')
 			</if>
 			and wb.state=1
 			order by wb.create_time,wb.update_time,wb.customer_code,wb.customer_name
@@ -148,6 +156,12 @@
 			</if>
 			<if test="makeDate != null and makeDate != '' ">
 				and	wb.make_date = #{makeDate}
+			</if>
+			<if test="billType==1">
+				and	wb.bill_state in ('save','cancel')
+			</if>
+			<if test="billType==2">
+				and	wb.bill_state in ('recevied','stored','approved','approve_fail')
 			</if>
 			and wb.state=1
 		</where>

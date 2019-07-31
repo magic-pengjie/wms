@@ -31,5 +31,5 @@ public interface CommodityInfoMapper extends BaseMapper<Commodity> {
      * 查询滞销品
      * @return
      */
-    List<Commodity> selectUnsalableGood(@Param("month")int month);
+    List<Commodity> selectUnsalableGood();
 }

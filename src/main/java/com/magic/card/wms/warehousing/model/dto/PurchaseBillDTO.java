@@ -48,13 +48,12 @@ public class PurchaseBillDTO {
      * 商家名称
      */
 	@ApiModelProperty("商家名称 not null")
-	@NotBlank(message = "商家名称不能为空")
     private String customerName;
 	 /**
      * 是否为食品
      */
 	@ApiModelProperty("是否为食品")
-	private String isFood;
+	private Integer isFood;
     /**
      * 采购日期
      */

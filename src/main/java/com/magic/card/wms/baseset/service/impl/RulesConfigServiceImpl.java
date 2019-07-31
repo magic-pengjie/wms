@@ -41,15 +41,15 @@ public class RulesConfigServiceImpl extends ServiceImpl<RulesConfigMapper, Rules
 	}
 
 	@Override
-	public Page<RulesConfig> select(RulesConfigReqDTO dto, PageInfo pageInfo) {
+	public Page<RulesConfig> getList(RulesConfigReqDTO dto, PageInfo pageInfo) {
 		Page<RulesConfig> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
 		Wrapper<RulesConfig> w = new EntityWrapper<>();
 		w.eq("state",Constants.STATE_1);
-		if(ObjectUtils.isEmpty(dto.getRuleType())) {
+		if(!ObjectUtils.isEmpty(dto.getRuleType())) {
 			w.eq("rule_type", dto.getRuleType());
-		}else if(ObjectUtils.isEmpty(dto.getRuleKey())) {
+		}else if(!ObjectUtils.isEmpty(dto.getRuleKey())) {
 			w.eq("rule_key", dto.getRuleKey());
-		}else if(ObjectUtils.isEmpty(dto.getRuleName())) {
+		}else if(!ObjectUtils.isEmpty(dto.getRuleName())) {
 			w.like("rule_name", dto.getRuleName());
 		}
 		List<String> orderParam = new ArrayList<>();
@@ -66,7 +66,7 @@ public class RulesConfigServiceImpl extends ServiceImpl<RulesConfigMapper, Rules
 		RulesConfig rulesConfig = new RulesConfig();
 		BeanUtils.copyProperties(dto, rulesConfig);
 		PoUtil.update(rulesConfig, Constants.DEFAULT_USER);
-		this.updateById(rulesConfig);
+		this.updateAllColumnById(rulesConfig);
 	}
 
 	@Override
@@ -77,6 +77,17 @@ public class RulesConfigServiceImpl extends ServiceImpl<RulesConfigMapper, Rules
 		PoUtil.update(config, Constants.DEFAULT_USER);
 		this.updateById(config);
 		
+	}
+
+	@Override
+	public RulesConfig selectObjectByType(RulesConfigReqDTO dto) {
+		Wrapper<RulesConfig> w = new EntityWrapper<>();
+		w.eq("rule_type", dto.getRuleType());
+		w.eq("state", Constants.STATE_1);
+		if(!ObjectUtils.isEmpty(dto.getRuleKey())) {
+			w.eq("rule_key", dto.getRuleKey());
+		}
+		return this.selectOne(w);
 	}
 
 }

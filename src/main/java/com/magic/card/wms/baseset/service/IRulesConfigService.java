@@ -28,7 +28,7 @@ public interface IRulesConfigService extends IService<RulesConfig> {
 	 * @param dto
 	 * @param pageInfo
 	 */
-	Page<RulesConfig> select(RulesConfigReqDTO dto, PageInfo pageInfo);
+	Page<RulesConfig> getList(RulesConfigReqDTO dto, PageInfo pageInfo);
 	/**
 	 * 修改
 	 * @param dto
@@ -39,5 +39,13 @@ public interface IRulesConfigService extends IService<RulesConfig> {
 	 * @param id
 	 */
 	void detele(long id);
+	
+	
+	/**
+	 * 根据规则类型等精确查询对象
+	 * @param dto
+	 * @return
+	 */
+	RulesConfig selectObjectByType(RulesConfigReqDTO dto);
 
 }

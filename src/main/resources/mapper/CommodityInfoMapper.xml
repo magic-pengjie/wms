@@ -49,7 +49,7 @@
 		 	   left join wms_customer_base_info cbi on ci.customer_id=cbi.id
 		 	   left join wms_order_commodity woc on ci.commodity_code=woc.bar_code and woc.state=1
 		 where woc.id is  null 
-		 	   or woc.create_time &gt;= (SELECT DATE_ADD(now(), INTERVAL ${month} MONTH))
+		 	   or woc.create_time &gt;= (SELECT DATE_ADD(now(), INTERVAL -6 MONTH))
 		 	  order by ci.commodity_code 
 	</select>
 
