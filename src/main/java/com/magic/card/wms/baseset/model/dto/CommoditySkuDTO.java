@@ -59,6 +59,12 @@ public class CommoditySkuDTO implements Serializable {
     private String modelNo;
 
     /**
+     * 耗材类型
+     */
+    @ApiModelProperty("耗材类型")
+    private String commodityType;
+
+    /**
      *是否是耗材
      */
     @ApiModelProperty("是否是耗材")
