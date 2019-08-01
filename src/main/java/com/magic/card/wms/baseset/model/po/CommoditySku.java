@@ -54,6 +54,11 @@ public class CommoditySku extends BasePo implements Serializable {
     private int isConsumable;
 
     /**
+     * 耗材类型
+     */
+    private String commodityType;
+
+    /**
      * 是否是食品
      */
     private int isFoodstuff;
