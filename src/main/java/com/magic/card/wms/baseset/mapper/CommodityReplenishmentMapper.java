@@ -1,8 +1,12 @@
 package com.magic.card.wms.baseset.mapper;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.po.CommodityReplenishment;
+import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,4 +25,12 @@ public interface CommodityReplenishmentMapper extends BaseMapper<CommodityReplen
      * @return
      */
     Map checkoutStorehouseConfigInfo(String storeCode);
+
+    /**
+     * 加载补货信息数据
+     * @param generatorPage
+     * @param entityWrapper
+     * @return
+     */
+    List<Map> loadGrid(Page generatorPage, @Param("ew") EntityWrapper entityWrapper);
 }

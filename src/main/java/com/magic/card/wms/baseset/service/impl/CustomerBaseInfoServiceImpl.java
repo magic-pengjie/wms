@@ -162,6 +162,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("wcbi.customer_code", customerCode).
+                eq("wcs.is_consumable", 0).
                 eq("wcs.state", StateEnum.normal.getCode()).
                 eq("wcs.is_consumable", 0).
                 isNull("wci.id");

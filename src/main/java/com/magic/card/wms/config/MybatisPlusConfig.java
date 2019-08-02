@@ -1,5 +1,7 @@
 package com.magic.card.wms.config;
 
+import com.baomidou.mybatisplus.MybatisMapWrapperFactory;
+import com.baomidou.mybatisplus.spring.boot.starter.ConfigurationCustomizer;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,17 @@ import lombok.extern.slf4j.Slf4j;
 	"com.magic.card.wms.common.mapper"})
 @Slf4j
 public class MybatisPlusConfig {
+
+
+	/**
+	 * Mybatis-Plus
+	 * @return
+	 */
+	@Bean
+	 public ConfigurationCustomizer mapConfigurationCustomizer() {
+		log.info("----开启返回map结果集的下划线转驼峰--------");
+	 	return configuration -> configuration.setObjectWrapperFactory(new MybatisMapWrapperFactory());
+	 }
 
 	/**
 	 * Mybatis-Plus 执行效率插件

@@ -23,10 +23,11 @@ import com.magic.card.wms.common.model.LoadGrid;
 public interface IStorehouseConfigService extends IService<StorehouseConfig> {
     /**
      * 查询仓库配置信息
+     *
      * @param loadGrid
-     * @return
      */
-    LoadGrid loadGrid(LoadGrid loadGrid);
+    void loadGrid(LoadGrid loadGrid);
+
 
     /**
      * 添加库位配置
@@ -90,4 +91,10 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      * @param batchStorehouseConfig
      */
     void batchConfig(BatchStorehouseConfigDTO batchStorehouseConfig);
+
+    /**
+     * 批量清空库位商品
+     * @param ids
+     */
+    void batchClearCommodity(List<String> ids);
 }

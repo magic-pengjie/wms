@@ -1,51 +1,49 @@
 package com.magic.card.wms.baseset.model.dto;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 
 /**
- * <p>
- * 商品耗材设置表
- * </p>
- *
- * @author Mr.Zhang
- * @since 2019-06-21
+ * com.magic.card.wms.baseset.model.dto
+ * 商品批量耗材设置
+ * @author : Mr.Zhang
+ * @e.mail : mr.zy883@gmail.com
+ * @date : 2019/8/1 14:09
+ * @since : 1.0.0
  */
 @Data
-@ApiModel("商品耗材关系表")
-public class CommodityConsumablesConfigDTO implements Serializable {
+@EqualsAndHashCode
+public class BatchConsumablesConfigDTO implements Serializable {
+    private static final long serialVersionUID = -8724237084775272621L;
 
-    private static final long serialVersionUID = 308682511021212978L;
-
-    /**
-     * 主键
-     */
-    @ApiModelProperty("修改关系是必须提供，否则验证不通过")
-    private Long id;
     /**
      * 商品条码
      */
     @NotNull(message = "商品条码不可为空")
     @ApiModelProperty("商品条码是必须提供，否则验证不通过")
-    private String commodityCode;
+    @Size(min = 1, message = "至少配置一个商品")
+    private List<String> commodityCodes;
 
     /**
      * 消耗商品条码
      */
     @NotNull(message = "消耗商品条码不可为空")
     @ApiModelProperty("消耗商品条码是必须提供，否则验证不通过")
-    private String useCommodityCode;
+    @Size(min = 1, message = "至少配置一个消耗商品")
+    private List<String> useCommodityCodes;
 
     /**
      * 左区间值
      */
     @NotNull(message = "左区间值不可为空")
     @ApiModelProperty("左区间值是必须提供，否则验证不通过")
-    private Integer leftValue;
+    private Integer leftValue = 1;
     /**
      * 右区间值
      */
@@ -57,11 +55,10 @@ public class CommodityConsumablesConfigDTO implements Serializable {
      */
     @NotNull(message = "消耗数量不可为空")
     @ApiModelProperty("消耗数量是必须提供，否则验证不通过")
-    private Integer useNums;
+    private Integer useNums=1;
     /**
      * 备注
      */
     @ApiModelProperty("备注")
     private String remark;
-
 }

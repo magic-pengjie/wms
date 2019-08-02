@@ -10,6 +10,8 @@ import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.po.*;
+import com.magic.card.wms.baseset.model.vo.ExcelOrderCommodity;
+import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.service.*;
 import com.magic.card.wms.baseset.service.order.OrderExceptionService;
 import com.magic.card.wms.common.exception.OperationException;
@@ -18,6 +20,7 @@ import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.utils.EasyExcelUtil;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
@@ -26,15 +29,22 @@ import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -101,7 +111,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         List<Map> grid = baseMapper.loadGrid(page, wrapper);
         Map<String, List> orderCommodities = Maps.newLinkedHashMap();
-        // TODO 优化待完善
+
         if (CollectionUtils.isNotEmpty(grid)) {
             List<String> orderNos = Lists.newLinkedList();
             grid.stream().filter(map -> {
@@ -165,6 +175,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         if (CollectionUtils.isEmpty(orderInfoDTO.getCommodities())) {
             throw OperationException.addException("订单不存在商品，请确认后再推送");
         }
+
         processOrderCommodities(orderInfoDTO.getCommodities(), order, customerBaseInfo.getId());
         // 触发生成拣货单 同检验拣货区商品是否充足
         new Thread(() ->
@@ -427,7 +438,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * @param customerId         商家ID
      */
     private void processOrderCommodities(List<OrderCommodityDTO> orderCommodityDTOS, Order order, Long customerId) {
-        String operator = Constants.DEFAULT_USER;
+        String operator = webUtil.operator();
         // 订单商品保存
         orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
             orderCommodityDTO.setOrderNo(order.getSystemOrderNo());
@@ -490,6 +501,72 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         return order;
+    }
+
+    /**
+     * 获取订单 key -> value Map
+     *
+     * @param systemOrderNo
+     * @return
+     */
+    @Override
+    public Map<String, Order> ordersMap(List<String> systemOrderNo) {
+        EntityWrapper<Order> orderEntityWrapper = new EntityWrapper<>();
+        orderEntityWrapper.in("system_order_no", systemOrderNo).ne("state", StateEnum.delete.getCode());
+        List<Order> orders = selectList(orderEntityWrapper);
+        Map<String, Order> ordersMap = Maps.newHashMap();
+
+        if (CollectionUtils.isNotEmpty(orders)) {
+            orders.forEach(order -> ordersMap.put(order.getSystemOrderNo(), order));
+        }
+
+        return ordersMap;
+    }
+
+    /**
+     * EXCEL 导入订单
+     *
+     * @param excelOrderFiles
+     */
+    @Override @Transactional
+    public void excelImport(MultipartFile[] excelOrderFiles) throws IOException {
+        if (excelOrderFiles != null && excelOrderFiles.length > 0) {
+            for (MultipartFile excelOrder :
+                    excelOrderFiles) {
+                EasyExcelUtil.validatorFileSuffix(excelOrder.getOriginalFilename());
+                List<ExcelOrderImport> excelOrders = EasyExcelUtil.readExcel(excelOrder.getInputStream(), ExcelOrderImport.class, 1, 1);
+                List<ExcelOrderCommodity> excelOrderCommodities = EasyExcelUtil.readExcel(excelOrder.getInputStream(), ExcelOrderCommodity.class, 2, 1);
+                Map<String, List<OrderCommodityDTO>> orderCmmodities = Maps.newHashMap();
+
+                if (CollectionUtils.isEmpty(excelOrders)) return;
+
+                if (CollectionUtils.isNotEmpty(excelOrderCommodities)) {
+                    excelOrderCommodities.forEach(excelOrderCommodity -> {
+                        final String orderNo = excelOrderCommodity.getOrderNo();
+                        OrderCommodityDTO orderCommodityDTO = new OrderCommodityDTO();
+                        BeanUtils.copyProperties(excelOrderCommodity, orderCommodityDTO);
+
+                        if (orderCmmodities.containsKey(orderNo)) {
+                            orderCmmodities.get(orderNo).add(orderCommodityDTO);
+                        } else {
+                            LinkedList<OrderCommodityDTO> orderCommodityDTOs = Lists.newLinkedList();
+                            orderCommodityDTOs.add(orderCommodityDTO);
+                            orderCmmodities.put(orderNo, orderCommodityDTOs);
+                        }
+
+                    });
+                }
+
+                excelOrders.forEach(excelOrderImport -> {
+                    final String orderNo = excelOrderImport.getOrderNo();
+                    OrderInfoDTO orderInfoDTO = new OrderInfoDTO();
+                    BeanUtils.copyProperties(excelOrderImport, orderInfoDTO);
+                    orderInfoDTO.setCommodities(orderCmmodities.get(orderNo));
+                    importOrder(orderInfoDTO);
+                });
+
+            }
+        }
     }
 
     /**

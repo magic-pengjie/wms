@@ -31,5 +31,5 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      * @param orderNo
      * @return
      */
-    List<OrderInfoDTO> selectOrderByNo(@Param("pickNo") String pickNo, @Param("orderNo") String orderNo);
+    List<OrderInfoDTO> selectOrderByNo(@Param("pickNo") String pickNo, @Param("orderNo") String orderNo, @Param("sendState") String sendState);
 }

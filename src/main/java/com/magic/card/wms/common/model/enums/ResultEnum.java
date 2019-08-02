@@ -48,7 +48,7 @@ public enum ResultEnum {
 
 	system_busy(11111, "系统繁忙请稍后再试"),
 
-	commodity_stock_setting_deficiency(10013, "当前商品库存不存在！"),
+	commodity_stock_setting_deficiency(10013, "当前商品设置库位！"),
 
 	query_user_failed(200000,"查询用户失败"),
 	add_user_failed(200001,"新增用户失败"),
@@ -67,7 +67,7 @@ public enum ResultEnum {
 	customer_no_exist(300001, "商家不存在！"),
 	customer_bind_commodity(300002, "当前商家已绑定商品条码"),
 	store_house_config_exist(300003, "当前库位已经配置，请勿重复配置"),
-
+	consumable_config_exist( 300004, "商品耗材已配置"),
 
 	select_purchase_failed(400000,"查询单据失败"),
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),
@@ -99,7 +99,7 @@ public enum ResultEnum {
 	order_package_no_hc(50009, "当前订单商品没有设置耗材"),
 	order_lock(50010, "订单超过15分钟已锁定"),
 	order_package_no_exist(50011, "订单包裹不存在，请核实包裹快递单号！"),
-
+	order_excel_import_err(500012, "Excel订单导入失败"),
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),
 

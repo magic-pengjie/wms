@@ -80,6 +80,7 @@
             woi.express_key expressKey,
             woi.prov prov,
             woi.is_b2b isB2b,
+            woi.is_batch isBatch,
             woi.bill_state billState,
             woi.create_time createTime
         FROM
@@ -96,25 +97,51 @@
     
     <!-- 根据拣货单查询订单及商品信息 -->
      <select id="selectOrderByNo" resultMap="BaseResultMap" >
-       	select pi.id,pi.mail_no,pi.pick_no,pi.preset_weight,pi.send_nums,pi.fail_reason,oi.order_no, oi.customer_code, oi.customer_name, oi.recipt_name, oi.post_code, 
-       	oi.prov, oi.city, oi.recipt_addr, oi.recipt_phone, oi.express_key, oi.is_b2b, oi.goods_value, oi.bill_state, oi.remark,
-       	oc.customer_code, oc.bar_code, oc.model_no, oc.spec, oc.numbers, oc.pick_numbers, 
-       	sku.sku_name
-       	from wms_mail_picking_info pi
-       		left join wms_order_info oi  on oi.order_no=pi.order_no
- 			left join wms_order_commodity oc on pi.order_no=oc.order_no
- 			left join wms_commodity_sku sku on oc.bar_code=sku.bar_code
- 		<where>
- 			<if test="pickNo != null and pickNo != '' ">
- 				pi.pick_no=#{pickNo}
- 			</if>
- 			<if test="orderNo != null and orderNo != '' ">
- 				pi.order_no=#{orderNo}
- 			</if>
- 			<if test="sendState != null and sendState != '' ">
- 				pi.send_state=#{sendState}
- 			</if>
- 		</where>
+         SELECT
+             pi.id,
+             pi.mail_no,
+             pi.pick_no,
+             pi.preset_weight,
+             pi.send_nums,
+             pi.fail_reason,
+             oi.order_no,
+             oi.customer_code,
+             oi.customer_name,
+             oi.recipt_name,
+             oi.post_code,
+             oi.prov,
+             oi.city,
+             oi.recipt_addr,
+             oi.recipt_phone,
+             oi.express_key,
+             oi.is_b2b,
+             oi.goods_value,
+             oi.bill_state,
+             oi.remark,
+
+             pd.commodity_code,
+             sku.bar_code,
+             sku.model_no,
+             sku.spec,
+             pd.package_nums numbers,
+             sku.sku_name
+         FROM
+             wms_mail_picking_info pi
+         LEFT JOIN  wms_mail_picking_detail pd  ON pd.mail_no = pi.mail_no
+         LEFT JOIN wms_order_info oi ON oi.system_order_no = pi.order_no
+         LEFT JOIN wms_commodity_sku sku ON pd.commodity_code = sku.bar_code
+         <where>
+                1= 1
+             <if test="pickNo != null and pickNo != '' ">
+                 AND pi.pick_no=#{pickNo}
+             </if>
+             <if test="orderNo != null and orderNo != '' ">
+                 AND pi.order_no=#{orderNo}
+             </if>
+             <if test="sendState != null and sendState != '' ">
+                 AND pi.send_state=#{sendState}
+             </if>
+         </where>
     </select>
     
 </mapper>

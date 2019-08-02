@@ -3,19 +3,29 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.CommodityConsumablesConfigMapper;
+import com.magic.card.wms.baseset.model.dto.BatchConsumablesConfigDTO;
 import com.magic.card.wms.baseset.model.dto.CommodityConsumablesConfigDTO;
 import com.magic.card.wms.baseset.model.po.CommodityConsumablesConfig;
 import com.magic.card.wms.baseset.service.ICommodityConsumablesConfigService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +52,8 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
         defaultColumns.put("rightValue", "wccc.right_value");
         defaultColumns.put("userNums", "wccc.use_nums");
     }
+    @Autowired
+    private WebUtil webUtil;
 
     /**
      * 数据加载（分页搜索排序）
@@ -50,7 +62,7 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
      * @return
      */
     @Override
-    public LoadGrid loadGrid(LoadGrid loadGrid) {
+    public void loadGrid(LoadGrid loadGrid) {
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("wccc.state", 1);
@@ -63,7 +75,6 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
         }
 
         loadGrid.finallyResult(page, this.baseMapper.loadGrid(page, wrapper));
-        return loadGrid;
     }
 
     /**
@@ -105,4 +116,42 @@ public class CommodityConsumablesConfigServiceImpl extends ServiceImpl<Commodity
             throw OperationException.DATA_OPERATION_DELETE;
 
     }
+
+    /**
+     * 批量配置
+     *
+     * @param batchConsumablesConfig
+     */
+    @Override @Transactional
+    public void batchConfig(BatchConsumablesConfigDTO batchConsumablesConfig) {
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.in("commodity_code", batchConsumablesConfig.getCommodityCodes()).
+                in("use_commodity_code", batchConsumablesConfig.getUseCommodityCodes()).
+                eq("state", StateEnum.normal.getCode());
+         if (baseMapper.selectCount(entityWrapper) > 0) {
+            throw OperationException.customException(ResultEnum.consumable_config_exist);
+        }
+
+        CommodityConsumablesConfig baseConfig = new CommodityConsumablesConfig();
+        BeanUtils.copyProperties(batchConsumablesConfig, baseConfig);
+        PoUtil.add(baseConfig, webUtil.operator());
+
+        if (CollectionUtils.isNotEmpty(batchConsumablesConfig.getCommodityCodes())
+                && CollectionUtils.isNotEmpty(batchConsumablesConfig.getUseCommodityCodes())) {
+            LinkedList<CommodityConsumablesConfig> commodityConsumables = Lists.newLinkedList();
+            batchConsumablesConfig.getCommodityCodes().forEach(commodityCode ->
+                batchConsumablesConfig.getUseCommodityCodes().forEach( useCommodityCode -> {
+                    CommodityConsumablesConfig commodityConsumablesConfig = new CommodityConsumablesConfig();
+                    BeanUtils.copyProperties(baseConfig, commodityConsumablesConfig);
+                    commodityConsumablesConfig.setCommodityCode(commodityCode);
+                    commodityConsumablesConfig.setUseCommodityCode(useCommodityCode);
+                    commodityConsumables.add(commodityConsumablesConfig);
+                })
+            );
+
+            insertBatch(commodityConsumables);
+        }
+
+    }
+
 }

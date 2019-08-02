@@ -1,10 +1,12 @@
 package com.magic.card.wms.baseset.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,27 +66,23 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     private ICustomerBaseInfoService customerService;
     @Autowired
     private IStorehouseInfoService storehouseInfoService;
-    @Autowired
+    @Autowired(required = false)
     private StorehouseConfigMapper storehouseConfigMapper;
 
     @Autowired
     private WebUtil webUtil;
-    /**
-     * 查询仓库配置信息
-     *
-     * @param loadGrid
-     * @return
-     */
+
+
     @Override
-    public LoadGrid loadGrid(LoadGrid loadGrid) {
+    public void loadGrid(LoadGrid loadGrid) {
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
+//        wrapper.eq("", customerCode);
+
         WrapperUtil.autoSettingSearch(wrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
         WrapperUtil.autoSettingOrder(wrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder ->
-            defaultSetOrder.orderBy("wsc.create_time", false));
+                defaultSetOrder.orderBy("wsc.create_time", false));
         loadGrid.finallyResult(page, baseMapper.loadGrid(page, wrapper));
-
-        return loadGrid;
     }
 
     /**
@@ -111,31 +109,30 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
      *
      * @param batchStorehouseConfig
      */
-    @Override
+    @Override @Transactional
     public void batchConfig(BatchStorehouseConfigDTO batchStorehouseConfig) {
         EntityWrapper entityWrapper = new EntityWrapper();
-        entityWrapper.in("storehouse_id", batchStorehouseConfig.getStorehouseIds()).
+        entityWrapper.in("id", batchStorehouseConfig.getStorehouseIds()).isNotNull("commodity_id").
                 eq("state", StateEnum.normal.getCode());
 
         if (selectCount(entityWrapper) > 0) {
-            throw OperationException.customException(ResultEnum.data_check_exist, "库位已经被配置");
+            throw OperationException.customException(ResultEnum.data_check_exist, "库位已经被配置商品");
         }
 
         // todo 拣货区商品库位限制
         StorehouseConfig baseConfig = new StorehouseConfig();
         BeanUtils.copyProperties(batchStorehouseConfig, baseConfig);
-        PoUtil.add(baseConfig, webUtil.operator());
+        PoUtil.update(baseConfig, webUtil.operator());
         List<StorehouseConfig> storehouseConfigs = Lists.newArrayList();
 
-        for (String storehouseId :
+        for (Long storehouseId :
                 batchStorehouseConfig.getStorehouseIds()) {
             StorehouseConfig storehouseConfig = new StorehouseConfig();
             BeanUtils.copyProperties(baseConfig, storehouseConfig);
-            storehouseConfig.setStorehouseId(storehouseId);
+            storehouseConfig.setId(storehouseId);
             storehouseConfigs.add(storehouseConfig);
         }
-
-        insertBatch(storehouseConfigs);
+        updateBatchById(storehouseConfigs);
     }
 
     /**
@@ -154,9 +151,6 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         if (this.baseMapper.updateById(config) < 1) {
             throw OperationException.DATA_OPERATION_UPDATE;
         }
-
-
-
     }
 
     /**
@@ -171,6 +165,21 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
             throw OperationException.DATA_OPERATION_DELETE;
         }
 
+    }
+
+    /**
+     * 批量清空库位商品
+     *
+     * @param ids
+     */
+    @Override
+    public void batchClearCommodity(List<String> ids) {
+        String setString = String.format(
+                "commodity_id = null, update_time = '%s', update_user = '%s'",
+                DateTime.now().toString(),
+                webUtil.operator()
+        );
+        baseMapper.updateForSet(setString, new EntityWrapper().in("id", ids));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
@@ -8,6 +9,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 public class PickBillController {
     @Autowired
     private IPickingBillService pickingBillService;
+    @Autowired
+    private IMailPickingService mailPickingService;
 
     @ApiOperation("加载数据")
     @PostMapping("loadGrid")
@@ -67,5 +72,11 @@ public class PickBillController {
     @GetMapping("invoiceCheckClose")
     public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
         return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo));
+    }
+
+    @GetMapping("sendOrder")
+    public ResponseData sendOrderToPost(@RequestParam String pickNo, @RequestParam String orderNo) throws UnsupportedEncodingException {
+        mailPickingService.sendOrder(pickNo, orderNo);
+        return ResponseData.ok();
     }
 }

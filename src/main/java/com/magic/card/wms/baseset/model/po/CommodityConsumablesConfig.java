@@ -21,15 +21,11 @@ import lombok.experimental.Accessors;
  */
 @Data
 @TableName("wms_commodity_consumables_config")
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 public class CommodityConsumablesConfig extends BasePo implements Serializable {
 
     private static final long serialVersionUID = -2984424458683252346L;
 
-    /**
-     * 主键
-     */
-    private Long id;
     /**
      * 商品Code 商品条码
      */

@@ -20,7 +20,7 @@ public class BatchStorehouseConfigDTO implements Serializable {
      * 库位id
      */
     @Size(min = 1)
-    private String[] storehouseIds;
+    private Long[] storehouseIds;
     /**
      * 客户id
      */

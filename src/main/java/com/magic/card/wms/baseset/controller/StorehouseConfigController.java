@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,8 +48,9 @@ public class StorehouseConfigController {
 
     @ApiOperation(value = "加载库位数据（可分页查询）")
     @PostMapping("loadGrid")
-    public ResponseData loadGrid( @ApiParam("搜索信息")@RequestBody LoadGrid loadGrid) {
-        return ResponseData.ok(storehouseConfigService.loadGrid(loadGrid));
+    public ResponseData loadGrid( @ApiParam("搜索信息")@RequestJsonParam LoadGrid loadGrid) {
+        storehouseConfigService.loadGrid(loadGrid);
+        return ResponseData.ok(loadGrid);
     }
 
     @ApiOperation(value = "新增库位配置数据基本信息")
@@ -72,11 +74,18 @@ public class StorehouseConfigController {
         return ResponseData.ok();
     }
 
+    @ApiOperation(value = "清空库位配置的商品")
+    @PostMapping("batchClearCommodity")
+    public ResponseData batchClearCommodity(@RequestParam List<String> ids) {
+        storehouseConfigService.batchClearCommodity(ids);
+        return ResponseData.ok();
+    }
+
     @ApiOperation(value = "删除库位配置基本信息(物理删除)")
     @GetMapping("delete")
     public ResponseData delete(@RequestParam Long id) {
         storehouseConfigService.delete(id);
-        return ResponseData.ok(storehouseConfigService.deleteById(id));
+        return ResponseData.ok();
     }
     
     @ApiOperation(value = "推荐库位")

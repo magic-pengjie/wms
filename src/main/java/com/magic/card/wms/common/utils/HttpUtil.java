@@ -20,8 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HttpUtil {
 
-	public static String json_format = "application/json;charset=UTF-8";
-	public static String encode_format = "=UTF-8";
+	public static String json_format = "application/json";
+	public static String encode_format = "UTF-8";
 	
 	/**
 	 * get 请求
@@ -50,7 +50,7 @@ public class HttpUtil {
 		String reqJson = JSONObject.toJSONString(params);
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders header = new HttpHeaders();
-		MediaType type = new MediaType(json_format);
+		MediaType type = MediaType.APPLICATION_JSON_UTF8;
 		header.setContentType(type);
 		header.add("Accept",json_format);
 		header.setContentLength(reqJson.getBytes(encode_format).length);

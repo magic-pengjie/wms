@@ -157,7 +157,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     }
 
     /**
-     * 加载商家绑定的库位
+     * 加载商家绑定的库位且未管理商品
      *
      * @param loadGrid
      * @param customerCode
@@ -167,7 +167,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
     public LoadGrid comboGridBind(LoadGrid loadGrid, String customerCode) {
         Page page = loadGrid.generatorPage();
         EntityWrapper entityWrapper = new EntityWrapper();
-        entityWrapper.eq("wcbi.customer_code", customerCode).eq("wsi.state", StateEnum.normal.getCode());
+        entityWrapper.isNull("wsc.commodity_id").eq("wcbi.customer_code", customerCode).eq("wsi.state", StateEnum.normal.getCode());
         loadGrid.finallyResult(page, baseMapper.comboGridBind(page, entityWrapper));
         return loadGrid;
     }

@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -187,7 +189,7 @@ public class EasyExcelUtil {
 				newFileName = new String(fileName.getBytes(),"ISO8859-1");
 			}	
 			else {
-				newFileName = URLEncoder.encode(fileName,"UFT-8");
+				newFileName = URLEncoder.encode(fileName,"UTF-8");
 				newFileName = newFileName.replace("+", "%20");
 			}
 		}else {
@@ -197,4 +199,16 @@ public class EasyExcelUtil {
 		return newFileName;
 	}
 
+	/**
+	 * 验证文件是否为excel
+	 * @param fileName
+	 */
+	public static void validatorFileSuffix(String fileName) {
+		if (StringUtils.isBlank(fileName)) {
+			throw OperationException.customException(ResultEnum.upload_file_inexistence);
+		}
+		if (!fileName.toLowerCase().endsWith(ExcelTypeEnum.XLS.getValue()) && !fileName.toLowerCase().endsWith(ExcelTypeEnum.XLSX.getValue())) {
+			throw OperationException.customException(ResultEnum.upload_file_suffix_err);
+		}
+	}
 }

@@ -1,21 +1,35 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.ResultEnum;
+import com.magic.card.wms.common.utils.EasyExcelUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 
 /**
@@ -26,6 +40,7 @@ import java.math.BigDecimal;
  * @date : 2019/6/24/024 16:35
  * @since : 1.0.0
  */
+@Slf4j
 @Api("订单导入系统控制器")
 @RestController
 @RequestMapping(value = "order", headers = "accept=application/json")
@@ -34,6 +49,8 @@ public class OrderController {
     private IOrderService orderService;
     @Autowired
     private IPickingBillService pickingBillService;
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     /**
      * 加载订单数据
@@ -43,6 +60,50 @@ public class OrderController {
     @PostMapping("loadGrid")
     public ResponseData loadGrid(@RequestBody LoadGrid loadGrid) {
        return ResponseData.ok(orderService.loadGrid(loadGrid));
+    }
+
+    @ApiModelProperty("Excel订单导入")
+    @PostMapping("excelImport")
+    public ResponseData excelImport(@RequestParam MultipartFile[] excelOrders) {
+        try {
+            orderService.excelImport(excelOrders);
+        } catch (IOException e) {
+            throw OperationException.customException(ResultEnum.order_excel_import_err);
+        }
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("下载订单导入模板")
+    @GetMapping("downloadTemplate")
+    public ResponseData downloadTemplate(HttpServletRequest request, HttpServletResponse response) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            String fileName = "订单导入模板";
+            String path = "templates/"+fileName+".xlsx";
+            Resource resource = resourceLoader.getResource("classPath:"+path);
+            EasyExcelUtil.prepareResponds(request, response, fileName, ExcelTypeEnum.XLSX);
+            in = resource.getInputStream();
+            out = response.getOutputStream();
+            IOUtils.copy(in, out);
+            response.flushBuffer();
+        }catch (Exception e) {
+            log.error("采购单据导入模版下载:{}",e);
+            return ResponseData.error(ResultEnum.download_error);
+        }finally {
+            try {
+                if(null != in) {
+                    in.close();
+                }
+                if(null != out) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                log.error("close io error:{}",e);
+            }
+
+        }
+        return null;
     }
 
     /**

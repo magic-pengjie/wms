@@ -9,6 +9,7 @@ import com.magic.card.wms.common.model.LoadGrid;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -54,4 +55,10 @@ public interface ICommoditySkuService extends IService<CommoditySku> {
      * @param commodityExcelFiles
      */
     void excelImport(MultipartFile[] commodityExcelFiles);
+
+    /**
+     * 加载消耗品数据
+     * @return
+     */
+    Map<String, List> comboGridConsumables();
 }

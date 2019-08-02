@@ -239,12 +239,11 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
                         // commodityIds.add(MapUtils.getString(noticeReplenishment, "commodityId"));
                         CommodityReplenishment commodityReplenishment = new CommodityReplenishment();
                         BeanUtils.copyProperties(baseCommodityReplenishment, commodityReplenishment);
-
                         commodityReplenishment.setReplenishmentNo(GeneratorCodeUtil.dataTime(5));
                         commodityReplenishment.setCommodityId(MapUtils.getString(noticeReplenishment, "commodityId"));
                         commodityReplenishment.setCheckoutId(MapUtils.getString(noticeReplenishment, "storehouseId"));
                         commodityReplenishment.setStockoutNums(MapUtils.getInteger(noticeReplenishment, "omitNums"));
-                        commodityReplenishment.setReplenishmentNums(MapUtils.getInteger(noticeReplenishment, "omitNums"));
+//                        commodityReplenishment.setReplenishmentNums(MapUtils.getInteger(noticeReplenishment, "omitNums"));
                         return commodityReplenishment;
                     }).
                     collect(Collectors.toList());

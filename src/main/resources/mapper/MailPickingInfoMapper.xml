@@ -168,7 +168,7 @@
             wmpi.is_finish isFinish
         FROM
             wms_mail_picking_info wmpi
-            LEFT JOIN wms_order_info woi ON woi.system_order_no wmpi.order_no
+            LEFT JOIN wms_order_info woi ON woi.system_order_no = wmpi.order_no
         <where>
             ${ew.sqlSegment}
         </where>

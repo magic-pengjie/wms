@@ -13,6 +13,7 @@ import com.magic.card.wms.baseset.model.vo.ExcelCommoditySkuVO;
 import com.magic.card.wms.baseset.service.ICommoditySkuService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
+import com.magic.card.wms.common.model.enums.CommodityType;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
@@ -58,6 +59,7 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
         defaultColumns.put("barCode", "bar_code");
         defaultColumns.put("modelNo", "model_no");
         defaultColumns.put("singleUnit", "single_unit");
+        defaultColumns.put("isConsumable", "is_consumable");
         defaultColumns.put("singleWeight", "single_weight");
         defaultColumns.put("singleWeightUnit", "single_weight_unit");
 
@@ -132,6 +134,35 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
     }
 
     /**
+     * 加载消耗品数据
+     *
+     * @return
+     */
+    @Override
+    public Map<String, List> comboGridConsumables() {
+        EntityWrapper<CommoditySku> entityWrapper = new EntityWrapper();
+        entityWrapper.eq("is_consumable", 1).eq("state", StateEnum.normal.getCode());
+        List<CommoditySku> commoditySkus = baseMapper.selectList(entityWrapper);
+
+        if (CollectionUtils.isNotEmpty(commoditySkus)) {
+            Map<String, List> consumables = Maps.newHashMap();
+            commoditySkus.forEach(commoditySku -> {
+                final String key = CommodityType.enToch(commoditySku.getCommodityType());
+                if (consumables.containsKey(key)) {
+                    consumables.get(key).add(commoditySku);
+                } else {
+                    List commodities = Lists.newLinkedList();
+                    commodities.add(commoditySku);
+                    consumables.put(key, commodities);
+                }
+            });
+            return consumables;
+        }
+
+        return null;
+    }
+
+    /**
      * Excel 导入 商品信息
      *
      * @param commodityExcelFiles
@@ -142,14 +173,7 @@ public class CommoditySkuServiceImpl extends ServiceImpl<CommoditySkuMapper, Com
         for (MultipartFile commodityExcelFile :
                 commodityExcelFiles) {
             String fileName = commodityExcelFile.getOriginalFilename();
-
-            if (fileName == null ) {
-                throw OperationException.customException(ResultEnum.upload_file_inexistence);
-            }
-            if (!fileName.toLowerCase().endsWith(ExcelTypeEnum.XLS.getValue()) && !fileName.toLowerCase().endsWith(ExcelTypeEnum.XLSX.getValue())) {
-                throw OperationException.customException(ResultEnum.upload_file_suffix_err);
-            }
-
+            EasyExcelUtil.validatorFileSuffix(fileName);
             try {
                 List<ExcelCommoditySkuVO> excelCommoditySkuVOS = EasyExcelUtil.readExcel(commodityExcelFile.getInputStream(), ExcelCommoditySkuVO.class, 1, 1);
 

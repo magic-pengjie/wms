@@ -14,6 +14,7 @@ import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.utils.GeneratorCodeUtil;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
@@ -320,44 +321,44 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         if (CollectionUtils.isEmpty(virtualMails)) return;
 
         //生成拣货单 时间戳 年月日时分秒 + 随机四位数
-        String pickNo = DateTime.now().toString("yyyyMMddHHmmss") + RandomStringUtils.random(4,"0123456789");
+        String pickNo = GeneratorCodeUtil.dataTime(4);
         PickingBill pickingBill = new PickingBill();
         pickingBill.setPickNo(pickNo);
-        pickingBill.setProcessStage("new_pick"); // 新的拣货单
-        pickingBill.setBillState("save");// 设置拣货单状态 save
+        pickingBill.setProcessStage(BillState.pick_process_new.getCode()); // 新的拣货单
+        pickingBill.setBillState(BillState.pick_save.getCode());// 设置拣货单状态 save
         PoUtil.add(pickingBill, operator);
 
         if (this.baseMapper.insert(pickingBill) < 1) return;
 
         //生成快递拣货篮 20
+        Map<String, Order> ordersMap = orderService.ordersMap(
+                virtualMails.
+                        stream().
+                        map(virtualMail ->
+                                virtualMail.get("systemOrderNo").toString()
+                        ).
+                        collect(Collectors.toList()));
         for (int basketNum = 1; basketNum <= virtualMails.size(); basketNum++) {
             Map virtualMail = virtualMails.get(basketNum - 1);
-            Order order = orderService.selectOne(
-                    new EntityWrapper().eq(
-                            "system_order_no",
-                            virtualMail.get("systemOrderNo")
-                    )
-            );
+            final String systemOrderNo = MapUtils.getString(virtualMail, "systemOrderNo");
+            final String virtualMailNo = MapUtils.getString(virtualMail, "mailNo");
+            Order order = ordersMap.get(systemOrderNo);
+            //获取快递单号
             String realMail = expressProviderManager.useExpressNo(order.getExpressKey());
+
             MailPicking mailPicking = new MailPicking();
             mailPicking.setOrderNo(order.getSystemOrderNo());
             mailPicking.setPickNo(pickingBill.getPickNo());
             mailPicking.setBasketNum(basketNum);
-            //获取快递单号
             mailPicking.setMailNo(realMail);
             //获取订单标准重量
-            mailPicking.setPresetWeight(mailPickingDetailService.mailPickingWeight(MapUtils.getString(
-                    virtualMail,
-                    "mailNo"
-            )));
+            mailPicking.setPresetWeight(mailPickingDetailService.mailPickingWeight(virtualMailNo));
             mailPicking.setWeightUnit("kg");
             mailPickingService.generatorMailPicking(mailPicking, operator);
+
             // region 更新拣货篮详情信息
             EntityWrapper wrapper = new EntityWrapper();
-            wrapper.eq("mail_no", MapUtils.getString(
-                    virtualMail,
-                    "mailNo"
-            )).eq("state", StateEnum.normal.getCode());
+            wrapper.eq("mail_no",  virtualMailNo).eq("state", StateEnum.normal.getCode());
             MailPickingDetail mailPickingDetail = new MailPickingDetail();
             mailPickingDetail.setMailNo(mailPicking.getMailNo());
             mailPickingDetail.setPickNo(mailPicking.getPickNo());
@@ -372,7 +373,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
             // endregion
         }
 
-        // TODO 拣货区库存对应减少，若拣货区库存小于拣货单所需值怎已负值形式展现，同时库存是否充足，若不足则通知补货
+        // 拣货区库存对应减少，若拣货区库存小于拣货单所需值怎已负值形式展现，同时库存是否充足，若不足则通知补货
         mailPickingDetailService.needNoticeReplenishment(pickNo);
     }
 

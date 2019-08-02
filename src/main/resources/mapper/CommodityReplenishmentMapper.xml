@@ -6,4 +6,27 @@
 
 
     </select>
+    <select id="loadGrid" resultType="java.util.Map">
+        select wcr.id,
+               wcr.replenishment_no,
+               wcr.commodity_id,
+               wcr.storage_id,
+               wcr.checkout_id,
+               wcr.stockout_nums,
+               wcr.replenishment_nums,
+               wcr.is_finally,
+               wcr.process_stage,
+               wcr.state,
+               wcs.sku_name,
+               wci.commodity_code,
+               wsi.store_code
+
+        from wms_commodity_replenishment wcr
+                 left join wms_commodity_info wci on wci.id = wcr.commodity_id
+                 left join wms_commodity_sku wcs on wcs.bar_code = wci.commodity_code
+                 left join wms_storehouse_info wsi on wsi.id = wcr.checkout_id
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
 </mapper>

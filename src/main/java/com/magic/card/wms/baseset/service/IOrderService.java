@@ -5,7 +5,9 @@ import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.common.model.LoadGrid;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -86,5 +88,17 @@ public interface IOrderService extends IService<Order> {
      * @param orderNo 系统订单 订单号 + 商家号
      */
     Order checkoutOrder(String orderNo);
-    
+
+    /**
+     * 获取订单 key -> value Map
+     * @param systemOrderNo
+     * @return
+     */
+    Map<String, Order> ordersMap(List<String> systemOrderNo);
+
+    /**
+     * EXCEL 导入订单
+     * @param excelOrders
+     */
+    void excelImport(MultipartFile[] excelOrders) throws IOException;
 }

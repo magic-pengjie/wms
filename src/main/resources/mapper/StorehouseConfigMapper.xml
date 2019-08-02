@@ -110,6 +110,7 @@
 			wsc.state,
 			wsc.customer_id customerId,
 			wsc.store_nums storeNums,
+			wsc.available_nums availabelNums,
 			wcs.sku_name skuName,
 			wcs.bar_code commodityCode,
 			wsi.house_code houseCode,

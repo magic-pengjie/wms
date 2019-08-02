@@ -58,10 +58,10 @@ public class CommodityInfoController {
         return ResponseData.ok();
     }
 
-    @ApiOperation("耗材关系列表")
-    @PostMapping("consumables/load")
-    public ResponseData loadGridCC(@RequestBody LoadGrid loadGrid) {
-        return ResponseData.ok(commodityConsumablesConfigService.loadGrid(loadGrid));
-    }
+//    @ApiOperation("耗材关系列表")
+//    @PostMapping("consumables/load")
+//    public ResponseData loadGridCC(@RequestBody LoadGrid loadGrid) {
+//        return ResponseData.ok(commodityConsumablesConfigService.loadGrid(loadGrid));
+//    }
 
 }

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -75,6 +76,8 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     private OrderInfoMapper orderInfoMapper;
     @Autowired
     private WebUtil webUtil;
+    @Value("${post.order.push.url}")
+    private String postUrl;
 
     /**
      * 获取拣货单所有漏检商品数据信息
@@ -271,7 +274,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	@Override
 	public void sendOrder(String pickNo,String orderNo) throws UnsupportedEncodingException {
 		//查询订单信息
-		List<OrderInfoDTO>  orderInfo = orderInfoMapper.selectOrderByNo(pickNo, orderNo);
+		List<OrderInfoDTO>  orderInfo = orderInfoMapper.selectOrderByNo(pickNo, orderNo, null);
 		if(ObjectUtils.isEmpty(orderInfo)) {
 			throw new OperationException(-1,"订单数据不存在");
 		}
@@ -292,7 +295,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			//TODO 推送数据至邮政
 			String reason = "数据推送异常";
 			try {
-				String result = HttpUtil.restPost("", order);
+				String result = HttpUtil.restPost(postUrl, order);
 				log.info("restPost finish result:{}",result);
 				ResponsesXml response = new ResponsesXml();
 				response = (ResponsesXml) XmlUtil.parseXml(response, xml);
@@ -393,6 +396,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			orderCommoditys.add(commodityXml);
 			
 		});
+		requestOrderXml.setCommodityList(orderCommoditys);
 		String xml = XmlUtil.toXml(requestOrderXml);
 		return xml;
 	}

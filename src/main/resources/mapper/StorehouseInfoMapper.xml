@@ -36,9 +36,9 @@
     <!--  库位的信息  -->
     <select id="comboGrid" resultType="java.util.Map">
         SELECT
-        wsi.id, wsi.area_code areaCode, wsi.house_code houseCode, wsi.store_code storeCode, wsi.state
+            wsi.id, wsi.area_code areaCode, wsi.house_code houseCode, wsi.store_code storeCode, wsi.state
         FROM
-        wms_storehouse_info wsi
+            wms_storehouse_info wsi
         LEFT JOIN wms_storehouse_config wsc ON wsc.storehouse_id = wsi.id
         LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
         <where>
@@ -46,7 +46,7 @@
         </where>
     </select>
     <select id="comboGridBind" resultType="java.util.Map">
-        select wsi.id, wsi.store_code storeCode, wsi.house_code houseCode, wsi.area_code areaCode from
+        select wsc.id, wsi.store_code storeCode, wsi.house_code houseCode, wsi.area_code areaCode from
         wms_storehouse_config wsc
         left join wms_customer_base_info wcbi on wcbi.id = wsc.customer_id
         left join wms_storehouse_info wsi on wsc.storehouse_id = wsi.id

@@ -1,7 +1,10 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.model.dto.BatchConsumablesConfigDTO;
 import com.magic.card.wms.baseset.model.dto.CommoditySkuDTO;
+import com.magic.card.wms.baseset.service.ICommodityConsumablesConfigService;
 import com.magic.card.wms.baseset.service.ICommoditySkuService;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -33,6 +37,8 @@ public class CommoditySkuController {
 
     @Autowired
     private ICommoditySkuService commoditySkuService;
+
+
 
     @ApiOperation(value = "新增商品SKU基本信息")
     @PostMapping("loadGrid")
@@ -65,4 +71,13 @@ public class CommoditySkuController {
         commoditySkuService.excelImport(commodityExcelFiles);
         return ResponseData.ok();
     }
+
+
+
+    @GetMapping("consumable")
+    public ResponseData comboGridConsumables() {
+        return ResponseData.ok(commoditySkuService.comboGridConsumables());
+    }
+
+
 }
