@@ -101,4 +101,9 @@ public interface IOrderService extends IService<Order> {
      * @param excelOrders
      */
     void excelImport(MultipartFile[] excelOrders) throws IOException;
+    
+    /**
+         * 订单超时预警
+     */
+    void runOrderTimeOutWarning();
 }

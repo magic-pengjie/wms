@@ -1,5 +1,6 @@
 package com.magic.card.wms.config;
 
+import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.magic.card.wms.baseset.service.ILogisticsTrackingInfoService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.warehousing.service.IPurchaseBillService;
@@ -29,6 +30,8 @@ public class WmsScheduledConfig {
     private IPurchaseBillService purchaseBillService;
     @Autowired
     private ILogisticsTrackingInfoService logisticsTrackingInfoService;
+    @Autowired
+    private ICommodityInfoService commodityInfoService;
 
 //    @Scheduled(cron = "0 0/30 * * * *")
     public void generatorPickingBill() {
@@ -56,6 +59,7 @@ public class WmsScheduledConfig {
     public void runUnsalableGoodsWarning() {
     	log.info("==>runUnsalableGoodsWarning start..");
         try {
+        	commodityInfoService.selectUnsalableGood();
              log.info("==>runUnsalableGoodsWarning end..");
 		} catch (Exception e) {
 			log.error("runUnsalableGoodsWarning error:{}",e);
@@ -89,7 +93,19 @@ public class WmsScheduledConfig {
 		}
     }
 
-
+    /**
+         * 订单超时预警 当日16：00之前订单，已锁定订单在2H之内没有后续系统操作，进行预警。16：00之后订单，超12H没有生成拣货单的订单进行预警
+     **/
+    //@Scheduled(cron = "* */2 * * * *")
+    public void runOrderTimeOutWarning() {
+    	log.info("==>runOrderTimeOutWarning start..");
+        try {
+        	logisticsTrackingInfoService.runLogisticsInfo();
+             log.info("==>runOrderTimeOutWarning end..");
+		} catch (Exception e) {
+			log.error("runOrderTimeOutWarning error:{}",e);
+		}
+    }
 //    @Synchronized
     public void execute(String taskName) {
         try {
