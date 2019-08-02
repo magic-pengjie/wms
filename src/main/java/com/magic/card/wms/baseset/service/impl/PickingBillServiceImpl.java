@@ -254,7 +254,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         wrapper.eq("state", StateEnum.normal.getCode()).
                 eq("is_b2b", 0).
                 // 15分钟锁定订单
-                gt("create_time", DateTime.now().minusMinutes(15).toDate()).
+                lt("create_time", DateTime.now().minusMinutes(15).toDate()).
                 groupBy("customer_code").
                 having("COUNT(*) > 0");
         List<String> customerCodes = baseMapper.customerCodes(wrapper);

@@ -104,11 +104,11 @@ public class ExcelOrderImport extends BaseRowModel implements Serializable {
         this.expressKey = expressKey;
     }
 
-    public void setIsBatch(String isBatch) {
-        this.isBatch = DataConvertUtil.isValue(isBatch);
-    }
-
-    public void setIsB2b(String isB2b) {
-        this.isB2b = DataConvertUtil.isValue(isB2b);
-    }
+//    public void setIsBatch(String isBatch) {
+//        this.isBatch = DataConvertUtil.isValue(isBatch);
+//    }
+//
+//    public void setIsB2b(String isB2b) {
+//        this.isB2b = DataConvertUtil.isValue(isB2b);
+//    }
 }
