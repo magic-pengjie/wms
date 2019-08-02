@@ -61,9 +61,10 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
     /**
      * 入库时推荐库位
      * @param customerCode 客户编码
+     * @param barCode 商品条码
      * @return
      */
-    List<StorehouseConfigVO> recommendStore(String customerCode);
+    List<StorehouseConfigVO> recommendStore(String customerCode,String barCode);
 
     /**
      * 客户商品补货推荐数据

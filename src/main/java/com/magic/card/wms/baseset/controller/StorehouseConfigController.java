@@ -90,10 +90,11 @@ public class StorehouseConfigController {
     
     @ApiOperation(value = "推荐库位")
     @GetMapping("/recommendStore")
-    public ResponseData recommendStore(@RequestParam(required = true) String customerCode) {
+    public ResponseData recommendStore(@RequestParam(required = true) String customerCode,
+    									@RequestParam String barCode) {
     	 List<StorehouseConfigVO> result = null;
     	try {
-    		result = storehouseConfigService.recommendStore(customerCode);
+    		result = storehouseConfigService.recommendStore(customerCode,barCode);
 		} catch (OperationException o) {
 			log.error("库位查询失败OperationException:{}", o);
 			return ResponseData.error(o.getErrCode(), o.getErrMsg());

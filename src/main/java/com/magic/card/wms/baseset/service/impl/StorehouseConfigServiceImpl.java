@@ -239,8 +239,8 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
    	}
 
 	@Override
-	public List<StorehouseConfigVO> recommendStore(String customerCode) {
-		List<StorehouseConfigVO> configList = storehouseConfigMapper.recommendStore(customerCode);
+	public List<StorehouseConfigVO> recommendStore(String customerCode,String barCode) {
+		List<StorehouseConfigVO> configList = storehouseConfigMapper.recommendStore(customerCode,barCode);
 		if(ObjectUtils.isEmpty(configList)) {
 			throw new OperationException(-1,"该商品无可用库位");
 		}

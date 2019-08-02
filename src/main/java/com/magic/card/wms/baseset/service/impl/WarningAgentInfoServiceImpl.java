@@ -35,15 +35,15 @@ public class WarningAgentInfoServiceImpl extends ServiceImpl<WarningAgentInfoMap
 		Page<WarningAgentInfo> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
 		Wrapper<WarningAgentInfo> w = new EntityWrapper<>();
 		w.eq("state",Constants.STATE_1);
-		if(ObjectUtils.isEmpty(dto.getAgentCode())) {
+		if(!ObjectUtils.isEmpty(dto.getAgentCode())) {
 			w.eq("agent_code", dto.getAgentCode());
-		}else if(ObjectUtils.isEmpty(dto.getModel())) {
+		}else if(!ObjectUtils.isEmpty(dto.getModel())) {
 			w.eq("model", dto.getModel());
-		}else if(ObjectUtils.isEmpty(dto.getTypeCode())) {
+		}else if(!ObjectUtils.isEmpty(dto.getTypeCode())) {
 			w.eq("type_code", dto.getTypeCode());
-		}else if(ObjectUtils.isEmpty(dto.getAgentState())) {
+		}else if(!ObjectUtils.isEmpty(dto.getAgentState())) {
 			w.eq("agent_state", dto.getAgentState());
-		}else if(ObjectUtils.isEmpty(dto.getAgentName())) {
+		}else if(!ObjectUtils.isEmpty(dto.getAgentName())) {
 			w.like("agent_name", dto.getAgentName());
 		}
 		List<String> orderParam = new ArrayList<>();
@@ -55,15 +55,15 @@ public class WarningAgentInfoServiceImpl extends ServiceImpl<WarningAgentInfoMap
 	}
 
 	@Override
-	public void deal(String id, String fid) {
+	public void deal(long id, String fid) {
 		if(ObjectUtils.isEmpty(id) && ObjectUtils.isEmpty(id)) {
 			throw new IllegalArgumentException("参数为空");
 		}
 		Wrapper<WarningAgentInfo> w = new EntityWrapper<>();
 		w.eq("state",Constants.STATE_1);
-		if(ObjectUtils.isEmpty(id)) {
+		if(!ObjectUtils.isEmpty(id)) {
 			w.eq("id", id);
-		}else if(ObjectUtils.isEmpty(fid)) {
+		}else if(!ObjectUtils.isEmpty(fid)) {
 			w.eq("fid", fid);
 		}
 		WarningAgentInfo agent = new WarningAgentInfo();
@@ -74,7 +74,7 @@ public class WarningAgentInfoServiceImpl extends ServiceImpl<WarningAgentInfoMap
 	}
 
 	@Override
-	public void delete(String id) {
+	public void delete(long id) {
 		this.deleteById(id);
 	}
 

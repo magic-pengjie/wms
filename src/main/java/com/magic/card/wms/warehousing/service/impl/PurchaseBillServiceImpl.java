@@ -154,7 +154,9 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			throw new OperationException(ResultEnum.purchase_commodity_repeat);
 		}
 		//根据客户名称查询客户编码
-		bill.setCustomerCode(getCustomerCode(bill.getCustomerName()));
+		if(ObjectUtils.isEmpty(bill.getCustomerCode())) {
+			bill.setCustomerCode(getCustomerCode(bill.getCustomerName()));
+		}
 		Date date = new Date();
 		bill.setBillState(BillStateEnum.save.getCode());
 		bill.setCreateUser(Constants.DEFAULT_USER);
@@ -166,7 +168,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		codeProduct.setProductDate(DateUtil.getTodayShort());
 		codeProduct.setLength(3);
 		String code = codeProductService.getCode(codeProduct);
-		bill.setPurchaseNo(bill.getCustomerCode()+codeProduct.getType()+code);
+		bill.setPurchaseNo(Constants.BILL_TYPE_FLAG_C+bill.getCustomerCode()+"-"+code);
 		bill.setName(bill.getCustomerName()+bill.getPurchaseNo()+"采购单");
 		if(StringUtils.isEmpty(bill.getMaker())) {
 			bill.setMaker(Constants.DEFAULT_USER);
@@ -283,7 +285,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			bill.setBillState(BillStateEnum.recevied.getCode());
 			bill.setReceivUser(Constants.DEFAULT_USER);
 			bill.setReceivDate(DateUtil.getStringDateShort());
-			bill.setReceivNo(bill.getPurchaseNo().replace("cg", "sh"));
+			bill.setReceivNo(Constants.BILL_TYPE_FLAG_R+bill.getPurchaseNo().substring(2, bill.getPurchaseNo().length()));
 			//修改收货商品数量
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
 			purchaseBillDetailService.updateBatchById(detailList);
@@ -292,8 +294,8 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 				throw new OperationException(ResultEnum.purchase_in_failed);
 			}
 			bill.setBillState(BillStateEnum.stored.getCode());
-			//生成入口单
-			bill.setWarehousingNo(bill.getPurchaseNo().replace("cg", "rk"));
+			//生成入库单
+			bill.setWarehousingNo(Constants.BILL_TYPE_FLAG_S+bill.getPurchaseNo().substring(2, bill.getPurchaseNo().length()));
 			bill.setWarehousingDate(new Date());
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
 			warning(bill, detailList);
@@ -322,9 +324,10 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 				throw new OperationException(ResultEnum.purchase_approve_failed);
 			}
 			bill.setBillState(BillStateEnum.approved.getCode());
-			if(!"1".equals(dto.getApproveResult())) {
-				bill.setBillState(BillStateEnum.approve_fail.getCode());
-			}
+			/*
+			 * if(!"1".equals(dto.getApproveResult())) {
+			 * bill.setBillState(BillStateEnum.approve_fail.getCode()); }
+			 */
 			bill.setApprover(Constants.DEFAULT_USER);
 			bill.setApproveTime(now);
 		}else {
