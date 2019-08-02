@@ -330,10 +330,10 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 							//1.2.3盘 正确结束， 两个一样结束， 三盘为准。审核结束，取消冻结。
 							if(!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//终盘数量
 								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
-							}else if (!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//复盘数量
-								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+							}else if (!StringUtils.isEmpty(checkRecordDto.getSecondCheckNums())){//复盘数量
+								sc.setStoreNums(checkRecordDto.getSecondCheckNums());
 							}else if (!StringUtils.isEmpty(checkRecordDto.getFirstCheckNums())){//初盘数量
-								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+								sc.setStoreNums(checkRecordDto.getFirstCheckNums());
 							}
 							sc.setUpdateTime(nowDate);
 							sc.setUpdateUser(name);
