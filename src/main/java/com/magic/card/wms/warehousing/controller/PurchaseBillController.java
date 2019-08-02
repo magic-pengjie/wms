@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.ObjectUtils;
@@ -131,6 +132,7 @@ public class PurchaseBillController {
 		try {
 			String fileName = "采购单导入模版";
 			String path = "/templates/"+fileName+".xlsx";
+			//Resource resource = new FileSystemResource(path);
 			Resource resource = resourceLoader.getResource("classPath:"+path);
 			EasyExcelUtil.prepareResponds(request, response, fileName, ExcelTypeEnum.XLSX);
 			in = resource.getInputStream();

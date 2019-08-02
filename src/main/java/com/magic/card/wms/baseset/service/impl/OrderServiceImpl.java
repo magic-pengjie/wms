@@ -613,4 +613,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
     }
+
+    /***
+     * 订单超时预警
+     */
+	@Override
+	public void runOrderTimeOutWarning() {
+		//查询
+		
+	}
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.check.model.dto.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,14 +27,6 @@ import com.magic.card.wms.baseset.mapper.StorehouseInfoMapper;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.check.mapper.CheckRecordMapper;
-import com.magic.card.wms.check.model.dto.AuditCheckRecordDto;
-import com.magic.card.wms.check.model.dto.CheckCountDto;
-import com.magic.card.wms.check.model.dto.CheckRecordCanellDto;
-import com.magic.card.wms.check.model.dto.CheckRecordDto;
-import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
-import com.magic.card.wms.check.model.dto.CheckRecordStartDto;
-import com.magic.card.wms.check.model.dto.QueryAuditCheckRecordDto;
-import com.magic.card.wms.check.model.dto.QueryCheckRecordDto;
 import com.magic.card.wms.check.model.po.CheckRecord;
 import com.magic.card.wms.check.service.ICheckRecordService;
 import com.magic.card.wms.common.exception.BusinessException;
@@ -114,7 +107,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 	//开始盘点
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
-	public List<CheckRecord> checkRecordStart(CheckRecordStartDto dto) throws BusinessException {
+	public List<CheckRecordQueryResponse> checkRecordStart(CheckRecordStartDto dto) throws BusinessException {
 		log.info("===>> 冻结开始...");
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
@@ -139,6 +132,8 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			throw new BusinessException(40001, "未查询到库存！");
 		}
 		log.info("===>> 查询库存：queryCommoidtyStoreList{}", commStoreList);
+
+		List<CheckRecordQueryResponse> crResponse = new ArrayList<CheckRecordQueryResponse>();
 		List<CheckRecord> crList = new ArrayList<CheckRecord>();
 		Date date = new Date();
 		commStoreList.forEach(cs->{
@@ -153,14 +148,31 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			cr.setCreateUser(userSession.getName());
 			cr.setState(StateEnum.normal.getCode());
 			crList.add(cr);
+
 		});
 		log.info("===>> Add CheckRecordInfo List:{}",crList);
 		if(!CollectionUtils.isEmpty(crList)) {
 			boolean insertBatch = this.insertBatch(crList);
 			log.info("===>> 生成盘点记录结束：{}", insertBatch);
-			
+			crResponse = BeanCopyUtil.copyList(crList, CheckRecordQueryResponse.class);
+			for (CheckRecordQueryResponse crr :crResponse) {
+				for (CheckRecordInfoDto css :commStoreList) {
+					if (crr.getSkuId().equals(css.getSkuId())) {
+						crr.setCustomerName(css.getCustomerName());
+						crr.setSkuCode(css.getSkuCode());
+						crr.setSkuName(css.getCommodityName());
+						crr.setBarCode(css.getSkuCode());
+						crr.setSpec(css.getSpec());
+						crr.setModelNo(css.getModelNo());
+						break;
+					}
+				}
+			}
+		}else{
+			throw new BusinessException(40010, "生成盘点记录失败！");
 		}
-		return crList;
+		log.info("===>> CheckRecordResponse:{}",crResponse);
+		return crResponse;
 	}
 
 	//取消盘点
@@ -241,7 +253,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 
 	//查询盘点记录
 	@Override
-	public List<CheckRecord> queryCheckRecord(QueryAuditCheckRecordDto auditDto) throws BusinessException{
+	public List<CheckRecordQueryResponse> queryCheckRecord(QueryAuditCheckRecordDto auditDto) throws BusinessException{
 		CheckRecord cr = new CheckRecord();
 		if(!StringUtils.isEmpty(auditDto.getCheckDate())) {
 			cr.setCheckDate(auditDto.getCheckDate());
