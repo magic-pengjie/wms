@@ -47,6 +47,7 @@
         LEFT JOIN wms_customer_base_info cbi on wcr.customer_code = cbi.customer_code and cbi.state = '1'
         LEFT JOIN wms_commodity_sku cs on wcr.sku_id = cs.id and cs.state = '1'
         WHERE wcr.state = 1
+        and sc.commodity_id is not null
 		<if test="cr.checkDate !=null">
 			AND DATE_FORMAT(wcr.check_date,'%Y-%m-%d') =DATE_FORMAT( #{cr.checkDate},'%Y-%m-%d')
         </if>
