@@ -28,12 +28,12 @@ public interface IWarningAgentInfoService extends IService<WarningAgentInfo> {
 	 * @param id
 	 * @param fid
 	 */
-	void deal(String id,String fid);
+	void deal(long id,String fid);
 	/**
 	 * 作废代办任务
 	 * @param id
 	 */
-	void delete(String id);
+	void delete(long id);
 	/**
 	 * 预警任务新增
 	 * @param agentInfo

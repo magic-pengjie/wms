@@ -138,11 +138,15 @@
 		from wms_storehouse_config sc
 				inner join wms_storehouse_info si on sc.storehouse_id=si.id and si.state=1
 				inner join wms_customer_base_info cbi on sc.customer_id=cbi.id and cbi.state=1
+				inner join wms_commodity_info ci on ci.id=sc.commodity_id and ci.state=1
 				where
 				   sc.state=1
 				   and sc.available_nums=0
 				   and si.is_frozen!=1
 				   and si.house_code='CK-GN-CCQ'
 				   and customer_code=#{customerCode}
+				   <if test="barCode !=null and barCode != '' ">
+				   		and ci.commodity_code=#{barCode}
+				   </if>
 	</select>
 </mapper>

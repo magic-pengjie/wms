@@ -82,5 +82,18 @@ public class Constants {
 	 * 消息类型-订单更新
 	 */
 	public static final String MSG_TYPE_UPDATE = "UPDATE";
+	
+	/**
+	 * 单据类型表示-采购单
+	 */
+	public static final String BILL_TYPE_FLAG_C = "C-";
+	/**
+	 * 单据类型表示-收货单
+	 */
+	public static final String BILL_TYPE_FLAG_R = "R-";
+	/**
+	 * 单据类型表示-上架单
+	 */
+	public static final String BILL_TYPE_FLAG_S = "S-";
 
 }

@@ -292,7 +292,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			//TODO 推送数据至邮政
 			String reason = "数据推送异常";
 			try {
-				String result = HttpUtil.restPost("", order);
+				String result = HttpUtil.restPost("http://211.156.200.111:5001/TAIWANLIANGAN/HttpService", order);
 				log.info("restPost finish result:{}",result);
 				ResponsesXml response = new ResponsesXml();
 				response = (ResponsesXml) XmlUtil.parseXml(response, xml);

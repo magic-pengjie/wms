@@ -49,5 +49,5 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
      * @param customerCode
      * @return
      */
-    List<StorehouseConfigVO> recommendStore( @Param("customerCode")String customerCode);
+    List<StorehouseConfigVO> recommendStore( @Param("customerCode")String customerCode,@Param("barCode") String barCode);
 }

@@ -52,7 +52,7 @@ public class WarningAgentInfoController {
 	
 	@ApiOperation(value = "预警代办列表处理", notes = "预警代办列表处理")
 	@GetMapping(value = "/deal")
-	public ResponseData deal(@RequestParam(required = true)String id,String fid) {
+	public ResponseData deal(@RequestParam(required = true)long id,String fid) {
 		try {
 			warningAgentInfoService.deal(id, null);
 			return ResponseData.ok();
@@ -65,7 +65,7 @@ public class WarningAgentInfoController {
 	
 	@ApiOperation(value = "预警代办列表删除", notes = "预警代办列表删除")
 	@GetMapping(value = "/delete")
-	public ResponseData delete(@RequestParam(required = true)String id) {
+	public ResponseData delete(@RequestParam(required = true)long id) {
 		try {
 			warningAgentInfoService.delete(id);
 			return ResponseData.ok();
