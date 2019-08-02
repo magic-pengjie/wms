@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * com.magic.card.wms.config.express
- * 系统暂时默认提供快递提供
+ * 系统暂时默认提供快递提供(邮政小包)
  * @author : Mr.Zhang
  * @e.mail : mr.zy883@gmail.com
  * @date : 2019/6/25/025 11:45

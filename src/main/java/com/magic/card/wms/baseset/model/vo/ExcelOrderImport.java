@@ -2,7 +2,9 @@ package com.magic.card.wms.baseset.model.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
+import com.magic.card.wms.common.utils.DataConvertUtil;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -46,12 +48,12 @@ public class ExcelOrderImport extends BaseRowModel implements Serializable {
     /**
      * 用户所在省
      */
-    @ExcelProperty(value = "订单号", index = 9)
+    @ExcelProperty(value = "用户所在省", index = 9)
     private String prov;
     /**
      * 户所在市县（区）
      */
-    @ExcelProperty(value = "订单号", index = 10)
+    @ExcelProperty(value = "户所在市县", index = 10)
     private String city;
 
     /**
@@ -97,4 +99,16 @@ public class ExcelOrderImport extends BaseRowModel implements Serializable {
      */
     @ExcelProperty(value = "订单备注", index = 13)
     private String remark;
+
+    public void setExpressKey(String expressKey) {
+        this.expressKey = expressKey;
+    }
+
+    public void setIsBatch(String isBatch) {
+        this.isBatch = DataConvertUtil.isValue(isBatch);
+    }
+
+    public void setIsB2b(String isB2b) {
+        this.isB2b = DataConvertUtil.isValue(isB2b);
+    }
 }

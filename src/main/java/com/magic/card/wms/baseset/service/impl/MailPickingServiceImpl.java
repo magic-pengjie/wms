@@ -114,7 +114,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			Map<String, List> packageCommodities = mailPickingDetailService.loadBatchPackageCommodity(mails);
 
 			if (MapUtils.isNotEmpty(packageCommodities)) {
-				mailPickings.stream().forEach(map -> map.put("packageCommodities", packageCommodities.get("mailNo")));
+				mailPickings.stream().forEach(map -> map.put("packageCommodities", packageCommodities.get(map.get("mailNo"))));
 			}
 		}
 
