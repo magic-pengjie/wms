@@ -3,6 +3,8 @@ package com.magic.card.wms.check.mapper;
 
 import java.util.List;
 
+import com.magic.card.wms.check.model.dto.CheckRecordInfoResponse;
+import com.magic.card.wms.check.model.dto.CheckRecordQueryResponse;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
@@ -19,6 +21,6 @@ import com.magic.card.wms.check.model.po.CheckRecord;
 public interface CheckRecordMapper extends BaseMapper<CheckRecord> {
 
 	
-	public List<CheckRecord> queryCheckRecordList(@Param("cr")CheckRecord cr);
+	public List<CheckRecordQueryResponse> queryCheckRecordList(@Param("cr")CheckRecord cr);
 	
 }
