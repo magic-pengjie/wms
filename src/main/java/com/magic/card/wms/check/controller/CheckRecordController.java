@@ -68,8 +68,7 @@ public class CheckRecordController {
 	@RequestMapping(value = "/checkRecordStart", method = RequestMethod.POST)
 	public ResponseData checkRecordStart(@RequestBody @Valid CheckRecordStartDto dto, BindingResult bindingResult ) throws BusinessException {
 		try {
-			List<CheckRecord> checkRecordList = checkRecordService.checkRecordStart(dto);
-			return ResponseData.ok(checkRecordList);
+			return ResponseData.ok(checkRecordService.checkRecordStart(dto));
 		} catch (BusinessException e) {
 			log.info("===>> 盘点失败：{}",e);
 			return ResponseData.error(e.getErrCode(), e.getErrMsg());
