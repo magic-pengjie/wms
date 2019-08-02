@@ -52,7 +52,8 @@
 		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
 		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
 		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
-		where  sc.state = 1 
+		where  sc.state = 1
+		and sc.commodity_id is not null
 		<if test="cr.customerId != null">
 			and sc.customer_id = #{cr.customerId}
 		</if>
