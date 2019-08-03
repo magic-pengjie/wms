@@ -143,5 +143,38 @@
              </if>
          </where>
     </select>
-    
+    <select id="loadPackageGrid" resultType="java.util.Map">
+        SELECT wmpi.id,
+            wmpi.order_no,
+            wmpi.mail_no,
+            wmpi.pick_no,
+            wmpi.basket_num,
+            wmpi.preset_weight,
+            wmpi.real_weight,
+            wmpi.express_fee,
+            wmpi.weight_unit,
+            wmpi.is_finish,
+            woi.id,
+            woi.order_no,
+            woi.system_order_no,
+            woi.customer_code,
+            woi.customer_name,
+            woi.recipt_name,
+            woi.post_code,
+             woi.prov,
+             woi.city,
+             woi.recipt_addr,
+             woi.recipt_phone,
+             woi.express_key,
+             woi.is_batch,
+             woi.is_b2b,
+             woi.goods_value,
+             woi.bill_state,
+             woi.state
+         FROM wms_mail_picking_info wmpi LEFT JOIN  wms_order_info woi ON woi.system_order_no = wmpi.order_no
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+
 </mapper>

@@ -367,9 +367,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     @Override
     public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode());
+        wrapper.eq("wmpi.state", StateEnum.normal.getCode()).ne("woi.bill_state", BillState.order_cancel.getCode());
         Page page = loadGrid.generatorPage();
-        loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
+//        mailPickingService.loadGrid(page, wrapper);
+//        loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
+        loadGrid.finallyResult(page, baseMapper.loadPackageGrid(page, wrapper));
 
         return loadGrid;
     }

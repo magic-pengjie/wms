@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.baseset.service.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +34,6 @@ import com.magic.card.wms.baseset.model.xml.OrderDTO;
 import com.magic.card.wms.baseset.model.xml.PersionXml;
 import com.magic.card.wms.baseset.model.xml.RequestOrderXml;
 import com.magic.card.wms.baseset.model.xml.ResponsesXml;
-import com.magic.card.wms.baseset.service.ICommodityStockService;
-import com.magic.card.wms.baseset.service.IMailPickingDetailService;
-import com.magic.card.wms.baseset.service.IMailPickingService;
-import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.enums.BillState;
@@ -72,6 +69,8 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	private ICommodityStockService commodityStockService;
     @Autowired
 	private IMailPickingDetailService mailPickingDetailService;
+    @Autowired
+    private IOrderService orderService;
     @Autowired(required = false)
     private OrderInfoMapper orderInfoMapper;
     @Autowired
@@ -346,7 +345,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		orderWrapper.eq("system_order_no", mailPicking.getOrderNo()).
 				ne("state", StateEnum.delete.getCode()).
 				ne("bill_state", BillState.order_cancel.getCode());
-		Order order = orderInfoMapper.selectOne(orderWrapper.getEntity());
+		Order order = orderService.selectOne(orderWrapper);
 
 		if (order == null) {
 			throw OperationException.customException(ResultEnum.order_cancel);

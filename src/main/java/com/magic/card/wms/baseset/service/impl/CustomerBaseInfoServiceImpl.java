@@ -55,6 +55,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
      */
     private static Map<String, String> defaultColumns = Maps.newConcurrentMap();
     private static Map<String, String> customerCommodityColumns = Maps.newConcurrentMap();
+    private static Map<String, String> notBindCommodityColumns = Maps.newConcurrentMap();
     static {
         defaultColumns.put("id", "cbf.id");
         defaultColumns.put("customerName", "cbf.customer_name");
@@ -81,6 +82,14 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         customerCommodityColumns.put("singleUnit", "wcs.single_unit ");
         customerCommodityColumns.put("packingUnit", "wci.packing_unit");
         customerCommodityColumns.put("customerCommodityId", "wci.id ");
+
+
+        notBindCommodityColumns.put("barCode", "wcs.bar_code");
+        notBindCommodityColumns.put("skuName", "wcs.sku_name");
+        notBindCommodityColumns.put("banner", "wcs.banner");
+        notBindCommodityColumns.put("spec", " wcs.spec");
+        notBindCommodityColumns.put("modelNo", "wcs.model_no");
+        notBindCommodityColumns.put("isFoodstuff", "wcs.is_foodstuff");
     }
     @Autowired
     private ICommodityInfoService commodityInfoService;
@@ -171,6 +180,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
                 eq("wcs.is_consumable", 0).
                 isNull("wci.id");
 
+        WrapperUtil.autoSettingSearch(wrapper, notBindCommodityColumns, loadGrid.getSearch());
         loadGrid.finallyResult(page, baseMapper.comboGridCommodities(page, wrapper));
         return loadGrid;
     }

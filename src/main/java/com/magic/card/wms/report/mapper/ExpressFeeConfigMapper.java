@@ -25,5 +25,5 @@ public interface ExpressFeeConfigMapper extends BaseMapper<ExpressFeeConfig> {
      * @param entityWrapper
      * @return
      */
-    List<Map> loadGrid(Page<Object> page, @Param("ew") EntityWrapper entityWrapper);
+    List<Map> loadGrid(Page page, @Param("ew") EntityWrapper entityWrapper);
 }
