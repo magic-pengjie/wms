@@ -69,16 +69,10 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
         EntityWrapper wrapper = new EntityWrapper<>();
         wrapper.ne("wsi.state", StateEnum.delete.getCode());
 
-        if (MapUtils.isNotEmpty(loadGrid.getSearch())) {
-
-        }
-
-        if (MapUtils.isNotEmpty(loadGrid.getOrder())) {
-
-        } else {
-            wrapper.orderBy("wdi.dict_name").orderBy("wsi.area_code").orderBy("wsi.store_code");
-        }
-
+        WrapperUtil.autoSettingSearch(wrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
+        WrapperUtil.autoSettingOrder(wrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder ->
+                defaultSetOrder.orderBy("wdi.dict_name").orderBy("wsi.area_code").orderBy("wsi.store_code")
+        );
         loadGrid.finallyResult(page, this.baseMapper.loadGrid(page, wrapper));
         return loadGrid;
     }
@@ -124,7 +118,7 @@ public class StorehouseInfoServiceImpl extends ServiceImpl<StorehouseInfoMapper,
                 storeCode = StringUtils.joinWith("-", storeCode, number);
             } else {
                 // 小区
-                storeCode = StringUtils.joinWith(null,  batchStorehouseDTO.getRockNo(), batchStorehouseDTO.getTierNo(), number);
+                storeCode = StringUtils.joinWith(null,storeCode, "-",  batchStorehouseDTO.getRockNo(), batchStorehouseDTO.getTierNo(), number);
             }
             storeCodes.add(storeCode);
             storehouse.setStoreCode(storeCode);

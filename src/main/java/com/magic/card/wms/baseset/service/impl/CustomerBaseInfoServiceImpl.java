@@ -10,6 +10,7 @@ import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
+import com.magic.card.wms.baseset.service.ICommodityStockService;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.common.exception.OperationException;
@@ -18,6 +19,7 @@ import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.ThreadPool;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +84,8 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
     }
     @Autowired
     private ICommodityInfoService commodityInfoService;
+    @Autowired
+    private ICommodityStockService commodityStockService;
 
     @Override
     public LoadGrid loadGrid(LoadGrid loadGrid) {
@@ -234,6 +238,11 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
             return commodity;
         }).collect(Collectors.toList());
         commodityInfoService.insertBatch(commodities);
+
+        // 初始化库存
+        ThreadPool.excutor(()-> {
+            commodityStockService.batchInitSetting(batchBindCommodity.getCustomerId(), commodities);
+        });
     }
 
     /**

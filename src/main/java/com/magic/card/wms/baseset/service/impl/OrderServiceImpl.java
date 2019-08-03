@@ -84,7 +84,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         defaultColumns.put("id", "woi.id");
         defaultColumns.put("systemOrderNo", "woi.system_order_no");
         defaultColumns.put("orderNo", "woi.order_no");
-        defaultColumns.put("customerCode", "customerCode");
+        defaultColumns.put("customerCode", "woi.customer_code");
         defaultColumns.put("customerName", "wcbi.customer_name");
         defaultColumns.put("reciptName", "woi.recipt_name");
         defaultColumns.put("reciptPhone", "woi.recipt_phone");
@@ -367,7 +367,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     @Override
     public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode()).isNotNull("real_weight");
+        wrapper.eq("state", StateEnum.normal.getCode());
         Page page = loadGrid.generatorPage();
         loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
 

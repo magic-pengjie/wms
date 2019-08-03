@@ -114,10 +114,12 @@
 			wsc.available_nums availabelNums,
 			wcs.sku_name skuName,
 			wcs.bar_code commodityCode,
+			wsi.id storehouseId,
 			wsi.house_code houseCode,
 			wsi.store_code storeCode,
 			wcbi.customer_code customerCode,
-			wcbi.customer_name customerName
+			wcbi.customer_name customerName,
+			wci.id commodityId
 		FROM
 			wms_storehouse_config wsc
 			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id

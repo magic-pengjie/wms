@@ -1,7 +1,10 @@
 package com.magic.card.wms.baseset.service;
 
 import com.baomidou.mybatisplus.service.IService;
+import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.model.po.CommodityStock;
+
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.service
@@ -63,4 +66,11 @@ public interface ICommodityStockService extends IService<CommodityStock> {
      * @param operator 操作人
      */
     void addCommodityStock(String customerCode, String commodityCode, Long addNum, String operator);
+
+    /**
+     * 批量初始化库存
+     * @param customerId
+     * @param commodities
+     */
+    void batchInitSetting(String customerId, List<Commodity> commodities);
 }
