@@ -46,9 +46,9 @@
 			 	si.is_frozen as isFrozen,  
     			sc.state,
 			 	cs.spec 
-		FROM wms_storehouse_config sc 
+		FROM wms_storehouse_config sc
 		LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
-		LEFT JOIN wms_customer_base_info cbi on ci.customer_id = cbi.id and cbi.state =1
+		LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
 		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
 		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
 		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
