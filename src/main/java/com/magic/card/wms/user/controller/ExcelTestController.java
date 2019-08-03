@@ -50,7 +50,7 @@ public class ExcelTestController {
 	@RequestMapping(value = "/exportUser", method = RequestMethod.GET)
 	public ResponseData exportUser(HttpServletRequest request,HttpServletResponse response) {
 		try {
-			List<User> userList = userService.getUserList();
+			List<User> userList = userService.getUserList(null,null);
 			List<UserVO> UserVOList = new ArrayList<>();
 			userList.forEach(User -> {
 				UserVO vo = new UserVO();

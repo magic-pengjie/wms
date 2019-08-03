@@ -51,7 +51,7 @@ public class RoleQueryDto implements Serializable {
      * 	菜單主鍵ID
      */
 	@ApiModelProperty(value="菜單主鍵IDList")
-	@NotEmpty(message="菜單不能为空")
+//	@NotEmpty(message="菜單不能为空")
 	private List<Long> menuKeyList;
 
 	@Override

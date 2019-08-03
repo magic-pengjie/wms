@@ -28,7 +28,7 @@ public interface IUserService extends IService<User> {
 	 * 查询所有用户
 	 * @return
 	 */
-	List<User> getUserList();
+	List<User> getUserList(String userNo,String name);
 	/**
 	 * 新增用户
 	 * @param dto
