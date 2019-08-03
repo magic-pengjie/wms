@@ -66,14 +66,14 @@ public class UserController {
 
 	/***
 	 * 获取用户信息
-	 * @return
+	 * @returnqueryUserRoleMenu
 	 */
 	@ApiOperation(value = "获取用户列表", notes = "获取用户列表")
 	@RequestMapping(value = "/getUserList", method = RequestMethod.GET)
-	public ResponseData getUserList(@Param("userNo")String userNo,@Param("name")String name) {
+	public ResponseData getUserList(@Param("userNo")String userNo,@Param("name")String userName) {
 		List result = null;
 		try {
-			result = userService.getUserList(userNo,name);
+			result = userService.getUserList(userNo,userName);
 		} catch (Exception e) {
 			log.error("===查询用户失败:{}",e);
 			return ResponseData.error(ResultEnum.query_user_failed.getMsg());
