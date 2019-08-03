@@ -79,8 +79,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	private WebUtil webUtil;
 	
 	@Override
-	public List<User> getUserList() {
+	public List<User> getUserList(String userNo,String name) {
 		Wrapper<User> w = new EntityWrapper<>();
+		if(!StringUtils.isEmpty(userNo)){
+			w.like("user_no",userNo);
+		}
+		if(!StringUtils.isEmpty(name)){
+			w.like("name",name);
+		}
+		w.eq("state",StateEnum.normal.getCode());
 		return this.selectList(w);
 	}
 
@@ -89,13 +96,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	public void addUser(UserDTO dto) throws BusinessException {
 		Wrapper<User> w = new EntityWrapper<>();
 		w.eq("user_no", dto.getUserNo());
-		w.eq("customer_id", dto.getCustomerId());
+//		w.eq("customer_id", dto.getCustomerId());
 		w.eq("state", StateEnum.normal.getCode());
 		User user = this.selectOne(w);
 		if(StringUtils.isEmpty(user)) {
 			//获取用户session
 			UserSessionUo userSession = webUtil.getUserSession();
 			user = new User();
+			BeanUtils.copyProperties(dto, user);
 			Date nowDate = new Date();
 			if(StringUtils.isEmpty(dto.getPassword())) {
 				user.setPassword("wms888888");
@@ -103,13 +111,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			user.setState(StateEnum.normal.getCode());
 			user.setCreateTime(nowDate);
 			user.setCreateUser(userSession.getName());
-			BeanUtils.copyProperties(dto, user);
 			//新增用户
 			boolean insertFlag = this.insert(user);
 			log.info("===inserUser.params:{},isSuccess:{}", user, insertFlag);
 			//新增用户角色信息
 			if(insertFlag) {
-				for (Long roleId : dto.getRoleKeyList()) {
+				for (Long roleId : dto.getRoleKey()) {
 					UserRoleMapping entity = new UserRoleMapping();
 					entity.setUserKey(user.getId());
 					entity.setCreateTime(nowDate);
@@ -219,8 +226,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			log.info("===>> login 用户不存在！userNo:{}", userKey);
 			throw new BusinessException(ResultEnum.user_name_not_exist.getCode(), ResultEnum.user_name_not_exist.getMsg());
 		}
-		CustomerBaseInfo customerBaseInfo = customerBaseInfoMapper.selectById(userInfo.getCustomerId());
-		BeanUtils.copyProperties(customerBaseInfo,userRoleMenuList);
+//		CustomerBaseInfo customerBaseInfo = customerBaseInfoMapper.selectById(userInfo.getCustomerId());
+//		BeanUtils.copyProperties(customerBaseInfo,userRoleMenuList);
 		BeanUtils.copyProperties(userInfo, userRoleMenuList);
 		userRoleMenuList.setUserKey(userInfo.getId());
 

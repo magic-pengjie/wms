@@ -43,14 +43,14 @@ public class UserDTO implements Serializable{
      * 客戶主鍵ID
      */
 	@ApiModelProperty(value="客戶主鍵ID")
-    @NotBlank(message="客戶不能为空")
+//    @NotBlank(message="客戶不能为空")
     private String customerId;
 	/**
 	 * 角色ID
 	 */
 	@ApiModelProperty(value="角色主键List")
 	@NotEmpty(message="角色不能为空")
-	private List<Long> roleKeyList;
+	private List<Long> roleKey;
 
 	@Override
 	public String toString() {
@@ -59,7 +59,7 @@ public class UserDTO implements Serializable{
 		sb.append(", password='").append(password).append('\'');
 		sb.append(", name='").append(name).append('\'');
 		sb.append(", customerId='").append(customerId).append('\'');
-		sb.append(", roleKeyList=").append(roleKeyList);
+		sb.append(", roleKeyList=").append(roleKey);
 		sb.append('}');
 		return sb.toString();
 	}
