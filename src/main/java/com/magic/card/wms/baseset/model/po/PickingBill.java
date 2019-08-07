@@ -32,6 +32,12 @@ public class PickingBill extends BasePo implements Serializable {
      */
     @TableField("is_B2B")
     private int isB2b;
+
+    /**
+     * 区域等级
+     */
+    private String areaLevel;
+
     /**
      * 流程阶段
      */

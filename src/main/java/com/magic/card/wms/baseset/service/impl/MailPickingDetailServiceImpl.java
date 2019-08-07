@@ -1,7 +1,9 @@
 package com.magic.card.wms.baseset.service.impl;
 
 import com.alibaba.excel.util.ObjectUtils;
+import com.baomidou.mybatisplus.enums.SqlLike;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -43,6 +45,23 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailMapper, MailPickingDetail> implements IMailPickingDetailService {
+    /**
+     * 最大货篮编号号
+     */
+    public static final Integer MAX_BASKET_NUM = 15;
+    public static final String FIRST_AREA_KEY = "FIRST_AREA";
+    public static final String SECOND_AREA_KEY = "SECOND_AREA";
+    public static final String OTHER_AREA_KEY = "OTHER_AREA";
+
+    /**
+     * 第一区域
+     */
+    public static final List<String> FIRST_AREA = Lists.newArrayList("上海");
+    /**
+     * 第二区域
+     */
+    public static final List<String> SECOND_AREA = Lists.newArrayList("江苏", "浙江", "安徽");
+
     @Autowired
     private IStorehouseConfigService storehouseConfigService;
     @Autowired
@@ -86,19 +105,79 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("woi.customer_code", customerCode).
                 // 加载 已锁定（导入系统15分钟默认锁定）的订单生成
-                lt("woi.create_time", DateTime.now().minusMinutes(15).toDate()).
+                eq("is_lock", 1).
                 eq("woi.state", StateEnum.normal.getCode()).
                 ne("woi.bill_state", BillState.order_cancel).
                 groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
                 // TODO 后期添加 快递公司、区域优先生成拣货单
                 orderBy("woi.create_time");
-        List<Map> virtualMails = baseMapper.virtualMails(new Page(1, 20), wrapper);
+        List<Map> virtualMails = baseMapper.virtualMails(new Page(1, MAX_BASKET_NUM), wrapper);
 
         if (CollectionUtils.isEmpty(virtualMails) || virtualMails.size() < executeSize) return null;
 
         return virtualMails;
     }
 
+    /**
+     * 获取商户订单不同区域的快递单数据
+     *
+     * @param customerCode 客户CODE
+     * @param executeSize  允许操作数
+     * @return
+     */
+    @Override
+    public Map<String, List<Map>> areaVirtualMails(String customerCode, Integer executeSize){
+        Map<String, List<Map>> areaVirtualMails = Maps.newHashMap();
+        Page baketPage = new Page(1, MAX_BASKET_NUM);
+        // First Area 上海
+        EntityWrapper firstAreaWrapper = basetVirtualMailWrapper(customerCode);
+        firstAreaWrapper.andNew();
+        FIRST_AREA.forEach(area -> {
+
+            if (FIRST_AREA.indexOf(area) > 0) {
+                firstAreaWrapper.or();
+            }
+
+            firstAreaWrapper.like("woi.prov", area, SqlLike.RIGHT);
+        });
+        areaVirtualMails.put(FIRST_AREA_KEY, baseMapper.virtualMails(baketPage,firstAreaWrapper));
+
+        // Second Area 江浙皖
+        EntityWrapper secondAreaWrapper = basetVirtualMailWrapper(customerCode);
+        secondAreaWrapper.andNew();
+        SECOND_AREA.forEach(area -> {
+
+            if (SECOND_AREA.indexOf(area) > 0) {
+                secondAreaWrapper.or();
+            }
+
+            secondAreaWrapper.like("woi.prov", area, SqlLike.RIGHT);
+        });
+        areaVirtualMails.put(SECOND_AREA_KEY, baseMapper.virtualMails(baketPage,secondAreaWrapper));
+
+        // Other Area 全国
+        EntityWrapper otherAreaWrapper = basetVirtualMailWrapper(customerCode);
+        Lists.newArrayList(FIRST_AREA, SECOND_AREA).forEach(areas ->
+                areas.forEach(area -> otherAreaWrapper.notLike("woi.prov", area, SqlLike.RIGHT))
+        );
+        areaVirtualMails.put(OTHER_AREA_KEY, baseMapper.virtualMails(baketPage,otherAreaWrapper));
+        return areaVirtualMails;
+    }
+
+    /**
+     * 获取虚拟包裹基本查询条件
+     * @return
+     */
+    private EntityWrapper basetVirtualMailWrapper(String customerCode) {
+        EntityWrapper baseWrapper = new EntityWrapper();
+        baseWrapper.eq("woi.customer_code", customerCode).
+                eq("is_lock", 1).
+                eq("woi.state", StateEnum.normal.getCode()).
+                ne("woi.bill_state", BillState.order_cancel).
+                groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
+                orderBy("woi.create_time");
+        return baseWrapper;
+    }
     /**
      * 快递包裹预重 （kg）
      * 拣货篮总货物称重
@@ -217,8 +296,6 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
         List<Map> noticeReplenishments = baseMapper.needNoticeReplenishment(pickNo, BillState.order_cancel.getCode(), StoreTypeEnum.JHQ.getCode());
 
         if (CollectionUtils.isNotEmpty(noticeReplenishments)) {
-//            Map<String, List> commodityReplenishmentInfos = Maps.newLinkedHashMap();
-//            List<String> commodityIds = Lists.newArrayList();
             CommodityReplenishment baseCommodityReplenishment = new CommodityReplenishment();
             PoUtil.add(baseCommodityReplenishment, webUtil.operator());
             List<StorehouseConfig> updateStorehouseConfigs = Lists.newArrayList();
@@ -248,16 +325,14 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
                     }).
                     collect(Collectors.toList());
 
-            commodityReplenishmentService.insertBatch(commodityReplenishments);
-            storehouseConfigService.updateBatchById(updateStorehouseConfigs);
+            if (CollectionUtils.isNotEmpty(commodityReplenishments)) {
+                commodityReplenishmentService.executorReplenishmentOperation(commodityReplenishments);
+            }
+//            commodityReplenishmentService.insertBatch(commodityReplenishments);
 
-//            List<Map> commodityStorage = storehouseConfigService.recommendCustomerCommodityStorage(commodityIds);
-//
-//            EntityWrapper<CommodityReplenishment> entityWrapper = new EntityWrapper();
-//            entityWrapper.in("commodity_id", commodityIds).
-//                    eq("state", StateEnum.normal.getCode()).
-//                    ne("process_stage", BillState.replenishment_processing.getCode());
-//            List<CommodityReplenishment> list = commodityReplenishmentService.selectList(entityWrapper);
+            if (CollectionUtils.isNotEmpty(updateStorehouseConfigs)) {
+                storehouseConfigService.updateBatchById(updateStorehouseConfigs);
+            }
         }
     }
 }

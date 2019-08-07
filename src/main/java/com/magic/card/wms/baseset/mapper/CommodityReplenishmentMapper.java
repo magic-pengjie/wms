@@ -33,4 +33,12 @@ public interface CommodityReplenishmentMapper extends BaseMapper<CommodityReplen
      * @return
      */
     List<Map> loadGrid(Page generatorPage, @Param("ew") EntityWrapper entityWrapper);
+
+    /**
+     * 获取存储
+     * @param replenishmentNo 补货单号
+     * @param houseCode 存储区编码
+     */
+    List<Map> loadGStorehouse(@Param("replenishmentNo") String replenishmentNo, @Param("houseCode") String houseCode);
+
 }

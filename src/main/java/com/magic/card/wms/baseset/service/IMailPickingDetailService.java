@@ -38,6 +38,14 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
     List<Map> virtualMails(String customerCode, Integer executeSize);
 
     /**
+     * 获取商户订单不同区域的快递单数据
+     * @param customerCode 客户CODE
+     * @param executeSize 允许操作数
+     * @return
+     */
+    Map<String, List<Map>> areaVirtualMails(String customerCode, Integer executeSize);
+
+    /**
      * 快递包裹预重 （kg）
      * 拣货篮总货物称重
      * @param virtualMail 虚拟快递号（uuid）

@@ -53,10 +53,10 @@ public class OrderCommodityDTO implements Serializable {
     @NotNull(message = "商品数量不可为空")
     @ApiModelProperty("商品数量不可为空，否则验证不通过")
     private Integer numbers;
-    /**
-     * 备注
-     */
-    private String remark;
+//    /**
+//     * 备注
+//     */
+//    private String remark;
     
     /**
      * 商品名称

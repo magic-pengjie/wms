@@ -26,7 +26,12 @@ public interface IPickingBillService extends IService<PickingBill> {
     /**
      * 定时任务生成
      */
-    void timingGenerator();
+    void timingGenerator(String operator);
+
+    /**
+     * 执行拣货单生成
+     */
+    void executorGenerator();
 
     /**
      * 拣货单 -> 生成配货单
