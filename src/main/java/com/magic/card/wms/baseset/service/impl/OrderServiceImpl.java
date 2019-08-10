@@ -698,11 +698,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     /**
      * 获取订单详情（商品 以及 对应的包裹信息）
      *
-     * @param orderNo 系统订单号
+     * @param orderNo      系统订单号
+     * @param customerCode 商家Code
      * @return
      */
     @Override
-    public Map loadDetails(String orderNo) {
+    public Map loadDetails(String orderNo, String customerCode) {
+//        Maps.
 
         return null;
     }

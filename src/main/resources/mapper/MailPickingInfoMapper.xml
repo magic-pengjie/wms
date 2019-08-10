@@ -183,6 +183,7 @@
             wmpi.basket_num basketNum,
             wmpi.mail_no mailNo,
             woi.order_no orderNo,
+            woi.customer_code,
             woi.system_order_no systemOrderNo,
             woi.prov,
             woi.express_key expressKey,
