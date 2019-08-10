@@ -18,22 +18,22 @@ public class ParchaseBillResponseVO extends BaseRowModel implements Serializable
     @ExcelProperty(value = "商家名称", index = 1)
     private String customerName;
 
-    @ExcelProperty(value = "商品ID", index = 2)
+//    @ExcelProperty(value = "商品ID", index = 2)
     private String commodityId;
 
-    @ExcelProperty(value = "商品名称", index = 3)
+    @ExcelProperty(value = "商品名称", index = 2)
     private String commodityName;
 
-    @ExcelProperty(value = "商品条码", index = 4)
+    @ExcelProperty(value = "商品条码", index = 3)
     private String skuCode;
 
-    @ExcelProperty(value = "型号", index = 5)
+    @ExcelProperty(value = "型号", index = 4)
     private String modelNo;
 
-    @ExcelProperty(value = "规格", index = 6)
+    @ExcelProperty(value = "规格", index = 5)
     private String spec;
 
-    @ExcelProperty(value = "入库数量", index = 7)
+    @ExcelProperty(value = "入库数量", index = 6)
     private String inStorehouseNum;
 
     @Override

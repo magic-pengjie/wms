@@ -62,4 +62,73 @@
 		</if>
 	</select>
 
+    <select id="queryStorehouseCountList" resultType="com.magic.card.wms.statistic.model.dto.StorehouseCountResponseDto">
+        select
+            wsc.customer_id as customerId,
+            cbi.customer_name as customerName,
+            cs.sku_code as skuCode,
+            cs.sku_name as commodityName,
+            cs.banner,
+            cs.spec,
+            cs.model_no as modelNo,
+            sum(wsc.available_nums) as 'availableNums',
+            sum(wsc.store_nums)-sum(wsc.available_nums) as 'emptyAvailableNums',
+            sum(wsc.available_nums) as 'usedAvailableNums',
+            sum(wsc.store_nums) as 'totalStoreNums'
+        from wms_customer_base_info cbi
+        left join wms_storehouse_config wsc on wsc.customer_id = cbi.id and wsc.state='1'
+        left join wms_commodity_info ci on wsc.commodity_id = ci.id and ci.state='1'
+        left join wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state ='1'
+        where  cbi.state='1'
+        <if test="null !=customerCode and ''!=customerCode">
+            and cbi.customer_code= #{customerCode}
+        </if>
+        GROUP BY wsc.customer_id,wsc.commodity_id,cbi.customer_name,cs.sku_name,cs.sku_code,cs.spec,cs.banner,cs.model_no
+    </select>
+
+    <select id="queryStorehouseUsedList" resultType="com.magic.card.wms.statistic.model.dto.StorehouseUsedResponseDto">
+        SELECT
+            cbi.customer_code,
+            cbi.customer_name as customerName,
+            si.house_code as houseCode,
+            count(1) as totalStoreNum,
+            count(case when sc.commodity_id is not null then sc.commodity_id else null end )  as usedStoreNum,
+            count(1) -count(case when sc.commodity_id is not null then sc.commodity_id else null end ) as residuleStoreNum
+        FROM wms_customer_base_info cbi
+        left join wms_storehouse_config sc on cbi.id = sc.customer_id and sc.state='1'
+        left join wms_storehouse_info si on sc.storehouse_id = si.id and si.state='1'
+        where cbi.state ='1'
+        <if test="null !=customerCode and ''!=customerCode">
+            and cbi.customer_code= #{customerCode}
+        </if>
+        group by cbi.customer_code,cbi.customer_name,si.house_code
+    </select>
+
+
+    <select id="queryOutStorehouseList" resultType="com.magic.card.wms.statistic.model.dto.OutStorehouseResponseDto">
+        select
+            cbi.customer_code as customerCode,
+            cbi.customer_name as  customerName,
+            cs.banner,
+            cs.bar_code as skuCode,
+            cs.sku_name as commodityName,
+            cs.spec,
+            cs.model_no as modelNo,
+            sum(oc.numbers) as outStorehouseNum
+        from wms_order_info  oi
+        left join wms_customer_base_info cbi on oi.customer_code = cbi.customer_code and cbi.state='1'
+        left join wms_order_commodity oc on oi.system_order_no = oc.order_no and oc.state='1'
+        left join wms_commodity_sku cs on oc.bar_code = cs.bar_code and cs.state='1'
+        where oi.state ='1'
+        and oi.bill_state in ('go_out','finished')
+        <if test="null !=customerCode and ''!=customerCode">
+            and oi.customer_code= #{customerCode}
+        </if>
+        <if test="null !=startDate and null !=endDate">
+            and oi.update_time BETWEEN #{startDate}  and #{endDate}
+        </if>
+
+        GROUP BY 	cbi.customer_code,	cbi.customer_name,	cs.banner, cs.bar_code,	cs.sku_name,	cs.spec,	cs.model_no
+    </select>
+
 </mapper>

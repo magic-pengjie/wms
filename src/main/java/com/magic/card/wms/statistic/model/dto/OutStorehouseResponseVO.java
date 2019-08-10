@@ -1,45 +1,45 @@
 package com.magic.card.wms.statistic.model.dto;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class OutStorehouseResponseDto implements Serializable {
+public class OutStorehouseResponseVO extends BaseRowModel implements Serializable {
 
 
     private static final long serialVersionUID = -1418860027642861917L;
 
-    @ApiModelProperty(value = "商家Code")
+    @ExcelProperty(value = "商家Code", index = 0)
     private String customerCode;
 
-    @ApiModelProperty(value = "商家名称")
+    @ExcelProperty(value = "商家名称", index = 0)
     private String customerName;
 
-    @ApiModelProperty(value = "商品ID")
     private String commodityId;
 
-    @ApiModelProperty(value = "商品名称")
+    @ExcelProperty(value = "商品名称", index = 0)
     private String commodityName;
 
-    @ApiModelProperty(value = "商品条码")
+    @ExcelProperty(value = "商品条码", index = 0)
     private String skuCode;
 
-    @ApiModelProperty(value = "品牌")
+    @ExcelProperty(value = "品牌", index = 0)
     private String banner;
 
-    @ApiModelProperty(value = "型号")
+    @ExcelProperty(value = "型号", index = 0)
     private String modelNo;
 
-    @ApiModelProperty(value = "规格")
+    @ExcelProperty(value = "规格", index = 0)
     private String spec;
 
-    @ApiModelProperty(value = "出库数量")
+    @ExcelProperty(value = "出库数量", index = 0)
     private String outStorehouseNum;
 
-    @ApiModelProperty(value = "效期分析")
-    private String analysis;
+    private String analysis;//效期分析
 
     @Override
     public String toString() {

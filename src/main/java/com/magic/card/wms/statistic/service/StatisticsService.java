@@ -35,7 +35,7 @@ public interface StatisticsService {
     /**
      * 出库报表 明细导出excel
      */
-    public void exportOutStorehouseExcel(ParchaseBillDto dto);
+    public void exportOutStorehouseExcel(ParchaseBillDto dto, HttpServletRequest request, HttpServletResponse response)throws BusinessException;
 
     /**
      * 库存报表
@@ -45,7 +45,7 @@ public interface StatisticsService {
     /**
      * 库存报表明细 导出excel
      */
-    public void exportStorehouseCountExcel(ParchaseBillDto dto);
+    public void exportStorehouseCountExcel(ParchaseBillDto dto, HttpServletRequest request, HttpServletResponse response)throws BusinessException;
 
     /**
      * 库存使用查询
@@ -55,7 +55,7 @@ public interface StatisticsService {
     /**
      * 库存使用查询
      */
-    public void exportStorehouseUsedExcel(ParchaseBillDto dto);
+    public void exportStorehouseUsedExcel(ParchaseBillDto dto, HttpServletRequest request, HttpServletResponse response)throws BusinessException;
 
 
 }

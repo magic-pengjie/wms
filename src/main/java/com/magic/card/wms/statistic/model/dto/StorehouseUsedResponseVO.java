@@ -1,31 +1,34 @@
 package com.magic.card.wms.statistic.model.dto;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class StorehouseUsedResponseDto implements Serializable {
+public class StorehouseUsedResponseVO extends BaseRowModel implements Serializable {
 
-    private static final long serialVersionUID = 2759775426614722587L;
+    private static final long serialVersionUID = 2885760326292994811L;
 
-    @ApiModelProperty(value = "商家Code")
+    @ExcelProperty(value = "商家Code", index = 0)
     private String customerCode;
 
-    @ApiModelProperty(value = "商家名称")
+    @ExcelProperty(value = "商家名称", index = 0)
     private String customerName;
 
-    @ApiModelProperty(value = "库位类型")
+    @ExcelProperty(value = "库位类型", index = 0)
     private String houseCode;
 
-    @ApiModelProperty(value = "总库位数量")
+    @ApiModelProperty(value = "")
+    @ExcelProperty(value = "总库位数量", index = 0)
     private String totalStoreNum;
 
-    @ApiModelProperty(value = "已用库位数量")
+    @ExcelProperty(value = "已用库位数量", index = 0)
     private String usedStoreNum;
 
-    @ApiModelProperty(value = "剩余库位数量")
+    @ExcelProperty(value = "剩余库位数量", index = 0)
     private String residuleStoreNum;
 
     @Override

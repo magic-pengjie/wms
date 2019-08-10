@@ -1,61 +1,63 @@
 package com.magic.card.wms.statistic.model.dto;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.metadata.BaseRowModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class StorehouseCountResponseDto implements Serializable {
+public class StorehouseCountResponseVO extends BaseRowModel implements Serializable {
 
-    private static final long serialVersionUID = 1829271610762704273L;
+    private static final long serialVersionUID = 1454890930546889153L;
 
-    @ApiModelProperty(value = "商家ID")
+    @ExcelProperty(value = "商家ID", index = 0)
     private String customerId;
 
-    @ApiModelProperty(value = "商家名称")
+    @ExcelProperty(value = "商家名称", index = 1)
     private String customerName;
 
-    @ApiModelProperty(value = "商品ID")
+//    @ExcelProperty(value = "商品ID", index = 2)
     private String commodityId;
 
-    @ApiModelProperty(value = "品牌")
+    @ExcelProperty(value = "品牌", index = 2)
     private String banner;
 
-    @ApiModelProperty(value = "商品名称")
+    @ExcelProperty(value = "商品名称", index = 3)
     private String commodityName;
 
-    @ApiModelProperty(value = "商品条码")
+    @ExcelProperty(value = "商品条码", index = 4)
     private String skuCode;
 
-    @ApiModelProperty(value = "型号")
+    @ExcelProperty(value = "型号", index = 5)
     private String modelNo;
 
-    @ApiModelProperty(value = "规格")
+    @ExcelProperty(value = "规格", index = 6)
     private String spec;
 
-    @ApiModelProperty(value = "商品库存")
+    @ExcelProperty(value = "商品库存", index = 7)
     private String availableNums;
 
-    @ApiModelProperty(value = "可用库存")
+    @ExcelProperty(value = "可用库存", index = 8)
     private String emptyAvailableNums;
 
-    @ApiModelProperty(value = "占用库存")
+    @ExcelProperty(value = "占用库存", index = 9)
     private String usedAvailableNums;
 
-    @ApiModelProperty(value = "总库存量")
+    @ExcelProperty(value = "总库存量", index = 10)
     private String totalStoreNums;
 
-    @ApiModelProperty(value = "不可用库存")
+//    @ExcelProperty(value = "不可用库存", index = 12)
     private String notUsedStoreNums;
 
-    @ApiModelProperty(value = "出库数量")
+//    @ExcelProperty(value = "出库数量", index = 13)
     private String outStorehouseNum;
 
-    @ApiModelProperty(value = "库位可用天数")
+//    @ExcelProperty(value = "库位可用天数", index = 14)
     private String availableDay;
 
-    @ApiModelProperty(value = "滞销品提示")
+//    @ExcelProperty(value = "滞销品提示", index = 15)
     private String unsalableMark;
 
     @Override

@@ -23,7 +23,7 @@ public class ParchaseBillDto implements Serializable {
 
     //可按月、年、商家、查询入库信息，明细可导出
     @ApiModelProperty(value = "商家Code")
-    @NotBlank(message = "商家不能为空！")
+//    @NotBlank(message = "商家不能为空！")
     private String customerCode;
 
     //可按月、年、商家、查询入库信息，明细可导出
