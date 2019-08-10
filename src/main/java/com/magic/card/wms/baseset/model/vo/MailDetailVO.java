@@ -12,10 +12,26 @@ import lombok.Data;
 public class MailDetailVO {
 	
 	/**
+     * 商家编码
+     */
+	@ApiModelProperty("商家编码")
+	private String customerCode;
+	
+	/**
+     * 商家名称
+     */
+	@ApiModelProperty("商家名称")
+	private String customerName;
+	
+	/**
      * 拣货单号
      */
 	@ApiModelProperty("拣货单号")
 	private String pickNo;
+	/**
+	 * 包裹id
+	 */
+	private long id;
 	/**
      * 快递单号
      */
@@ -34,9 +50,9 @@ public class MailDetailVO {
 	private String systemOrderNo;
 	
 	/**
-     * 发送状态
+     * 发送状态(未发送:0;已发送:1;发送失败:2;终止发送3)
      */
-	@ApiModelProperty("发送状态")
+	@ApiModelProperty("发送状态(未发送:0;已发送:1;发送失败:2;终止发送3)")
 	private String sendState;
 	
 	/**
@@ -45,11 +61,15 @@ public class MailDetailVO {
 	@ApiModelProperty("发送失败原因")
 	private String failReason;
 	/**
-	 * 是否捡货完成
+	 * 是否捡货完成1:是 0:否
 	 */
 	private int isFinish;
 	/**
-	 * 物流状态
+	 * 是否称重完成1:是 0:否
+	 */
+	private int isWeight;
+	/**
+	 * 物流状态态0:无 1:有 8:已人工处理 9完成
 	 */
 	private int logisticsState;
 	
@@ -73,6 +93,11 @@ public class MailDetailVO {
 	 */
 	@ApiModelProperty("收件人电话")
 	private String reciptPhone;
+	/**
+	 * 收件人地址
+	 */
+	@ApiModelProperty("收件人地址")
+	private String reciptAddr;
 	/**
 	 * 商品信息
 	 */

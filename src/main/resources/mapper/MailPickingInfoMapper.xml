@@ -32,10 +32,13 @@
     <resultMap id="MailResultMap" type="com.magic.card.wms.baseset.model.vo.MailDetailVO">
         <id column="id" property="id" />
         <result column="mail_no" property="mailNo" />
+        <result column="customer_code" property="customerCode" />
+        <result column="customer_name" property="customerName" />
         <result column="order_no" property="orderNo" />
         <result column="system_order_no" property="systemOrderNo" />
         <result column="send_state" property="sendState" />
         <result column="is_finish" property="isFinish" />
+        <result column="is_weight" property="isWeight" />
         <result column="logistics_state" property="logisticsState" />
         <result column="fail_reason" property="failReason" />
         <result column="send_state" property="sendState" />
@@ -43,6 +46,7 @@
         <result column="order_date" property="orderDate" />
         <result column="recipt_name" property="reciptName" />
         <result column="recipt_phone" property="reciptPhone" />
+        <result column="recipt_addr" property="reciptAddr" />
         <association  property="logisticsInfo" javaType="com.magic.card.wms.baseset.model.po.LogisticsTrackingInfo">
 	        <result column="serial_no" property="serialNo" />
 	        <result column="batch_no" property="batchNo" />
@@ -228,8 +232,10 @@
 	
 	
 	<select id="selectPickInfoList" resultMap="MailResultMap" parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
-   		select mpi.mail_no,mpi.is_finish,mpi.logistics_state,mpi.send_state,mpi.fail_reason,mpi.create_time mail_date,
-	       woi.system_order_no, woi.order_no,woi.create_time order_date,woi.recipt_name,woi.recipt_phone,
+   		select mpi.id,mpi.mail_no,mpi.is_finish,
+   		   case when mpi.real_weight is not null then 1 else 0 end is_weight,
+   		   mpi.logistics_state,mpi.send_state,mpi.fail_reason,mpi.create_time mail_date,
+	       woi.system_order_no, woi.order_no,woi.create_time order_date,woi.customer_code,woi.customer_name, woi.recipt_name,woi.recipt_phone,woi.recipt_addr,
 	       lti.serial_no,lti.batch_no,lti.op_time, lti.op_code, lti.op_name, lti.op_desc, lti.op_org_prov_name, lti.op_org_city, 
 	       lti.op_org_code, lti.op_org_name, lti.operator_no, lti.operator_name, lti.response_state, lti.errorDesc, lti.create_time,lti.remark,
 	       wcs.sku_name, wcs.bar_code,wcs.spec,wcs.model_no,
@@ -243,6 +249,12 @@
          	<if test="isFinish !=null">
          		and mpi.is_finish=#{isFinish}
          	</if>
+         	<if test="isWeight !=null and isWeight==1">
+         		and mpi.real_weight is not null
+         	</if>
+         	<if test="isWeight !=null and isWeight==0">
+         		and mpi.real_weight is null
+         	</if>
          	<if test="logisticsState !=null">
          		and mpi.logistics_state=#{logisticsState}
          	</if>
@@ -252,11 +264,11 @@
          	<if test="orderNo !=null and orderNo !='' ">
          		and woi.order_no=#{orderNo}
          	</if>
-         	<if test="startDate !=null ">
-         		 and woi.create_time &lt;${startDate}
+         	<if test="startDate !=null and endDate == null">
+         		 and woi.create_time &lt;#{startDate}
          	</if>
          	<if test="startDate !=null and endDate != null">
-         		 and (woi.create_time BETWEEN ${startDate} AND ${endDate})
+         		 and (woi.create_time BETWEEN #{startDate} AND #{endDate})
          	</if>
          	<if test="reciptName !=null and reciptName !=''">
          		 and woi.recipt_name=#{reciptName}
@@ -277,6 +289,12 @@
          	<if test="isFinish !=null">
          		and mpi.is_finish=#{isFinish}
          	</if>
+         	<if test="isWeight !=null and isWeight==1">
+         		and mpi.real_weight is not null
+         	</if>
+         	<if test="isWeight !=null and isWeight==0">
+         		and mpi.real_weight is null
+         	</if>
          	<if test="logisticsState !=null">
          		and mpi.logistics_state=#{logisticsState}
          	</if>
@@ -286,11 +304,11 @@
          	<if test="orderNo !=null and orderNo !='' ">
          		and woi.order_no=#{orderNo}
          	</if>
-         	<if test="startDate !=null ">
-         		 and woi.create_time &lt;${startDate}
+         	<if test="startDate !=null and endDate == null">
+         		 and woi.create_time &lt;#{startDate}
          	</if>
          	<if test="startDate !=null and endDate != null">
-         		 and (woi.create_time BETWEEN ${startDate} AND ${endDate})
+         		 and (woi.create_time BETWEEN #{startDate} AND #{endDate})
          	</if>
          	<if test="reciptName !=null and reciptName !=''">
          		 and woi.recipt_name=#{reciptName}

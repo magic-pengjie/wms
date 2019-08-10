@@ -11,7 +11,7 @@ public class MailDTO {
      * 查询类型
      */
 	@ApiModelProperty("查询类型1:包裹信息 2:当天无物流信息3:历史无物流信息")
-	private int type;
+	private int type = 1;
 	/**
      * 快递单号
      */
@@ -27,17 +27,18 @@ public class MailDTO {
      */
 	@ApiModelProperty("订单日期")
 	private String orderDate;
-	/**
-     * 快递单生成日期
-     */
-	@ApiModelProperty("快递单生成日期")
-	private String mailDate;
 	
 	/**
      * 是否拣货完成
      */
 	@ApiModelProperty("是否拣货完成")
 	private Integer isFinish;
+	
+	/**
+     * 是否称重完成
+     */
+	@ApiModelProperty("是否称重完成成")
+	private Integer isWeight;
 
 	/**
      * 物流状态
