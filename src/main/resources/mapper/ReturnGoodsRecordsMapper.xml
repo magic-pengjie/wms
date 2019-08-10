@@ -79,7 +79,7 @@
 			left join wms_customer_base_info cbi on rgr.customer_code=cbi.customer_code and cbi.state=1
 			left join wms_commodity_sku cs on rgr.commodity_code=cs.bar_code and cs.state=1
  		where rgr.state=1
- 			 <if test="orderNo != null and orderNo != '' ">
+ 			  <if test="orderNo != null and orderNo != '' ">
 				and rgr.order_no = #{orderNo}
 			</if>
 			 <if test="mailNo != null and mailNo != '' ">
@@ -97,11 +97,17 @@
 			<if test="commodityName != null and commodityName != '' ">
 				and cs.sku_name like concat(concat("%",#{commodityName}),"%")
 			</if>
+			<if test="commodityState != null and commodityState != '' ">
+				and rgr.commodity_state = #{commodityState}
+			</if>
 			<if test="reciptName != null and reciptName != '' ">
 				and rgr.recipt_name like concat(concat("%",#{reciptName}),"%")
 			</if>
 			<if test="reciptPhone != null and reciptPhone != '' ">
 				and rgr.recipt_phone = #{reciptPhone}
+			</if>
+			<if test="createTime != null and createTime != '' ">
+				and DATE_FORMAT(rgr.create_time,'%Y-%m-%d') = #{createTime}
 			</if>
 			
     </select>
