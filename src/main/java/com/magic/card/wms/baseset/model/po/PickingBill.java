@@ -39,6 +39,11 @@ public class PickingBill extends BasePo implements Serializable {
     private String areaLevel;
 
     /**
+     * 拣货人
+     */
+    private String pickUser;
+
+    /**
      * 流程阶段
      */
     private String processStage;

@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.controller;
 
+import com.magic.card.wms.baseset.model.dto.invoice.InvoiceCheckOmitDTO;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.common.model.LoadGrid;
@@ -8,8 +9,10 @@ import com.magic.card.wms.common.model.enums.Constants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -72,6 +75,20 @@ public class PickBillController {
     @GetMapping("invoiceCheckClose")
     public ResponseData invoiceCheckClose(@RequestParam String pickNo) {
         return ResponseData.ok(pickingBillService.checkInvoiceClose(pickNo));
+    }
+
+    @ApiOperation("配货复核完毕")
+    @GetMapping("invoiceCheckFinished")
+    public ResponseData invoiceCheckFinished(@RequestParam String pickNo, @RequestParam String pickOperator) {
+        pickingBillService.checkInvoiceFinished(pickNo, pickOperator);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("配货单漏检")
+    @PostMapping("invoiceCheckOmit")
+    public ResponseData invoiceCheckOmit(@RequestBody @Valid InvoiceCheckOmitDTO invoiceCheckOmitDTO, BindingResult bindingResult) {
+        pickingBillService.checkInvoiceOmit(invoiceCheckOmitDTO);
+        return ResponseData.ok();
     }
 
     @GetMapping("sendOrder")

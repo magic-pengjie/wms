@@ -1,6 +1,11 @@
 package com.magic.card.wms.common.model.enums;
 
+import com.google.common.collect.Lists;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * com.magic.card.wms.common.model.enums
@@ -26,9 +31,12 @@ public enum BillState {
     pick_exception_overflow("overflow", "多拣货物"),
     //endregion
     //region 订单相关状态
-    order_save("save", "订单导入创建"),
-    order_confirm("confirm", "订单确认"),
-    order_cancel("cancel", "订单取消或退订"),
+    order_save("save", "确认"),
+    order_picking("picking", "拣货中"),
+    order_packing("packing", "打包中"),
+    order_go_out("go_out", "出库"),
+    order_finished("finished", "完成"),
+    order_cancel("cancel", "取消"),
     //endregion
     //region 补货单相关状态
     replenishment_process_create("save", "创建补货单"),
@@ -44,12 +52,42 @@ public enum BillState {
     checker_cancel("cancel", "作废"),
     ;
     @Getter
-    private String code;
+    private final String code;
     @Getter
-    private String desc;
+    private final String desc;
 
     BillState(String code, String desc) {
         this.code = code;
         this.desc = desc;
+    }
+
+    /**
+     * 转换订单状态码
+     * @return
+     */
+    public static String orderCode(String desc) {
+        ArrayList<BillState> orderStates = Lists.newArrayList(BillState.order_save, BillState.order_picking, BillState.order_packing, BillState.order_go_out, BillState.order_finished, BillState.order_cancel);
+        AtomicReference<String> orderStateCode = new AtomicReference<>("");
+        orderStates.forEach(orderState -> {
+            if (StringUtils.containsIgnoreCase(desc, orderState.getDesc())) {
+                orderStateCode.set(orderState.getCode());
+            }
+        });
+        return orderStateCode.get();
+    }
+
+    /**
+     * 转换订单状态描述
+     * @return
+     */
+    public static String orderDesc(String code) {
+        ArrayList<BillState> orderStates = Lists.newArrayList(BillState.order_save, BillState.order_picking, BillState.order_packing, BillState.order_go_out, BillState.order_finished, BillState.order_cancel);
+        AtomicReference<String> orderStateDesc = new AtomicReference<>("");
+        orderStates.forEach(orderState -> {
+            if (StringUtils.containsIgnoreCase(code, orderState.getCode())) {
+                orderStateDesc.set(orderState.getDesc());
+            }
+        });
+        return orderStateDesc.get();
     }
 }

@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.magic.card.wms.baseset.mapper.PickingBillMapper">
+    <update id="updateOrderBillState">
+        UPDATE
+            wms_order_info
+        SET bill_state = #{packingOrderCode}
+        WHERE system_order_no in (
+            SELECT
+                DISTINCT order_no
+            FROM wms_mail_picking_info
+            WHERE pick_no = #{pickNo}
+        ) AND bill_state != #{cancelOrderCode}
+    </update>
     <select id="loadGrid" resultType="java.util.Map">
         SELECT
             id,

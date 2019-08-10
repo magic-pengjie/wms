@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.Order;
+import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -40,4 +41,7 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      * @return
      */
     List<Map> loadPackageGrid(Page page, @Param("ew") EntityWrapper wrapper);
+
+    List<ExcelOrderImport> excelExport(@Param("orderNos") List<String> orderNos);
+
 }

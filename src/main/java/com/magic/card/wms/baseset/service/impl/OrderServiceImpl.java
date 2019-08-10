@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.service.impl;
 
+import com.alibaba.excel.metadata.BaseRowModel;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -89,6 +90,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         defaultColumns.put("reciptPhone", "woi.recipt_phone");
         defaultColumns.put("reciptAddr", "woi.recipt_addr");
         defaultColumns.put("expressKey", "woi.express_key");
+        defaultColumns.put("isLock", "woi.is_lock");
+        defaultColumns.put("isMatched", "woi.is_matched");
         defaultColumns.put("prov", "woi.prov");
         defaultColumns.put("isB2b", "woi.is_b2b");
         defaultColumns.put("billState", "woi.bill_state");
@@ -406,12 +409,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         String operator = webUtil.operator();
         // 订单商品保存
         orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
-            orderCommodityDTO.setOrderNo(order.getSystemOrderNo());
+            orderCommodityDTO.setOrderNo(order.getOrderNo());
             orderCommodityDTO.setCustomerCode(order.getCustomerCode());
             this.orderCommodityService.importOrderCommodity(orderCommodityDTO, "" + customerId, operator);
         });
 
-        // TODO 根据拆单规则生成包裹快递篮
+        //TODO 目前不会处理/批量订单以及/B2B订单
+        if (order.getIsB2b() == 1 || order.getIsBatch() == 1) return;
+
         List<List<OrderCommodityDTO>> orderSplitPackages = splitPackageRuleService.orderSplitPackages(orderCommodityDTOS);
 
         if (CollectionUtils.isNotEmpty(orderSplitPackages)) {
@@ -427,16 +432,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
                     mailPickingDetailService.add(mailPickingDetail);
                 });
             });
-            // 当前默认是按照一个订单一个包裹
-//            String mailNo = UUID.randomUUID().toString();
-//            orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
-//                MailPickingDetail mailPickingDetail = new MailPickingDetail();
-//                mailPickingDetail.setOrderNo(order.getSystemOrderNo());
-//                mailPickingDetail.setMailNo(mailNo);
-//                mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
-//                mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
-//                mailPickingDetailService.add(mailPickingDetail);
-//            });
             updateById(order);
         }
 
@@ -609,15 +604,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         // region todo 订单合并处理
-//        Stream<String> orderTokeStream = orders.stream().map(OrderInfoDTO::orderToken);
-//        if (orderTokeStream.distinct().count() < orderTokeStream.count()) {
-//            orderTokeStream.forEach(orderToken -> {
-//
-//            });
-//            List<String> orderTokens = orderTokeStream.collect(Collectors.toList());
+        // 统计可合单的订单
+        // 判断是否有可合单 若可以合则执行合单导入从原有数据中移除，否则走拆单导入逻辑
+//        LinkedList<String> orderTokens = Lists.newLinkedList();
+//        Map<String, List<Integer>> canOrders = Maps.newHashMap();
+//        for (int i = 0; i < orders.size(); i++) {
+//            OrderInfoDTO orderInfoDTO = orders.get(i);
+//            final String orderToken = orderInfoDTO.orderToken();
 //
 //        }
-        // endregion
 
         for (int i = 0; i < orders.size(); i++) {
             OrderInfoDTO order = orders.get(i);
@@ -688,4 +683,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 		//查询
 		
 	}
+
+    /**
+     * 导出订单数据
+     *
+     * @param orderNos
+     * @return
+     */
+    @Override
+    public List<? extends BaseRowModel> excelExport(List<String> orderNos) {
+        return baseMapper.excelExport(orderNos);
+    }
+
+    /**
+     * 获取订单详情（商品 以及 对应的包裹信息）
+     *
+     * @param orderNo 系统订单号
+     * @return
+     */
+    @Override
+    public Map loadDetails(String orderNo) {
+
+        return null;
+    }
 }

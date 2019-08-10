@@ -25,4 +25,11 @@ public class DataConvertUtil {
 
         return 0;
     }
+
+    public static String isValue(int isValue) {
+
+        if (isValue == 1) return "是";
+
+        return "否";
+    }
 }

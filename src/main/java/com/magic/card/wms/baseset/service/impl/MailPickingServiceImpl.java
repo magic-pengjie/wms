@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.magic.card.wms.baseset.service.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -102,7 +103,6 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
         wrapper.eq("wmpi.pick_no", pickNo).
                 eq("wmpi.state", StateEnum.normal.getCode()).
                 orderBy("wmpi.basket_num");
-//		List<Map> mailPickings = baseMapper.selectMaps(wrapper);
 		List<Map> mailPickings = baseMapper.pickBillMails(wrapper);
 
 		if (CollectionUtils.isNotEmpty(mailPickings)) {
@@ -117,26 +117,6 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			}
 		}
 
-//        if (CollectionUtils.isNotEmpty(mailPickings)){
-//            List<String> orderNos = mailPickings.stream().map(
-//                    map -> map.get("orderNo").toString()
-//                ).collect(Collectors.toList());
-//
-//            if (CollectionUtils.isNotEmpty(orderNos)) {
-//                Map<String, List> orderCommodities = orderCommodityService.loadBatchOrderCommodityGrid(orderNos);
-//
-//                mailPickings.stream().forEach(mailPicking ->
-//                        mailPicking.put(
-//                                "orderCommodities",
-//                                orderCommodities.get(
-//                                    MapUtils.getString(mailPicking, "orderNo")
-//                                )
-//                        )
-//                );
-//            }
-//
-//
-//        }
 
         return mailPickings;
     }
@@ -351,18 +331,48 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			throw OperationException.customException(ResultEnum.order_cancel);
 		}
 
-		PoUtil.update(mailPicking, webUtil.operator());
-		// 统计包裹快递费
-		BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(mailPicking.getOrderNo(), realWeight, mailPicking.getWeightUnit());
+		// 订单状态 -> 出库
+		order.setBillState(BillState.order_go_out.getCode());
+		orderService.updateById(order);
 
-		if (orderExpressFree != null) {
-			mailPicking.setExpressFee(orderExpressFree);
-		}
+		PoUtil.update(mailPicking, webUtil.operator());
+		// TODO 一期暂停开发，统计包裹快递费
+//		BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(mailPicking.getOrderNo(), realWeight, mailPicking.getWeightUnit());
+//
+//		if (orderExpressFree != null) {
+//			mailPicking.setExpressFee(orderExpressFree);
+//		}
 
 		updateById(mailPicking);
 		// 释放库存
 		releaseStock(mailNo, order.getCustomerCode());
 		// TODO 推送订单信息到邮政
+	}
+
+	/**
+	 * 更新拣货单包裹状态
+	 *
+	 * @param pickNo
+	 * @param excludeMails
+	 */
+	@Override @Transactional
+	public void updatePickingFinishState(String pickNo, List<String> excludeMails) {
+		// 获取对应的拣货篮信息
+		EntityWrapper wrapper = new EntityWrapper();
+		wrapper.eq("pick_no", pickNo).
+				ne("is_finish", 1).
+				notIn("mail_no", excludeMails).
+				ne("state", StateEnum.delete.getCode());
+		updateForSet(
+				String.format("is_finish = 1, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+				wrapper
+		);
+		EntityWrapper detailsWrapper = new EntityWrapper();
+		detailsWrapper.eq("pick_no", pickNo).notIn("mail_no", excludeMails).ne("state", StateEnum.delete.getCode());
+		mailPickingDetailService.updateForSet(
+					String.format("pick_nums = package_nums, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+					detailsWrapper
+		);
 	}
 
 	public String getXmlBaseInfo(OrderInfoDTO orderInfoDTO) {

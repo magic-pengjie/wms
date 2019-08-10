@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.po.MailPickingDetail;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
      * @param executeSize 允许操作数
      * @return
      */
-    Map<String, List<Map>> areaVirtualMails(String customerCode, Integer executeSize);
+    Map<String, List<List<Map>>> areaVirtualMails(String customerCode, Integer executeSize);
 
     /**
      * 快递包裹预重 （kg）
@@ -86,4 +87,21 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
      * @param pickNo
      */
     void needNoticeReplenishment(String pickNo);
+
+    /**
+     * 包裹数据漏检记录
+     * @param pickNo 拣货单号
+     * @param mailNo 快递单号
+     * @param commodityCode 商品编号
+     * @param omitNums 漏检数量
+     */
+    void packageOmit(String pickNo, String mailNo, String commodityCode, int omitNums);
+
+    /**
+     * 更新拣货单包裹数据
+     * @param pickNo 拣货单号
+     * @param mailNo 快递单号
+     * @param excludeCommodities 排除产品条形码
+     */
+    void updatePackageCommodity(String pickNo, String mailNo, ArrayList<String> excludeCommodities);
 }

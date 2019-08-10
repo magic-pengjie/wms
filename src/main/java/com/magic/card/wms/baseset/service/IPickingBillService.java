@@ -60,6 +60,19 @@ public interface IPickingBillService extends IService<PickingBill> {
     Object checkInvoiceClose(String pickNo);
 
     /**
+     * 配货单检查完毕
+     * @param pickNo
+     */
+    void checkInvoiceFinished(String pickNo, String pickOperator);
+
+    /**
+     * 配货单漏检
+     * @param omitInfo
+     * @param <T>
+     */
+    <T> void checkInvoiceOmit(T omitInfo);
+
+    /**
      * 拣货单列表
      * @param loadGrid
      * @return
