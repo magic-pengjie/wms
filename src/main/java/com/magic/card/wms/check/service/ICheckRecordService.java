@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.check.model.dto.*;
 import com.magic.card.wms.check.model.po.CheckRecord;
 import com.magic.card.wms.common.exception.BusinessException;
+import com.magic.card.wms.common.model.ResponseData;
 
 /**
  * <p>
@@ -23,7 +24,7 @@ public interface ICheckRecordService extends IService<CheckRecord> {
 	 */
 	List<CheckRecordInfoDto> countCheckRecord(CheckCountDto dto) throws BusinessException;
 
-	List<CheckRecordQueryResponse> checkRecordStart(CheckRecordStartDto dto)throws BusinessException;
+	ResponseData checkRecordStart(CheckRecordStartDto dto)throws BusinessException;
 	
 	boolean updateRecordInfo(List<CheckRecord> checkRecordList)throws BusinessException;
 

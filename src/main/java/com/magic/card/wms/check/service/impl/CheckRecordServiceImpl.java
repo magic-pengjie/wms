@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.magic.card.wms.check.model.dto.*;
+import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.utils.DateUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,20 +109,23 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 	//开始盘点
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
-	public List<CheckRecordQueryResponse> checkRecordStart(CheckRecordStartDto dto) throws BusinessException {
-		log.info("===>> 冻结开始...");
+	public ResponseData checkRecordStart(CheckRecordStartDto dto) throws BusinessException {
+		log.info("===>> 开始盘点。冻结开始...");
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
 
-		//盘点是否已经在盘点中
+		//盘点是否已经在盘点中，盘点中则查询返回盘点中的盘点记录
 		Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
 		siWrapper.in("id", dto.getStoreIdList());
 		siWrapper.eq("is_frozen",IsFrozenEnum.FROZEN.getCode());
 		List<StorehouseInfo> frozenStoreList = storehouseInfoMapper.selectList(siWrapper);
 		if(!CollectionUtils.isEmpty(frozenStoreList)){
-			log.info("===>> 盘点失败，当前盘点库位存在盘点中的库位：{}", dto.getStoreIdList());
-			throw new BusinessException(400011,"初始化盘点失败，当前盘点库位存在正在盘点中的库位！");
+			log.info("===>> 盘点失败，当前盘点库位存在盘点中的库位");
+			//查询返回正在盘点中的记录
+			List<CheckRecordQueryResponse> checkList = checkRecordMapper.queryCheckRecordListByCustomerId(dto.getCustomerId());
+			return  ResponseData.ok(50001,"当前商家存在盘点中的库位",checkList);
 		}
+
 		//冻结库位
 		Integer updateStoreFrozen = updateStoreFrozenState(userSession, dto.getStoreIdList(), IsFrozenEnum.FROZEN);
 		if(updateStoreFrozen == 0) {
@@ -185,14 +189,14 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			throw new BusinessException(40010, "生成盘点记录失败！");
 		}
 		log.info("===>> CheckRecordResponse:{}",crResponse);
-		return crResponse;
+		return ResponseData.ok(crResponse);
 	}
 
 	//保存盘点信息
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public boolean saveCheckRecord(List<CheckRecord> checkRecordList)throws BusinessException{
-		log.info("===>> 取消盘点，解除冻结开始.saveCheckRecord start...");
+		log.info("===>> 保存盘点信息.saveCheckRecord start...");
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
 		Date date = new Date();
@@ -304,6 +308,9 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		}
 		if(!StringUtils.isEmpty(auditDto.getBillState())) {
 			cr.setBillState(auditDto.getBillState());
+		}
+		if(!StringUtils.isEmpty(auditDto.getCheckCode())) {
+			cr.setCheckCode(auditDto.getCheckCode());
 		}
 		return checkRecordMapper.queryCheckRecordList(cr);
 	}

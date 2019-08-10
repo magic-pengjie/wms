@@ -27,14 +27,16 @@ public class CheckRecordStartDto implements Serializable{
     @ApiModelProperty(value="库位id列表")
     @NotEmpty(message="盘点库位不能为空")
     private List<Long> storeIdList;
-    
+
+	@ApiModelProperty("商家ID")
+	private String customerId;
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("CheckRecordStartDto [");
-		if (storeIdList != null)
-			builder.append("storeIdList=").append(storeIdList);
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("CheckRecordStartDto{");
+		sb.append("storeIdList=").append(storeIdList);
+		sb.append(", customerId='").append(customerId).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
-
 }

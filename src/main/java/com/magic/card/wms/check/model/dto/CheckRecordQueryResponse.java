@@ -47,15 +47,21 @@ public class CheckRecordQueryResponse extends CheckRecord implements Serializabl
      */
     private String modelNo;
 
+//    /**
+//     * 是否已存在盘点记录
+//     */
+//    private boolean existFlag;
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("CheckRecordQueryResponse{");
-        sb.append(", customerName='").append(customerName).append('\'');
+        sb.append("customerName='").append(customerName).append('\'');
         sb.append(", skuCode='").append(skuCode).append('\'');
         sb.append(", skuName='").append(skuName).append('\'');
         sb.append(", barCode='").append(barCode).append('\'');
         sb.append(", spec='").append(spec).append('\'');
         sb.append(", modelNo='").append(modelNo).append('\'');
+//        sb.append(", existFlag=").append(existFlag);
         sb.append('}');
         return sb.toString();
     }

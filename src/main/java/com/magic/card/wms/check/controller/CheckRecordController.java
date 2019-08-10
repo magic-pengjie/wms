@@ -2,11 +2,13 @@ package com.magic.card.wms.check.controller;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import com.magic.card.wms.check.model.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,7 +70,7 @@ public class CheckRecordController {
 	@RequestMapping(value = "/checkRecordStart", method = RequestMethod.POST)
 	public ResponseData checkRecordStart(@RequestBody @Valid CheckRecordStartDto dto, BindingResult bindingResult ) throws BusinessException {
 		try {
-			return ResponseData.ok(checkRecordService.checkRecordStart(dto));
+			return checkRecordService.checkRecordStart(dto);
 		} catch (BusinessException e) {
 			log.info("===>> 盘点失败：{}",e);
 			return ResponseData.error(e.getErrCode(), e.getErrMsg());

@@ -60,6 +60,9 @@
 		<if test="cr.billState !=null and cr.billState !=''">
 			AND wcr.bill_state = #{cr.billState}
 		</if>
+        <if test="cr.checkCode !=null and cr.checkCode !=''">
+            AND wcr.check_code like concat('%',#{cr.checkCode},'%')
+        </if>
 	</select>
 
     <select id="queryStorehouseCountList" resultType="com.magic.card.wms.statistic.model.dto.StorehouseCountResponseDto">
@@ -129,6 +132,26 @@
         </if>
 
         GROUP BY 	cbi.customer_code,	cbi.customer_name,	cs.banner, cs.bar_code,	cs.sku_name,	cs.spec,	cs.model_no
+    </select>
+    <select id="queryCheckRecordListByCustomerId" resultMap="SubClassResultMap">
+
+        SELECT
+        cbi.customer_name ,
+        cs.sku_code ,
+        cs.bar_code,
+        cs.sku_name,
+        cs.spec,
+        cs.model_no ,
+        wcr.*
+        FROM wms_customer_base_info cbi
+        left join wms_check_record wcr on cbi.customer_code = wcr.customer_code and  wcr.state = 1
+        LEFT JOIN wms_commodity_sku cs on wcr.sku_id = cs.id and cs.state = '1'
+        WHERE cbi.state = '1'
+        and wcr.bill_state ='save'
+        <if test="null !=customerId and '' !=customerId">
+            and cbi.id = #{customerId}
+        </if>
+
     </select>
 
 </mapper>

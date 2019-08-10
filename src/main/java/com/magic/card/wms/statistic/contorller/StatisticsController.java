@@ -103,7 +103,7 @@ public class StatisticsController {
         return ResponseData.ok(statisticsService.queryStorehouseUsedList(dto));
     }
 
-    @ApiOperation(value = "库存报表导出excel", notes = "库存报表导出excel")
+    @ApiOperation(value = "库位使用报表导出excel", notes = "库位使用报表导出excel")
     @RequestMapping(value = "/export/storeUsedExcel", method = RequestMethod.GET)
     public void exportStorehouseUsed(@Valid ParchaseBillDto dto,HttpServletRequest request, HttpServletResponse response) throws BusinessException {
         statisticsService.exportStorehouseUsedExcel(dto,request,response);

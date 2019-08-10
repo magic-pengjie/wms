@@ -67,6 +67,14 @@ public class ResponseData<T> {
 		result.setData(data);
 		return result;
 	}
+
+	public static <T> ResponseData ok(int code ,String msg, T data) {
+		ResponseData<T> result = new ResponseData();
+		result.setCode(code);
+		result.setMsg(msg);
+		result.setData(data);
+		return result;
+	}
 	
 	public static ResponseData error(int code ,String msg) {
 		ResponseData result = new ResponseData();

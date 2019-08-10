@@ -26,6 +26,8 @@ public interface CheckRecordMapper extends BaseMapper<CheckRecord> {
 
 	public List<CheckRecordQueryResponse> queryCheckRecordList(@Param("cr") CheckRecord cr);
 
+	public List<CheckRecordQueryResponse> queryCheckRecordListByCustomerId(@Param("customerId") String customerId);
+
 
 	public List<StorehouseCountResponseDto> queryStorehouseCountList(@Param("customerCode") String customerCode);
 
