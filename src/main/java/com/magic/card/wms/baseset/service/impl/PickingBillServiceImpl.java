@@ -108,7 +108,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      * @param pickNo
      * @param pickOperator
      */
-    @Override
+    @Override @Transactional
     public void checkInvoiceFinished(String pickNo, String pickOperator) {
         String operator = webUtil.operator();
         PickingBill pickingBill = checkOutPickBill(pickNo);

@@ -1,8 +1,10 @@
 package com.magic.card.wms.baseset.controller;
 
 import com.magic.card.wms.baseset.model.dto.invoice.InvoiceCheckOmitDTO;
+import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
@@ -31,6 +33,8 @@ public class PickBillController {
     private IPickingBillService pickingBillService;
     @Autowired
     private IMailPickingService mailPickingService;
+    @Autowired
+    private IStorehouseConfigService storehouseConfigService;
 
     @ApiOperation("加载数据")
     @PostMapping("loadGrid")
@@ -89,6 +93,12 @@ public class PickBillController {
     public ResponseData invoiceCheckOmit(@RequestBody @Valid InvoiceCheckOmitDTO invoiceCheckOmitDTO, BindingResult bindingResult) {
         pickingBillService.checkInvoiceOmit(invoiceCheckOmitDTO);
         return ResponseData.ok();
+    }
+
+    @ApiOperation("获取缺货商品库位信息")
+    @PostMapping("omitStoke")
+    public ResponseData invoiceOmitStoke(@RequestBody @Valid OmitStokeDTO omitStokeDTO) {
+        return ResponseData.ok(storehouseConfigService.invoiceOmitStoke(omitStokeDTO));
     }
 
     @GetMapping("sendOrder")

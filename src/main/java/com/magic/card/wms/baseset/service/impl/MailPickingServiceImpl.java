@@ -113,7 +113,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			Map<String, List> packageCommodities = mailPickingDetailService.loadBatchPackageCommodity(mails);
 
 			if (MapUtils.isNotEmpty(packageCommodities)) {
-				mailPickings.stream().forEach(map -> map.put("packageCommodities", packageCommodities.get("mailNo")));
+				mailPickings.stream().forEach(map -> map.put("packageCommodities", packageCommodities.get(MapUtils.getString(map, "mailNo"))));
 			}
 		}
 
@@ -387,13 +387,13 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 				notIn("mail_no", excludeMails).
 				ne("state", StateEnum.delete.getCode());
 		updateForSet(
-				String.format("is_finish = 1, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+				String.format("is_finish = 1, update_user = '%s', update_time = '%s'", webUtil.operator(), DateTime.now().toString("yyyy-MM-dd HH:mm:ss")),
 				wrapper
 		);
 		EntityWrapper detailsWrapper = new EntityWrapper();
 		detailsWrapper.eq("pick_no", pickNo).notIn("mail_no", excludeMails).ne("state", StateEnum.delete.getCode());
 		mailPickingDetailService.updateForSet(
-					String.format("pick_nums = package_nums, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+					String.format("pick_nums = package_nums, update_user = '%s', update_time = '%s'", webUtil.operator(), DateTime.now().toString("yyyy-MM-dd HH:mm:ss")),
 					detailsWrapper
 		);
 	}

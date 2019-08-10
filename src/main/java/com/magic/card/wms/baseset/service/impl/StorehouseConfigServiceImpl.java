@@ -1,10 +1,13 @@
 package com.magic.card.wms.baseset.service.impl;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.joda.time.DateTime;
@@ -12,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
@@ -40,6 +44,8 @@ import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.constraints.Size;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -182,6 +188,37 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
                 webUtil.operator()
         );
         baseMapper.updateForSet(setString, new EntityWrapper().in("id", ids));
+    }
+
+    /**
+     * 获取缺货商品的库位编码
+     *
+     * @param omitStokeDTO
+     * @return
+     */
+    @Override
+    public Map<String, String> invoiceOmitStoke(OmitStokeDTO omitStokeDTO) {
+        final String customerCode = omitStokeDTO.getCustomerCode();
+        List<String> commodityCodes = omitStokeDTO.getCommodityCodes();
+
+        if (StringUtils.isBlank(customerCode) || CollectionUtils.isEmpty(commodityCodes)) return null;
+
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.
+                eq("wcbi.customer_code", omitStokeDTO.getCustomerCode()).
+                in("wcs.bar_code", omitStokeDTO.getCommodityCodes()).
+                eq("wsc.state", StateEnum.normal.getCode()).
+                eq("wsi.house_code", StoreTypeEnum.JHQ.getCode());
+        List<Map> stokeConfigs = baseMapper.loadGrid(new Page(), wrapper);
+
+        if (CollectionUtils.isEmpty(stokeConfigs)) return null;
+
+        HashMap<String, String> commodityStoke = Maps.newHashMap();
+        stokeConfigs.forEach(stokeConfig -> {
+            final String commodityCode = MapUtils.getString(stokeConfig, "commodityCode");
+            commodityStoke.put(commodityCode, MapUtils.getString(stokeConfig, "storeCode"));
+        });
+        return commodityStoke;
     }
 
     /**

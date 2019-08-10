@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
 import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
+import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
 import com.magic.card.wms.common.exception.BusinessException;
@@ -98,4 +99,11 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      * @param ids
      */
     void batchClearCommodity(List<String> ids);
+
+    /**
+     * 获取缺货商品的库位编码
+     * @param omitStokeDTO
+     * @return
+     */
+    Map<String, String> invoiceOmitStoke(OmitStokeDTO omitStokeDTO);
 }

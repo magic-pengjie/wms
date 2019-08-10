@@ -128,7 +128,8 @@ public interface IOrderService extends IService<Order> {
     /**
      * 获取订单详情（商品 以及 对应的包裹信息）
      * @param orderNo 系统订单号
+     * @param customerCode 商家Code
      * @return
      */
-    Map loadDetails(String orderNo);
+    Map loadDetails(String orderNo, String customerCode);
 }

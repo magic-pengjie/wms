@@ -68,8 +68,8 @@ public class OrderController {
 
     @ApiOperation("获取订单商品信息以及包裹信息")
     @PostMapping("loadDetails")
-    public ResponseData loadDetails(@RequestParam String orderNo) {
-        return ResponseData.ok(orderService.loadDetails(orderNo));
+    public ResponseData loadDetails(@RequestParam String orderNo, @RequestParam String customerCode) {
+        return ResponseData.ok(orderService.loadDetails(orderNo, customerCode));
     }
 
     @PostMapping("excelExport")
