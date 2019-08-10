@@ -6,23 +6,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.magic.card.wms.common.annotation.ExcelDataConvertor;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.enums.ResultEnum;
-import org.apache.commons.codec.Charsets;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
-import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.context.AnalysisContext;
@@ -39,6 +39,7 @@ import com.magic.card.wms.warehousing.model.vo.PurchaseBillExcelVO;
  * @author PENGJIE
  * @date 2019年6月18日
  */
+@Slf4j
 public class EasyExcelUtil {
 	
 	/**
@@ -82,8 +83,19 @@ public class EasyExcelUtil {
 		List<T> data = new ArrayList<>();
 		AnalysisEventListener listener = new AnalysisEventListener<T>() {
 
+
 			@Override
 			public void invoke(T object, AnalysisContext context) {
+				for (Method method : object.getClass().getMethods()) {
+					if (method.getAnnotation(ExcelDataConvertor.class) != null) {
+						try {
+							method.invoke(object, null);
+						} catch (Exception e) {
+							log.error("Excel 数据转化异常，请及时查看！");
+						}
+					}
+				}
+
 				data.add(object);
 			}
 

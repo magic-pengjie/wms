@@ -77,6 +77,17 @@ public class CheckRecordController {
 			return ResponseData.error("盘点异常");
 		}
 	}
+
+	/**
+	 * 保存盘点信息
+	 */
+	@ApiOperation(value="取消盘点,解除冻结")
+	@RequestMapping(value = "/saveCheckRecord", method = RequestMethod.POST)
+	public ResponseData saveCheckRecord(@RequestBody @Valid CheckRecordUpdateDto checkRecordSaveDto, BindingResult bindingResult) throws BusinessException {
+		return ResponseData.ok(checkRecordService.saveCheckRecord(checkRecordSaveDto.getCheckRecordList()));
+	}
+
+
 	
 	/**
 	 * 取消盘点,解除冻结

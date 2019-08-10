@@ -50,7 +50,7 @@ public class CheckRecordQueryResponse extends CheckRecord implements Serializabl
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("CheckRecordQueryResponse{");
-        sb.append("customerName='").append(customerName).append('\'');
+        sb.append(", customerName='").append(customerName).append('\'');
         sb.append(", skuCode='").append(skuCode).append('\'');
         sb.append(", skuName='").append(skuName).append('\'');
         sb.append(", barCode='").append(barCode).append('\'');

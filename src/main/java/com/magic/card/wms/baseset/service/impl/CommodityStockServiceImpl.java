@@ -3,6 +3,7 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.magic.card.wms.baseset.mapper.CommodityStockMapper;
+import com.magic.card.wms.baseset.model.po.Commodity;
 import com.magic.card.wms.baseset.model.po.CommodityStock;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.baseset.service.ICommodityStockService;
@@ -17,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -61,6 +64,17 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
             PoUtil.add(stock, Constants.DEFAULT_USER);
             insert(stock);
         }
+    }
+
+    /**
+     * 批量初始化库存
+     *
+     * @param customerId
+     * @param commodities
+     */
+    @Override
+    public void batchInitSetting(String customerId, List<Commodity> commodities) {
+        commodities.forEach(commodity -> initSetting(customerId, commodity.getCommodityCode()));
     }
 
     /**

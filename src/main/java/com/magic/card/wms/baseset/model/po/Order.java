@@ -88,6 +88,11 @@ public class Order extends BasePo implements Serializable {
      * 是否B2B
      */
     private int isB2b;
+
+    /**
+     * 是否匹配规则
+     */
+    private int isMatched;
     /**
      * 商品金额
      */

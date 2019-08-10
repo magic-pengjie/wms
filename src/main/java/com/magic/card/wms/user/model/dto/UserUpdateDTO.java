@@ -48,7 +48,7 @@ public class UserUpdateDTO implements Serializable{
 	 * 客戶主鍵ID
 	 */
 	@ApiModelProperty(value="客戶主鍵ID")
-	@NotBlank(message="客戶不能为空")
+//	@NotBlank(message="客戶不能为空")
 	private Long customerId;
 	
 	/**

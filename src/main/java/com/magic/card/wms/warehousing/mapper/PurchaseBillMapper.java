@@ -5,10 +5,12 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
+import com.magic.card.wms.statistic.model.dto.ParchaseBillResponseDto;
 import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
 import com.magic.card.wms.warehousing.model.po.PurchaseBill;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
 import com.magic.card.wms.warehousing.model.vo.PurchaseWarehousingVO;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -57,4 +59,15 @@ public interface PurchaseBillMapper extends BaseMapper<PurchaseBill> {
 	 * @return
 	 */
 	List<PurchaseBill> getFoodWarningList(Pagination page);
+
+
+	/**
+	 * 入库报表统计查询
+	 * @param customerCode
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	List<ParchaseBillResponseDto> queryPurchaseBillCountList(@Param("customerCode")String customerCode,@Param("startDate")String startDate,@Param("endDate")String endDate);
+
 }

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.magic.card.wms.check.model.dto.*;
+import com.magic.card.wms.common.utils.DateUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -111,6 +112,16 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		log.info("===>> 冻结开始...");
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
+
+		//盘点是否已经在盘点中
+		Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
+		siWrapper.in("id", dto.getStoreIdList());
+		siWrapper.eq("is_frozen",IsFrozenEnum.FROZEN.getCode());
+		List<StorehouseInfo> frozenStoreList = storehouseInfoMapper.selectList(siWrapper);
+		if(!CollectionUtils.isEmpty(frozenStoreList)){
+			log.info("===>> 盘点失败，当前盘点库位存在盘点中的库位：{}", dto.getStoreIdList());
+			throw new BusinessException(400011,"初始化盘点失败，当前盘点库位存在正在盘点中的库位！");
+		}
 		//冻结库位
 		Integer updateStoreFrozen = updateStoreFrozenState(userSession, dto.getStoreIdList(), IsFrozenEnum.FROZEN);
 		if(updateStoreFrozen == 0) {
@@ -136,9 +147,11 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		List<CheckRecordQueryResponse> crResponse = new ArrayList<CheckRecordQueryResponse>();
 		List<CheckRecord> crList = new ArrayList<CheckRecord>();
 		Date date = new Date();
+		String checkCode = commStoreList.get(0).getCustomerCode()+DateUtil.getStringAllDate();
 		commStoreList.forEach(cs->{
 			CheckRecord cr = new CheckRecord();
 			BeanUtils.copyProperties(cs, cr);
+			cr.setCheckCode(checkCode);//生成盘点批次Code
 			cr.setStorehouseType(cs.getStoreType());
 			cr.setStorehouseCode(cs.getStoreCode());
 			cr.setBillState(BillState.checker_save.getCode());//初始化状态
@@ -175,6 +188,25 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		return crResponse;
 	}
 
+	//保存盘点信息
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
+	public boolean saveCheckRecord(List<CheckRecord> checkRecordList)throws BusinessException{
+		log.info("===>> 取消盘点，解除冻结开始.saveCheckRecord start...");
+		//获取当前登录人信息
+		UserSessionUo userSession = webUtil.getUserSession();
+		Date date = new Date();
+		boolean checkUpdate = false;
+		for (CheckRecord checkRecord : checkRecordList) {
+			checkRecord.setUpdateTime(date);
+			checkRecord.setUpdateUser(userSession.getName());
+			checkUpdate = this.updateById(checkRecord);
+		}
+		return checkUpdate;
+	}
+
+
+
 	//取消盘点
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
@@ -204,7 +236,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		}
 		return false;
 	}
-	
+
 
 	//盘点结束：修改盘点记录，状态设置为，审批中，后续审批通过后，修改库存
 	@Override
@@ -216,22 +248,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			//获取当前登录人信息
 			UserSessionUo userSession = webUtil.getUserSession();
 			Date date = new Date();
-			boolean checkUpdate = false;
-			for (CheckRecord checkRecord : checkRecordList) {
-				//计算盘点差异值
-				if(!StringUtils.isEmpty(checkRecord.getThirdCheckNums())){
-					checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getThirdCheckNums());
-				}else if(!StringUtils.isEmpty(checkRecord.getSecondCheckNums())){
-					checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getSecondCheckNums());
-				}else if(!StringUtils.isEmpty(checkRecord.getFirstCheckNums())){
-					checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getFirstCheckNums());
-				}
-				checkRecord.setBillState(BillState.checker_approving.getCode());//审批中
-				checkRecord.setUpdateTime(date);
-				checkRecord.setUpdateUser(userSession.getName());
-				checkRecord.setState(StateEnum.normal.getCode());
-				checkUpdate = this.updateById(checkRecord);
-			}
+			boolean checkUpdate = isCheckUpdate(checkRecordList, userSession, date);
 			log.info("===>> update.CheckRecord end :{} rows", checkRecordList.size());
 			if(checkUpdate) {
 				log.info("===>> StoreHouseInfo UnFrozen start...");
@@ -249,6 +266,27 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		}
 		log.info("===>> 修改盘点记录结束..");
 		return true;
+	}
+
+	//修改盘点记录
+	private boolean isCheckUpdate(List<CheckRecord> checkRecordList, UserSessionUo userSession, Date date) {
+		boolean checkUpdate = false;
+		for (CheckRecord checkRecord : checkRecordList) {
+			//计算盘点差异值
+			if(!StringUtils.isEmpty(checkRecord.getThirdCheckNums())){
+				checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getThirdCheckNums());
+			}else if(!StringUtils.isEmpty(checkRecord.getSecondCheckNums())){
+				checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getSecondCheckNums());
+			}else if(!StringUtils.isEmpty(checkRecord.getFirstCheckNums())){
+				checkRecord.setDiffNums(checkRecord.getStoreNums()-checkRecord.getFirstCheckNums());
+			}
+			checkRecord.setBillState(BillState.checker_approving.getCode());//审批中
+			checkRecord.setUpdateTime(date);
+			checkRecord.setUpdateUser(userSession.getName());
+			checkRecord.setState(StateEnum.normal.getCode());
+			checkUpdate = this.updateById(checkRecord);
+		}
+		return checkUpdate;
 	}
 
 	//查询盘点记录
@@ -330,10 +368,10 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 							//1.2.3盘 正确结束， 两个一样结束， 三盘为准。审核结束，取消冻结。
 							if(!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//终盘数量
 								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
-							}else if (!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//复盘数量
-								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+							}else if (!StringUtils.isEmpty(checkRecordDto.getSecondCheckNums())){//复盘数量
+								sc.setStoreNums(checkRecordDto.getSecondCheckNums());
 							}else if (!StringUtils.isEmpty(checkRecordDto.getFirstCheckNums())){//初盘数量
-								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+								sc.setStoreNums(checkRecordDto.getFirstCheckNums());
 							}
 							sc.setUpdateTime(nowDate);
 							sc.setUpdateUser(name);
@@ -368,4 +406,11 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		log.info("===>> storehouceInfo.updateByIds,chanage:[{}] rows!", updateStoreFrozen);
 		return updateStoreFrozen;
 	}
+
+
+	public static void main(String[] args) {
+		Date date = new Date();
+		System.out.println(date.getTime());
+	}
+
 }

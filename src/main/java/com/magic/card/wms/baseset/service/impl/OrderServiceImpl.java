@@ -10,6 +10,7 @@ import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.po.*;
+import com.magic.card.wms.baseset.model.vo.ExcelCommodity;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderCommodity;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.service.*;
@@ -20,10 +21,7 @@ import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.common.utils.EasyExcelUtil;
-import com.magic.card.wms.common.utils.PoUtil;
-import com.magic.card.wms.common.utils.WebUtil;
-import com.magic.card.wms.common.utils.WrapperUtil;
+import com.magic.card.wms.common.utils.*;
 import com.magic.card.wms.report.service.ExpressFeeConfigService;
 import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
@@ -36,16 +34,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -74,6 +71,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     @Autowired
     private IMailPickingDetailService mailPickingDetailService;
     @Autowired
+    private ISplitPackageRuleService splitPackageRuleService;
+    @Autowired
     private WebUtil webUtil;
     /**
      *
@@ -84,7 +83,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         defaultColumns.put("id", "woi.id");
         defaultColumns.put("systemOrderNo", "woi.system_order_no");
         defaultColumns.put("orderNo", "woi.order_no");
-        defaultColumns.put("customerCode", "customerCode");
+        defaultColumns.put("customerCode", "woi.customer_code");
         defaultColumns.put("customerName", "wcbi.customer_name");
         defaultColumns.put("reciptName", "woi.recipt_name");
         defaultColumns.put("reciptPhone", "woi.recipt_phone");
@@ -94,6 +93,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         defaultColumns.put("isB2b", "woi.is_b2b");
         defaultColumns.put("billState", "woi.bill_state");
         defaultColumns.put("createTime", "woi.create_time");
+    }
+
+    /**
+     * 自动锁定订单
+     */
+    @Override @Transactional
+    public void autoLockOrder() {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("is_lock", 0).
+                ne("state", StateEnum.delete.getCode()).
+                lt("create_time", DateTime.now().toDate());
+        updateForSet("is_lock = 1", wrapper);
     }
 
     /**
@@ -178,9 +189,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         processOrderCommodities(orderInfoDTO.getCommodities(), order, customerBaseInfo.getId());
         // 触发生成拣货单 同检验拣货区商品是否充足
-        new Thread(() ->
-            pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 20)
-        ).start();
+        ThreadPool.excutor(() -> pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 15));
     }
 
     /**
@@ -246,52 +255,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         return null;
     }
-
-//    /**
-//     * 获取订单所有商品的总重量 kg
-//     *
-//     * @param orderNo
-//     * @param customerCode
-//     * @return
-//     */
-//    @Override
-//    public BigDecimal orderCommodityWeight(String orderNo, String customerCode) {
-//        //统计订单商品重量（包括耗材重量）
-//        List<Map> maps = this.baseMapper.orderCommodityWeightMap(orderNo, customerCode);
-//        //商品对应所有的耗材 (已g计算重量)
-//        BigDecimal weightTotal = BigDecimal.valueOf(0.00);
-//
-//        for (Map map : maps) {
-//            // 购买数量
-//            int bayNums = MapUtils.getIntValue(map, "bayNums");
-//            BigDecimal singleWeigh = (BigDecimal) map.get("singleWeight");
-//            singleWeigh = CommodityUtil.unitConversion_G(singleWeigh, MapUtils.getString(map, "singleWeightUnit"));
-//            weightTotal = weightTotal.add(singleWeigh.multiply(BigDecimal.valueOf(bayNums)));
-//
-//            // 判断当前商品是否存在 消耗品
-//            if (ObjectUtils.isEmpty(map.get("useBarCode"))) continue;
-//
-//            int leftValue = MapUtils.getIntValue(map, "leftValue");
-//            int rightValue = MapUtils.getIntValue(map, "rightValue");
-//            // 范围消耗品数量
-//            int useNums = MapUtils.getIntValue(map, "useNums");
-//
-//            if (rightValue >= leftValue) {
-//                int allUseNums = bayNums/rightValue*useNums;
-//
-//                if (bayNums%rightValue >= leftValue) {
-//                    allUseNums += useNums;
-//                }
-//
-//                BigDecimal useSingleWeigh = (BigDecimal) map.get("useSingleWeight");
-//                useSingleWeigh = CommodityUtil.unitConversion_G(useSingleWeigh, MapUtils.getString(map, "useSingleWeightUnit"));
-//
-//                weightTotal = weightTotal.add( useSingleWeigh.multiply(BigDecimal.valueOf(allUseNums)));
-//            }
-//        }
-//
-//        return weightTotal.divide(new BigDecimal("1000"));
-//    }
 
     /**
      * 订单称重对比
@@ -367,9 +330,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     @Override
     public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode()).isNotNull("real_weight");
+        wrapper.eq("wmpi.state", StateEnum.normal.getCode()).ne("woi.bill_state", BillState.order_cancel.getCode());
         Page page = loadGrid.generatorPage();
-        loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
+//        mailPickingService.loadGrid(page, wrapper);
+//        loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
+        loadGrid.finallyResult(page, baseMapper.loadPackageGrid(page, wrapper));
 
         return loadGrid;
     }
@@ -447,16 +412,34 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         });
 
         // TODO 根据拆单规则生成包裹快递篮
-        // 当前默认是按照一个订单一个包裹
-        String mailNo = UUID.randomUUID().toString();
-        orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
-            MailPickingDetail mailPickingDetail = new MailPickingDetail();
-            mailPickingDetail.setOrderNo(order.getSystemOrderNo());
-            mailPickingDetail.setMailNo(mailNo);
-            mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
-            mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
-            mailPickingDetailService.add(mailPickingDetail);
-        });
+        List<List<OrderCommodityDTO>> orderSplitPackages = splitPackageRuleService.orderSplitPackages(orderCommodityDTOS);
+
+        if (CollectionUtils.isNotEmpty(orderSplitPackages)) {
+            order.setIsMatched(1);
+            orderSplitPackages.forEach(packageCommodities-> {
+                String mailNo = UUID.randomUUID().toString();
+                packageCommodities.stream().forEach(orderCommodityDTO -> {
+                    MailPickingDetail mailPickingDetail = new MailPickingDetail();
+                    mailPickingDetail.setOrderNo(order.getSystemOrderNo());
+                    mailPickingDetail.setMailNo(mailNo);
+                    mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
+                    mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
+                    mailPickingDetailService.add(mailPickingDetail);
+                });
+            });
+            // 当前默认是按照一个订单一个包裹
+//            String mailNo = UUID.randomUUID().toString();
+//            orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
+//                MailPickingDetail mailPickingDetail = new MailPickingDetail();
+//                mailPickingDetail.setOrderNo(order.getSystemOrderNo());
+//                mailPickingDetail.setMailNo(mailNo);
+//                mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
+//                mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
+//                mailPickingDetailService.add(mailPickingDetail);
+//            });
+            updateById(order);
+        }
+
     }
 
     /**
@@ -468,7 +451,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         CustomerBaseInfo customerBaseInfo = this.customerService.checkoutCustomer(orderInfoDTO.getCustomerCode());
 
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode());
+        wrapper.ne("state", StateEnum.delete);
         wrapper.eq("customer_code", orderInfoDTO.getCustomerCode());
         wrapper.eq("order_no", orderInfoDTO.getOrderNo());
 
@@ -528,11 +511,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      *
      * @param excelOrderFiles
      */
-    @Override @Transactional
+//    @Override @Transactional
     public void excelImport(MultipartFile[] excelOrderFiles) throws IOException {
         if (excelOrderFiles != null && excelOrderFiles.length > 0) {
             for (MultipartFile excelOrder :
                     excelOrderFiles) {
+
                 EasyExcelUtil.validatorFileSuffix(excelOrder.getOriginalFilename());
                 List<ExcelOrderImport> excelOrders = EasyExcelUtil.readExcel(excelOrder.getInputStream(), ExcelOrderImport.class, 1, 1);
                 List<ExcelOrderCommodity> excelOrderCommodities = EasyExcelUtil.readExcel(excelOrder.getInputStream(), ExcelOrderCommodity.class, 2, 1);
@@ -570,6 +554,89 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     }
 
     /**
+     * EXCEL 导入订单
+     *
+     * @param excelOrders
+     */
+    @Override @Transactional
+    public void excelNewImport(MultipartFile excelOrderFile) throws IOException {
+
+        if (excelOrderFile == null) return;
+
+        // 验证文件后缀
+        EasyExcelUtil.validatorFileSuffix(excelOrderFile.getOriginalFilename());
+        // 解析EXCEL文件,获取订单数据
+        List<ExcelOrderImport> excelOrders = EasyExcelUtil.readExcel(excelOrderFile.getInputStream(), ExcelOrderImport.class, 1, 1);
+
+        if (CollectionUtils.isEmpty(excelOrders)) return;
+
+        LinkedList<OrderInfoDTO> orders = Lists.newLinkedList();
+        // 不同商品不同条码
+        Map<String, Map<String, ExcelCommodity>> excelOrderCommodityMap = Maps.newHashMap();
+
+        for (int i = 0; i < excelOrders.size(); i++) {
+            final ExcelOrderImport excelOrder = excelOrders.get(i);
+            final String orderNo = excelOrder.getOrderNo();
+            final String commodityCode = excelOrder.getBarCode();
+
+            if (StringUtils.isAnyBlank(orderNo, excelOrder.getCustomerCode(), commodityCode)) continue;
+
+            Map<String, ExcelCommodity> excelCommodityMaps = null;
+
+            if (excelOrderCommodityMap.containsKey(orderNo)) {
+                excelCommodityMaps = excelOrderCommodityMap.get(orderNo);
+            } else {
+                excelCommodityMaps = Maps.newHashMap();
+                OrderInfoDTO orderInfo = new OrderInfoDTO();
+                BeanUtils.copyProperties(excelOrder, orderInfo);
+                orders.add(orderInfo);
+                excelOrderCommodityMap.put(orderNo, excelCommodityMaps);
+            }
+
+            ExcelCommodity excelCommodity = null;
+
+            if (excelCommodityMaps.containsKey(commodityCode)) {
+                excelCommodity = excelCommodityMaps.get(commodityCode);
+                excelCommodity.setNumbers(
+                        excelOrder.getNumbers() + excelCommodity.getNumbers()
+                );
+            } else {
+                excelCommodity = new ExcelCommodity();
+                BeanUtils.copyProperties(excelOrder, excelCommodity);
+                excelCommodityMaps.put(commodityCode, excelCommodity);
+            }
+
+        }
+
+        // region todo 订单合并处理
+//        Stream<String> orderTokeStream = orders.stream().map(OrderInfoDTO::orderToken);
+//        if (orderTokeStream.distinct().count() < orderTokeStream.count()) {
+//            orderTokeStream.forEach(orderToken -> {
+//
+//            });
+//            List<String> orderTokens = orderTokeStream.collect(Collectors.toList());
+//
+//        }
+        // endregion
+
+        for (int i = 0; i < orders.size(); i++) {
+            OrderInfoDTO order = orders.get(i);
+            final String orderNo = order.getOrderNo();
+            ArrayList<OrderCommodityDTO> orderCommodities = Lists.newArrayList();
+            excelOrderCommodityMap.get(orderNo).forEach((commodityCode, excelCommodity) -> {
+                OrderCommodityDTO orderCommodity = new OrderCommodityDTO();
+                BeanUtils.copyProperties(excelCommodity, orderCommodity);
+                orderCommodities.add(orderCommodity);
+            });
+
+            if (orderCommodities.size() > 0) {
+                order.setCommodities(orderCommodities);
+                importOrder(order);
+            }
+        }
+    }
+
+    /**
      * 检出系统订单是否存在或是已取消
      * @param orderNo 系统订单 + 商家code
      */
@@ -588,7 +655,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         return order;
     }
-
 
     /**
      * 称重完成释放库存

@@ -32,4 +32,12 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      * @return
      */
     List<OrderInfoDTO> selectOrderByNo(@Param("pickNo") String pickNo, @Param("orderNo") String orderNo, @Param("sendState") String sendState);
+
+    /**
+     * 加载包裹数据信息
+     * @param page
+     * @param wrapper
+     * @return
+     */
+    List<Map> loadPackageGrid(Page page, @Param("ew") EntityWrapper wrapper);
 }

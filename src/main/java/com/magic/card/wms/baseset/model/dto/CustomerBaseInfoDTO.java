@@ -72,11 +72,11 @@ public class CustomerBaseInfoDTO implements Serializable {
     /**
      * 租用面积
      */
-    @NotNull(message = "租用面积不可为空")
+//    @NotNull(message = "租用面积不可为空")
     private Double storeArea;
     /**
      * 单价 平方米/天
      */
-    @NotNull(message = "单价不可为空")
+//    @NotNull(message = "单价不可为空")
     private Double unitPrice;
 }

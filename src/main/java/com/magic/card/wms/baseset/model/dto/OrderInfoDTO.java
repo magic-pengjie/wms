@@ -11,6 +11,8 @@ import javax.validation.constraints.Size;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * com.magic.card.wms.baseset.model.dto
@@ -138,4 +140,17 @@ public class OrderInfoDTO implements Serializable {
      * 订单备注
      */
     private String remark;
+
+
+    public String orderToken() {
+        byte[] bytes = StringUtils.joinWith(null,
+                customerCode,
+                prov,
+                city,
+                reciptAddr,
+                reciptName,
+                reciptPhone
+        ).getBytes();
+        return Base64.encodeBase64String(bytes);
+    }
 }

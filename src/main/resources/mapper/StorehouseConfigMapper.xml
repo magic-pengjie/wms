@@ -46,13 +46,14 @@
 			 	si.is_frozen as isFrozen,  
     			sc.state,
 			 	cs.spec 
-		FROM wms_storehouse_config sc 
+		FROM wms_storehouse_config sc
 		LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
-		LEFT JOIN wms_customer_base_info cbi on ci.customer_id = cbi.id and cbi.state =1
+		LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
 		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
 		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
 		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
-		where  sc.state = 1 
+		where  sc.state = 1
+		and sc.commodity_id is not null
 		<if test="cr.customerId != null">
 			and sc.customer_id = #{cr.customerId}
 		</if>
@@ -114,10 +115,12 @@
 			wsc.available_nums availabelNums,
 			wcs.sku_name skuName,
 			wcs.bar_code commodityCode,
+			wsi.id storehouseId,
 			wsi.house_code houseCode,
 			wsi.store_code storeCode,
 			wcbi.customer_code customerCode,
-			wcbi.customer_name customerName
+			wcbi.customer_name customerName,
+			wci.id commodityId
 		FROM
 			wms_storehouse_config wsc
 			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id and wsi.state=1

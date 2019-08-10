@@ -38,6 +38,10 @@ public class CommodityReplenishment extends BasePo implements Serializable {
      */
     private String checkoutId;
     /**
+     * 补货记录
+     */
+    private String replenishmentRecord;
+    /**
      * 缺货量
      */
     private Integer stockoutNums;

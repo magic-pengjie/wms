@@ -22,6 +22,10 @@ import java.util.Map;
  */
 public interface IOrderService extends IService<Order> {
     /**
+     * 自动锁定订单
+     */
+    void autoLockOrder();
+    /**
      * 系统订单查询
      * @param loadGrid
      * @return
@@ -96,11 +100,17 @@ public interface IOrderService extends IService<Order> {
      */
     Map<String, Order> ordersMap(List<String> systemOrderNo);
 
+//    /**
+//     * EXCEL 导入订单
+//     * @param excelOrders
+//     */
+//    void excelImport(MultipartFile[] excelOrders) throws IOException;
+
     /**
      * EXCEL 导入订单
-     * @param excelOrders
+     * @param excelOrder
      */
-    void excelImport(MultipartFile[] excelOrders) throws IOException;
+    void excelNewImport(MultipartFile excelOrder) throws IOException;
     
     /**
          * 订单超时预警

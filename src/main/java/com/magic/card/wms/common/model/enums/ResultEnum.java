@@ -68,6 +68,8 @@ public enum ResultEnum {
 	customer_bind_commodity(300002, "当前商家已绑定商品条码"),
 	store_house_config_exist(300003, "当前库位已经配置，请勿重复配置"),
 	consumable_config_exist( 300004, "商品耗材已配置"),
+	replenishment_no_exist( 30005, "补货单不存在"),
+	replenishment_finnished( 30006, "补货单已补货完成"),
 
 	select_purchase_failed(400000,"查询单据失败"),
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),

@@ -44,7 +44,7 @@ public class PickBillController {
     @ApiOperation("手动触发拣货单生成")
     @GetMapping("executeGenerator")
     public ResponseData executeGenerator() {
-        pickingBillService.timingGenerator();
+        pickingBillService.executorGenerator();
         return ResponseData.ok();
     }
 

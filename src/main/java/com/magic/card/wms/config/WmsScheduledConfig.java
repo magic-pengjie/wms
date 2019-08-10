@@ -2,11 +2,14 @@ package com.magic.card.wms.config;
 
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.magic.card.wms.baseset.service.ILogisticsTrackingInfoService;
+import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.warehousing.service.IPurchaseBillService;
 
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -32,10 +35,17 @@ public class WmsScheduledConfig {
     private ILogisticsTrackingInfoService logisticsTrackingInfoService;
     @Autowired
     private ICommodityInfoService commodityInfoService;
+    @Autowired
+    private IOrderService orderService;
 
-//    @Scheduled(cron = "0 0/30 * * * *")
+    @Scheduled(cron = "0 0/30 * * * *")
     public void generatorPickingBill() {
-        pickingBillService.timingGenerator();
+        autoLockOrder();
+        try {
+            pickingBillService.timingGenerator(Constants.TIMING_GENERATOR_PICK_USER);
+        } catch (Exception e) {
+            log.error("自动生成拣货单定时任务产生异常： {}, 异常抛出时间：{}", e.getCause(), DateTime.now().toString("yyyy-MM-dd hh:mm:ss"));
+        }
     }
 
     /**
@@ -106,14 +116,16 @@ public class WmsScheduledConfig {
 			log.error("runOrderTimeOutWarning error:{}",e);
 		}
     }
-//    @Synchronized
-    public void execute(String taskName) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        log.info("{} ----- {}", taskName,System.currentTimeMillis());
-    }
 
+    /**
+     * 每30秒执行一次锁定订单
+     */
+    @Scheduled(cron = "30 * * * * *")
+    public void autoLockOrder() {
+        try {
+            orderService.autoLockOrder();
+        } catch (Exception e) {
+            log.error("自动生成拣货单定时任务产生异常： {}, 异常抛出时间：{}", e.getCause(), DateTime.now().toString("yyyy-MM-dd hh:mm:ss"));
+        }
+    }
 }

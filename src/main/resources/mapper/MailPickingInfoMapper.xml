@@ -187,6 +187,8 @@
             woi.prov,
             woi.express_key expressKey,
             woi.bill_state,
+            wmpi.preset_weight presetWeight,
+            wmpi.real_weight realWeight,
             wmpi.is_finish isFinish
         FROM
             wms_mail_picking_info wmpi

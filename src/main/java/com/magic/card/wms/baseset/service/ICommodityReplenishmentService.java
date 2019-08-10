@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.service;
 
 import com.baomidou.mybatisplus.service.IService;
+import com.magic.card.wms.baseset.model.dto.CommodityReplenishmentDTO;
 import com.magic.card.wms.baseset.model.dto.ReplenishmentFinishedDTO;
 import com.magic.card.wms.baseset.model.po.CommodityReplenishment;
 import com.magic.card.wms.common.model.LoadGrid;
@@ -49,5 +50,18 @@ public interface ICommodityReplenishmentService extends IService<CommodityReplen
      * 补货完成信息
      * @param replenishmentFinished
      */
-    void replenishmentFinished(ReplenishmentFinishedDTO replenishmentFinished);
+    void replenishmentFinished(CommodityReplenishmentDTO replenishmentFinished);
+
+    /**
+     * 执行补货操作
+     * @param commodityReplenishments
+     */
+    void executorReplenishmentOperation(List<CommodityReplenishment> commodityReplenishments);
+
+    /**
+     * 获取存储库位
+     * @param replenishmentNo
+     * @return
+     */
+    List<Map> loadStorehouse(String replenishmentNo);
 }

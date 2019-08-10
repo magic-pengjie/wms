@@ -64,9 +64,9 @@ public class OrderController {
 
     @ApiModelProperty("Excel订单导入")
     @PostMapping("excelImport")
-    public ResponseData excelImport(@RequestParam MultipartFile[] excelOrders) {
+    public ResponseData excelImport(@RequestParam MultipartFile excelOrders) {
         try {
-            orderService.excelImport(excelOrders);
+            orderService.excelNewImport(excelOrders);
         } catch (IOException e) {
             throw OperationException.customException(ResultEnum.order_excel_import_err);
         }
@@ -79,7 +79,7 @@ public class OrderController {
         InputStream in = null;
         OutputStream out = null;
         try {
-            String fileName = "订单导入模板";
+            String fileName = "订单导入模板-v2.0";
             String path = "templates/"+fileName+".xlsx";
             Resource resource = resourceLoader.getResource("classPath:"+path);
             EasyExcelUtil.prepareResponds(request, response, fileName, ExcelTypeEnum.XLSX);

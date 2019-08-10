@@ -25,6 +25,10 @@ public class CheckRecord extends BasePo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 盘点批次Code
+     */
+    private String checkCode;
+    /**
      * 商家编码
      */
     private String customerCode;
@@ -84,7 +88,8 @@ public class CheckRecord extends BasePo implements Serializable {
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("CheckRecord{");
-        sb.append("customerCode='").append(customerCode).append('\'');
+        sb.append("checkCode='").append(checkCode).append('\'');
+        sb.append(", customerCode='").append(customerCode).append('\'');
         sb.append(", skuId='").append(skuId).append('\'');
         sb.append(", checkUser='").append(checkUser).append('\'');
         sb.append(", storehouseType='").append(storehouseType).append('\'');

@@ -23,19 +23,18 @@ public class QueryAuditCheckRecordDto implements Serializable{
     @ApiModelProperty(value="单据状态")
     private String billState;
 
+	@ApiModelProperty(value="盘点批次Code")
+	private String checkCode;
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("QueryAuditCheckRecordDto [");
-		if (customerCode != null)
-			builder.append("customerCode=").append(customerCode).append(", ");
-		if (checkUser != null)
-			builder.append("checkUser=").append(checkUser).append(", ");
-		if (checkDate != null)
-			builder.append("checkDate=").append(checkDate).append(", ");
-		if (billState != null)
-			builder.append("billState=").append(billState);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("QueryAuditCheckRecordDto{");
+		sb.append("customerCode='").append(customerCode).append('\'');
+		sb.append(", checkUser='").append(checkUser).append('\'');
+		sb.append(", checkDate=").append(checkDate);
+		sb.append(", billState='").append(billState).append('\'');
+		sb.append(", checkCode='").append(checkCode).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
 }

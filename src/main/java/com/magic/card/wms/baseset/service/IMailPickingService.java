@@ -1,5 +1,7 @@
 package com.magic.card.wms.baseset.service;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 
@@ -87,5 +89,4 @@ public interface IMailPickingService extends IService<MailPicking> {
      * @param ignore 是否忽略称重异常
      */
     void packageWeigh(String mailNo, BigDecimal realWeight, Boolean ignore);
-
 }

@@ -80,7 +80,7 @@ public class CommoditySkuDTO implements Serializable {
      * 商品单位
      */
     @ApiModelProperty("商品单位：罐")
-    private String singleUnit;
+    private String singleUnit = "个";
     /**
      * 单个重量
      */
@@ -90,7 +90,7 @@ public class CommoditySkuDTO implements Serializable {
      * 单重单位
      */
     @ApiModelProperty("商品重量单位：kg")
-    private String singleWeightUnit;
+    private String singleWeightUnit = "kg";
 
     /**
      * 单个体积
@@ -102,7 +102,7 @@ public class CommoditySkuDTO implements Serializable {
      * 单体单位
      */
     @ApiModelProperty("商品体积单位：m³")
-    private String singleVolumeUnit;
+    private String singleVolumeUnit = "m³";
 
     @ApiModelProperty("备注")
     private String remark;

@@ -114,12 +114,12 @@ public class ExpressFeeConfigService extends ServiceImpl<ExpressFeeConfigMapper,
         Order order = orderService.checkoutOrder(orderNo);
         BigDecimal realWeigh_g = CommodityUtil.unitConversion_G(realWeight, weightUnit);
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode())
+        wrapper.eq("wewr.state", StateEnum.normal.getCode())
                 .ge("wewr.right_value", realWeigh_g)
                 .le("wewr.left_value", realWeigh_g)
                 .like("wdi.dict_name", order.getProv(), SqlLike.RIGHT)
                 .eq("wefc.customer_code", order.getCustomerCode());
-        List<Map> fees = baseMapper.loadGrid(null, wrapper);
+        List<Map> fees = baseMapper.loadGrid(new Page(1, 10000), wrapper);
 
         if (CollectionUtils.isNotEmpty(fees) && fees.size() == 1) {
             BigDecimal feeValue = (BigDecimal) fees.get(0).get("feeValue");

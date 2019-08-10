@@ -3,27 +3,33 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.CommodityReplenishmentMapper;
 import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
-import com.magic.card.wms.baseset.model.dto.ReplenishmentFinishedDTO;
+import com.magic.card.wms.baseset.model.dto.CommodityReplenishmentDTO;
 import com.magic.card.wms.baseset.model.po.CommodityReplenishment;
 import com.magic.card.wms.baseset.service.ICommodityReplenishmentService;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
+import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.BillState;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.model.enums.StoreTypeEnum;
+import com.magic.card.wms.common.utils.PoUtil;
+import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +58,15 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
        DEFAULT_COLUMNS.put("skuName", "wcs.sku_name");
        DEFAULT_COLUMNS.put("commodityCode", "wci.commodity_code");
        DEFAULT_COLUMNS.put("storeCode", "wsi.store_code");
+       DEFAULT_COLUMNS.put("modelNo", "wcs.model_no");
+       DEFAULT_COLUMNS.put("singleUnit", "wcs.single_unit");
+       DEFAULT_COLUMNS.put("spec", "wcs.spec");
+       DEFAULT_COLUMNS.put("createTime", "wcr.create_time");
+       DEFAULT_COLUMNS.put("customerName", "wcbi.customer_name");
    }
+
+   @Autowired
+   private WebUtil webUtil;
     @Resource
     private StorehouseConfigMapper storehouseConfigMapper;
     @Autowired
@@ -70,7 +84,7 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
         EntityWrapper entityWrapper = new EntityWrapper();
         WrapperUtil.autoSettingSearch(entityWrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
         WrapperUtil.autoSettingOrder(entityWrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder-> defaultSetOrder.orderBy("wcr.create_time"));
-        loadGrid.finallyResult(page, baseMapper.loadGrid(loadGrid.generatorPage(), new EntityWrapper()));
+        loadGrid.finallyResult(page, baseMapper.loadGrid(page, entityWrapper));
     }
 
     /**
@@ -119,13 +133,110 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
     }
 
     /**
+     * 执行补货操作
+     *
+     * @param commodityReplenishments
+     */
+    @Override @Transactional
+    public void executorReplenishmentOperation(List<CommodityReplenishment> commodityReplenishments) {
+        List<String> checkoutIds = commodityReplenishments.
+                stream().
+                map(commodityReplenishment -> commodityReplenishment.getCheckoutId()).
+                collect(Collectors.toList());
+
+        EntityWrapper<CommodityReplenishment> wrapper = new EntityWrapper();
+        wrapper.eq("is_finally", 0).in("checkout_id", checkoutIds);
+
+        List<CommodityReplenishment> updateCommodityReplenishment = selectList(wrapper);
+
+        if (CollectionUtils.isNotEmpty(updateCommodityReplenishment)) {
+            List<CommodityReplenishment> removes = Lists.newArrayList();
+
+            updateCommodityReplenishment.forEach(commodityReplenishment -> {
+                int index = checkoutIds.indexOf(commodityReplenishment.getCheckoutId());
+                if (index >= 0) {
+                    CommodityReplenishment replenishment = commodityReplenishments.get(index);
+                    commodityReplenishment.setStockoutNums(replenishment.getStockoutNums());
+                    commodityReplenishment.setUpdateTime(new Date());
+                    removes.add(replenishment);
+                }
+            });
+
+            if (CollectionUtils.isNotEmpty(removes)) {
+                commodityReplenishments.removeAll(removes);
+            }
+
+            updateBatchById(updateCommodityReplenishment);
+        }
+
+        if (CollectionUtils.isNotEmpty(commodityReplenishments)) {
+            insertBatch(commodityReplenishments);
+        }
+    }
+
+    /**
+     * 获取存储库位
+     *
+     * @param replenishmentNo
+     * @return
+     */
+    @Override
+    public List<Map> loadStorehouse(String replenishmentNo) {
+        return baseMapper.loadGStorehouse(replenishmentNo, StoreTypeEnum.CCQ.getCode());
+    }
+
+    /**
      * 补货完成信息
      *
      * @param replenishmentFinished
      */
-    @Override
-    public void replenishmentFinished(ReplenishmentFinishedDTO replenishmentFinished) {
+    @Override @Transactional
+    public void replenishmentFinished(CommodityReplenishmentDTO replenishmentFinished) {
+        EntityWrapper<CommodityReplenishment> wrapper = new EntityWrapper<>();
+        wrapper.eq("replenishment_no", replenishmentFinished.getReplenishmentNo()).eq("is_finally", 0);
+        CommodityReplenishment commodityReplenishment = selectOne(wrapper);
 
+        if (commodityReplenishment == null) {
+            throw OperationException.customException(ResultEnum.replenishment_no_exist);
+        }
+
+        commodityReplenishment.setIsFinally(1);
+        PoUtil.update(commodityReplenishment, webUtil.operator());
+
+        if (CollectionUtils.isNotEmpty(replenishmentFinished.getReplenishmentInfos())) {
+            replenishmentFinished.getReplenishmentInfos().forEach((CommodityReplenishmentDTO.ReplenishmentInfo replenishmentInfo) -> {
+
+                    commodityReplenishment.setReplenishmentNums(
+                            replenishmentInfo.getNums() + commodityReplenishment.getReplenishmentNums()
+                    );
+
+                    if (StringUtils.isBlank(commodityReplenishment.getStorageId())) {
+                        commodityReplenishment.setStorageId("" + replenishmentInfo.getId());
+                    } else {
+                        commodityReplenishment.setStorageId(
+                                StringUtils.joinWith(",",
+                                        commodityReplenishment.getStorageId(),
+                                        replenishmentInfo.getId()
+                                )
+                        );
+                    }
+
+                    if (StringUtils.isBlank(commodityReplenishment.getReplenishmentRecord())) {
+                        commodityReplenishment.setReplenishmentRecord("" + replenishmentInfo.getNums());
+                    } else {
+                        commodityReplenishment.setReplenishmentRecord(
+                                StringUtils.joinWith(",",
+                                        commodityReplenishment.getReplenishmentRecord(),
+                                        replenishmentInfo.getNums()
+                                )
+                        );
+                    }
+
+                    String setString = String.format("available_nums = available_nums - %s", replenishmentInfo.getNums());
+                    storehouseConfigService.updateForSet(setString, new EntityWrapper().eq("id", replenishmentInfo.getId()));
+            });
+            updateById(commodityReplenishment);
+        }
     }
 
     /**
