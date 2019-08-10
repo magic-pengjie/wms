@@ -24,7 +24,7 @@ public class ReturnGoodsVO extends ReturnGoodsRecords{
 	 */
 	private String commodityName;
 	/**
-	 * 商家规格
+	 * 商品规格
 	 */
 	private String spec;
 	/**

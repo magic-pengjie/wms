@@ -100,15 +100,13 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	@Override
 	public Page<MailDetailVO> selectPickInfoList(MailDTO dto,PageInfo pageInfo) {
 		Page<MailDetailVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
-		if(1==dto.getType()) {
-			//查询包裹信息
-			
-		}else {
+		if(dto.getType()!=1) {
 			String endDateStr = DateUtil.getStringDateShort();
 			String startDateStr = DateUtil.getNextDay(endDateStr, "-1");
 			Date startDate = DateUtil.strToDateLong(startDateStr+food_warning_time);
 			Date endDate = DateUtil.strToDateLong(endDateStr+food_warning_time);
 			dto.setIsFinish(Constants.ONE);
+			dto.setIsWeight(Constants.ONE);
 			dto.setLogisticsState(Constants.ZERO);
 			if(2==dto.getType()) {
 				//查询当天无物流信息包裹

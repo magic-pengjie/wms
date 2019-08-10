@@ -43,6 +43,10 @@ public class ReturnGoodsDTO {
      */
 	@ApiModelProperty("商品名称")
 	private String commodityName;
+	 /**
+     * 商品状态(正常:normal;残次residual)
+     */
+    private String commodityState;
 	/**
      * 收货人名称
      */
@@ -53,5 +57,10 @@ public class ReturnGoodsDTO {
      */
 	@ApiModelProperty("收货人电话")
 	private String reciptPhone;
+	/**
+	 * 退货时间
+	 */
+	@ApiModelProperty("退货时间")
+	private String createTime;
 	
 }
