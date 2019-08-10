@@ -2,6 +2,7 @@ package com.magic.card.wms.baseset.service;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
+import com.magic.card.wms.baseset.model.dto.split.SplitPackageRuleDTO;
 import com.magic.card.wms.baseset.model.po.SplitPackageRule;
 
 import java.util.List;
@@ -22,6 +23,15 @@ public interface ISplitPackageRuleService extends IService<SplitPackageRule> {
      */
     List<List<OrderCommodityDTO>> orderSplitPackages(List<OrderCommodityDTO> orderCommodities);
 
-    void add();
-    void deleted();
+    /**
+     * 删除
+     * @param ids
+     */
+    void deleted(List<String> ids);
+
+    /**
+     * 创建拆包规则
+     * @param splitPackageRule
+     */
+    void generateRule(SplitPackageRuleDTO splitPackageRule);
 }

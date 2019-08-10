@@ -23,9 +23,11 @@ import com.magic.card.wms.common.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +50,8 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
     /**
      * 最大货篮编号号
      */
-    public static final Integer MAX_BASKET_NUM = 15;
+    @Value("${pick.bill.max.basket.nums}")
+    public Integer MAX_BASKET_NUM = 15;
     public static final String FIRST_AREA_KEY = "FIRST_AREA";
     public static final String SECOND_AREA_KEY = "SECOND_AREA";
     public static final String OTHER_AREA_KEY = "OTHER_AREA";
@@ -122,13 +125,29 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
      * 获取商户订单不同区域的快递单数据
      *
      * @param customerCode 客户CODE
-     * @param executeSize  允许操作数
+     * @param executeSize 允许操作数
      * @return
      */
     @Override
-    public Map<String, List<Map>> areaVirtualMails(String customerCode, Integer executeSize){
-        Map<String, List<Map>> areaVirtualMails = Maps.newHashMap();
-        Page baketPage = new Page(1, MAX_BASKET_NUM);
+    public Map<String, List<List<Map>>> areaVirtualMails(String customerCode, Integer executeSize){
+        Map<String, List<List<Map>>> areaVirtualMails = Maps.newHashMap();
+        // First Area 上海
+        areaVirtualMails.put(FIRST_AREA_KEY, firstAreaVirtualMails(customerCode, executeSize));
+        // Second Area 江浙皖
+        areaVirtualMails.put(SECOND_AREA_KEY, secondAreaVirtualMails(customerCode, executeSize));
+        // Other Area 全国
+        areaVirtualMails.put(OTHER_AREA_KEY, otherAreaVirtualMails(customerCode, executeSize));
+        return areaVirtualMails;
+    }
+
+    /**
+     * 获取一区包裹数据
+     *
+     * @param customerCode
+     * @param executeSize
+     * @return
+     */
+    private List<List<Map>> firstAreaVirtualMails(String customerCode, Integer executeSize) {
         // First Area 上海
         EntityWrapper firstAreaWrapper = basetVirtualMailWrapper(customerCode);
         firstAreaWrapper.andNew();
@@ -140,9 +159,17 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
 
             firstAreaWrapper.like("woi.prov", area, SqlLike.RIGHT);
         });
-        areaVirtualMails.put(FIRST_AREA_KEY, baseMapper.virtualMails(baketPage,firstAreaWrapper));
+        return areaVirtualPageMails(firstAreaWrapper, executeSize);
+    }
 
-        // Second Area 江浙皖
+    /**
+     * 获取二区包裹数据
+     *
+     * @param customerCode
+     * @param executeSize
+     * @return
+     */
+    private List<List<Map>> secondAreaVirtualMails(String customerCode, Integer executeSize) {
         EntityWrapper secondAreaWrapper = basetVirtualMailWrapper(customerCode);
         secondAreaWrapper.andNew();
         SECOND_AREA.forEach(area -> {
@@ -153,15 +180,49 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
 
             secondAreaWrapper.like("woi.prov", area, SqlLike.RIGHT);
         });
-        areaVirtualMails.put(SECOND_AREA_KEY, baseMapper.virtualMails(baketPage,secondAreaWrapper));
+        return areaVirtualPageMails(secondAreaWrapper, executeSize);
+    }
 
-        // Other Area 全国
+    /**
+     * 获取全国其他地区的包裹数据
+     * @param customerCode
+     * @param executeSize
+     * @return
+     */
+    private List<List<Map>> otherAreaVirtualMails(String customerCode, Integer executeSize) {
         EntityWrapper otherAreaWrapper = basetVirtualMailWrapper(customerCode);
         Lists.newArrayList(FIRST_AREA, SECOND_AREA).forEach(areas ->
                 areas.forEach(area -> otherAreaWrapper.notLike("woi.prov", area, SqlLike.RIGHT))
         );
-        areaVirtualMails.put(OTHER_AREA_KEY, baseMapper.virtualMails(baketPage,otherAreaWrapper));
-        return areaVirtualMails;
+        return areaVirtualPageMails(otherAreaWrapper, executeSize);
+    }
+
+    /**
+     * 分页包裹数据
+     *
+     * @param wrapper
+     * @param executeSize
+     * @return
+     */
+    private List<List<Map>> areaVirtualPageMails(EntityWrapper wrapper, Integer executeSize) {
+        List<List<Map>> areaPage = Lists.newArrayList();
+        List<Map> virtualMails = baseMapper.virtualMails(new Page(), wrapper);
+
+        if (CollectionUtils.isNotEmpty(virtualMails)) {
+            final int inall = virtualMails.size();
+            for (int page = 0; page <= inall / MAX_BASKET_NUM; page ++) {
+                int startIndex = page * MAX_BASKET_NUM;
+                int endIndex = startIndex + MAX_BASKET_NUM > inall ? inall : startIndex + MAX_BASKET_NUM;
+                List<Map> maps = virtualMails.subList(startIndex, endIndex);
+
+                if (executeSize <= maps.size()) {
+                    areaPage.add(maps);
+                }
+
+            }
+        }
+
+        return areaPage;
     }
 
     /**
@@ -334,5 +395,39 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
                 storehouseConfigService.updateBatchById(updateStorehouseConfigs);
             }
         }
+    }
+
+    /**
+     * 包裹数据漏检记录
+     *
+     * @param pickNo        拣货单号
+     * @param mailNo        快递单号
+     * @param commodityCode 商品编号
+     * @param omitNums      漏检数量
+     */
+    @Override @Transactional
+    public void packageOmit(String pickNo, String mailNo, String commodityCode, int omitNums) {
+        baseMapper.packageOmit(pickNo, mailNo, commodityCode, omitNums);
+    }
+
+    /**
+     * 更新拣货单包裹数据
+     *
+     * @param pickNo             拣货单号
+     * @param mailNo             快递单号
+     * @param excludeCommodities 排除产品条形码
+     */
+    @Override @Transactional
+    public void updatePackageCommodity(String pickNo, String mailNo, ArrayList<String> excludeCommodities) {
+        EntityWrapper detailsWrapper = new EntityWrapper();
+        detailsWrapper.
+                eq("pick_no", pickNo).
+                eq("mail_no", mailNo).
+                notIn("commodity_code", excludeCommodities).
+                ne("state", StateEnum.delete.getCode());
+        updateForSet(
+                String.format("pick_nums = package_nums, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+                detailsWrapper
+        );
     }
 }

@@ -7,6 +7,7 @@ import com.magic.card.wms.baseset.model.po.MailPicking;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -89,4 +90,11 @@ public interface IMailPickingService extends IService<MailPicking> {
      * @param ignore 是否忽略称重异常
      */
     void packageWeigh(String mailNo, BigDecimal realWeight, Boolean ignore);
+
+    /**
+     * 更新拣货单包裹状态
+     * @param pickNo
+     * @param excludeMails
+     */
+    void updatePickingFinishState(String pickNo, List<String> excludeMails);
 }

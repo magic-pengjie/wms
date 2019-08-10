@@ -57,4 +57,14 @@ public interface MailPickingDetailMapper extends BaseMapper<MailPickingDetail> {
      * @return
      */
     List<Map> needNoticeReplenishment(@Param("pickNo") String pickNo, @Param("billState") String billState, @Param("houseCode") String houseCode);
+
+    /**
+     * 包裹数据漏检记录
+     *
+     * @param pickNo        拣货单号
+     * @param mailNo        快递单号
+     * @param commodityCode 商品编号
+     * @param omitNums      漏检数量
+     */
+    void packageOmit(@Param("pickNo") String pickNo, @Param("mailNo") String mailNo, @Param("commodityCode") String commodityCode, @Param("omitNums") int omitNums);
 }

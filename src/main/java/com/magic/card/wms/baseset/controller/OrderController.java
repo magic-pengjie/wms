@@ -3,9 +3,11 @@ package com.magic.card.wms.baseset.controller;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
+import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.EasyExcelParams;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
@@ -17,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -61,6 +65,29 @@ public class OrderController {
     public ResponseData loadGrid(@RequestBody LoadGrid loadGrid) {
        return ResponseData.ok(orderService.loadGrid(loadGrid));
     }
+
+    @ApiOperation("获取订单商品信息以及包裹信息")
+    @PostMapping("loadDetails")
+    public ResponseData loadDetails(@RequestParam String orderNo) {
+        return ResponseData.ok(orderService.loadDetails(orderNo));
+    }
+
+    @PostMapping("excelExport")
+    public void excelExport(@RequestBody List<String> orderNos, HttpServletResponse response, HttpServletRequest request) {
+        EasyExcelParams easyExcelParams = new EasyExcelParams();
+        easyExcelParams.setSheetName("订单信息");
+        easyExcelParams.setRequest(request);
+        easyExcelParams.setResponse(response);
+        easyExcelParams.setDataModelClazz(ExcelOrderImport.class);
+        easyExcelParams.setExcelNameWithoutExt("订单数据导出" + DateTime.now().toString("yyyyMMddHHmmss"));
+        easyExcelParams.setData(orderService.excelExport(orderNos));
+        try {
+            EasyExcelUtil.exportExcel2007Format(easyExcelParams);
+        } catch (IOException e) {
+            throw OperationException.customException(ResultEnum.order_excel_export_err);
+        }
+    }
+
 
     @ApiModelProperty("Excel订单导入")
     @PostMapping("excelImport")

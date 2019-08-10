@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.magic.card.wms.baseset.mapper.MailPickingDetailMapper">
+    <update id="packageOmit">
+        UPDATE wms_mail_picking_detail
+        SET pick_nums = package_nums - #{omitNums}
+        WHERE pick_no = #{pickNo}
+        AND mail_no = #{mailNo}
+        AND commodity_code = #{commodityCode}
+    </update>
 
     <!--   获取虚拟快递单号，用于生成拣货单数据 -->
     <select id="virtualMails" resultType="java.util.Map">

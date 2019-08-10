@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.baseset.service.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,10 +35,6 @@ import com.magic.card.wms.baseset.model.xml.OrderDTO;
 import com.magic.card.wms.baseset.model.xml.PersionXml;
 import com.magic.card.wms.baseset.model.xml.RequestOrderXml;
 import com.magic.card.wms.baseset.model.xml.ResponsesXml;
-import com.magic.card.wms.baseset.service.ICommodityStockService;
-import com.magic.card.wms.baseset.service.IMailPickingDetailService;
-import com.magic.card.wms.baseset.service.IMailPickingService;
-import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.enums.BillState;
@@ -75,6 +73,8 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
     @Autowired(required = false)
     private OrderInfoMapper orderInfoMapper;
     @Autowired
+    private IOrderService orderService;
+    @Autowired
     private WebUtil webUtil;
     @Value("${post.order.push.url}")
     private String postUrl;
@@ -103,7 +103,6 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
         wrapper.eq("wmpi.pick_no", pickNo).
                 eq("wmpi.state", StateEnum.normal.getCode()).
                 orderBy("wmpi.basket_num");
-//		List<Map> mailPickings = baseMapper.selectMaps(wrapper);
 		List<Map> mailPickings = baseMapper.pickBillMails(wrapper);
 
 		if (CollectionUtils.isNotEmpty(mailPickings)) {
@@ -118,26 +117,6 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			}
 		}
 
-//        if (CollectionUtils.isNotEmpty(mailPickings)){
-//            List<String> orderNos = mailPickings.stream().map(
-//                    map -> map.get("orderNo").toString()
-//                ).collect(Collectors.toList());
-//
-//            if (CollectionUtils.isNotEmpty(orderNos)) {
-//                Map<String, List> orderCommodities = orderCommodityService.loadBatchOrderCommodityGrid(orderNos);
-//
-//                mailPickings.stream().forEach(mailPicking ->
-//                        mailPicking.put(
-//                                "orderCommodities",
-//                                orderCommodities.get(
-//                                    MapUtils.getString(mailPicking, "orderNo")
-//                                )
-//                        )
-//                );
-//            }
-//
-//
-//        }
 
         return mailPickings;
     }
@@ -179,26 +158,26 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
             throw OperationException.addException("配货单生成异常，数据为空请核实数据！");
         }
 
-        //补货预警提示
-        List<Map> replenishmentNotices = Lists.newLinkedList();
-        invoiceList.forEach(invoice->{
-            int bayNums = MapUtils.getIntValue(invoice, "bayNums");
-            int availableNums = MapUtils.getIntValue(invoice, "availableNums");
-            // 可用量小于购买量
-            if (availableNums < bayNums) {
-                replenishmentNotices.add(invoice);
-            }
-        });
-
-        new Thread(() -> {
-            //TODO 拣货区库存不足 补货提醒功能待实现
-            if (CollectionUtils.isNotEmpty(replenishmentNotices)) {
-                replenishmentNotices.forEach(map -> {
-                    log.warn("拣货区库存不足请及时补货： 商品条形码：{}", map.get("barCode"));
-                });
-            }
-
-        }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
+//        //补货预警提示
+//        List<Map> replenishmentNotices = Lists.newLinkedList();
+//        invoiceList.forEach(invoice->{
+//            int bayNums = MapUtils.getIntValue(invoice, "bayNums");
+//            int availableNums = MapUtils.getIntValue(invoice, "availableNums");
+//            // 可用量小于购买量
+//            if (availableNums < bayNums) {
+//                replenishmentNotices.add(invoice);
+//            }
+//        });
+//
+//        new Thread(() -> {
+//            //TODO 拣货区库存不足 补货提醒功能待实现
+//            if (CollectionUtils.isNotEmpty(replenishmentNotices)) {
+//                replenishmentNotices.forEach(map -> {
+//                    log.warn("拣货区库存不足请及时补货： 商品条形码：{}", map.get("barCode"));
+//                });
+//            }
+//
+//        }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
 
         return invoiceList;
     }
@@ -375,18 +354,48 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			throw OperationException.customException(ResultEnum.order_cancel);
 		}
 
-		PoUtil.update(mailPicking, webUtil.operator());
-		// 统计包裹快递费
-		BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(mailPicking.getOrderNo(), realWeight, mailPicking.getWeightUnit());
+		// 订单状态 -> 出库
+		order.setBillState(BillState.order_go_out.getCode());
+		orderService.updateById(order);
 
-		if (orderExpressFree != null) {
-			mailPicking.setExpressFee(orderExpressFree);
-		}
+		PoUtil.update(mailPicking, webUtil.operator());
+		// TODO 一期暂停开发，统计包裹快递费
+//		BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(mailPicking.getOrderNo(), realWeight, mailPicking.getWeightUnit());
+//
+//		if (orderExpressFree != null) {
+//			mailPicking.setExpressFee(orderExpressFree);
+//		}
 
 		updateById(mailPicking);
 		// 释放库存
 		releaseStock(mailNo, order.getCustomerCode());
 		// TODO 推送订单信息到邮政
+	}
+
+	/**
+	 * 更新拣货单包裹状态
+	 *
+	 * @param pickNo
+	 * @param excludeMails
+	 */
+	@Override @Transactional
+	public void updatePickingFinishState(String pickNo, List<String> excludeMails) {
+		// 获取对应的拣货篮信息
+		EntityWrapper wrapper = new EntityWrapper();
+		wrapper.eq("pick_no", pickNo).
+				ne("is_finish", 1).
+				notIn("mail_no", excludeMails).
+				ne("state", StateEnum.delete.getCode());
+		updateForSet(
+				String.format("is_finish = 1, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+				wrapper
+		);
+		EntityWrapper detailsWrapper = new EntityWrapper();
+		detailsWrapper.eq("pick_no", pickNo).notIn("mail_no", excludeMails).ne("state", StateEnum.delete.getCode());
+		mailPickingDetailService.updateForSet(
+					String.format("pick_nums = package_nums, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+					detailsWrapper
+		);
 	}
 
 	public String getXmlBaseInfo(OrderInfoDTO orderInfoDTO) {

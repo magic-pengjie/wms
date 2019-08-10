@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.PickingBillMapper;
+import com.magic.card.wms.baseset.model.dto.invoice.InvoiceCheckOmitDTO;
 import com.magic.card.wms.baseset.model.po.*;
 import com.magic.card.wms.baseset.service.*;
 import com.magic.card.wms.common.exception.OperationException;
@@ -27,9 +28,11 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +65,9 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     @Autowired
     private WebUtil webUtil;
 
+    @Value("${pick.bill.max.basket.nums}")
+    public Integer MAX_BASKET_NUM = 15;
+
     static {
         defaultColumns.put("id", "id");
         defaultColumns.put("pickNo", "pick_no");
@@ -82,7 +88,6 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     public void triggerGenerator(String customerCode, Integer executeSize) {
         long start = System.currentTimeMillis();
         log.info("触发规则生成拣货单开始****** start times: {}ms", System.currentTimeMillis() );
-//        generatorPickingBill(customerCode, executeSize, Constants.TRIGGER_GENERATOR_PICK_USER);
         generatorAreaPickingBill(customerCode, executeSize, Constants.TRIGGER_GENERATOR_PICK_USER);
         long end = System.currentTimeMillis();
         log.info("触发规则生成拣货单结束****** end times: {}ms, 总耗时 {}ms", end,end - start );
@@ -98,6 +103,72 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     }
 
     /**
+     * 配货单检查完毕
+     *
+     * @param pickNo
+     * @param pickOperator
+     */
+    @Override
+    public void checkInvoiceFinished(String pickNo, String pickOperator) {
+        String operator = webUtil.operator();
+        PickingBill pickingBill = checkOutPickBill(pickNo);
+        pickingBill.setBillState(BillState.pick_finish.getCode());
+        pickingBill.setPickUser(pickOperator);
+        pickingBill.setProcessStage(BillState.pick_process_check_close.getCode());
+        PoUtil.update(pickingBill, operator);
+        updateById(pickingBill);
+        mailPickingService.updatePickingFinishState(pickNo, Lists.newArrayList());
+        // 更新订单状态 -> 打包中。。。
+        baseMapper.updateOrderBillState(pickNo, BillState.order_packing.getCode(),BillState.order_cancel.getCode());
+    }
+
+    /**
+     * 配货单漏检
+     *
+     * @param omitInfo
+     */
+    @Override
+    public <T> void checkInvoiceOmit(T omitInfo) {
+        InvoiceCheckOmitDTO invoiceCheckOmitDTO = (InvoiceCheckOmitDTO)omitInfo;
+        final String pickNo = invoiceCheckOmitDTO.getPickNo();
+        checkOutPickBill(pickNo);
+
+        List<String> excludeMails = Lists.newLinkedList();
+        invoiceCheckOmitDTO.getMails().forEach(omitMailDTO -> {
+            final String mailNo = omitMailDTO.getMailNo();
+            String omitToken = StringUtils.joinWith(
+                    "&&",
+                    invoiceCheckOmitDTO.getPickNo(),
+                    omitMailDTO.getOrderNo(),
+                    mailNo);
+            excludeMails.add(mailNo);
+            ArrayList<String> excludeCommodities = Lists.newArrayList();
+            omitMailDTO.getCommodities().forEach(omitCommodity -> {
+                final String commodityCode = omitCommodity.getCommodityCode();
+                final int omitNums = omitCommodity.getOmitNums();
+                excludeCommodities.add(commodityCode);
+                mailPickingDetailService.packageOmit(pickNo, mailNo, commodityCode, omitNums);
+                pickingBillExceptionService.handleException( omitToken,
+                        StringUtils.joinWith(
+                                "&&",
+                                commodityCode,
+                                omitNums
+                        )
+                        ,
+                        BillState.pick_exception_omit
+                        ,
+                        invoiceCheckOmitDTO.getPickOperator()
+                );
+            });
+            // 更新包裹其他商品数据信息
+            mailPickingDetailService.updatePackageCommodity(pickNo, mailNo, excludeCommodities);
+        });
+
+        // 更新拣货单其他包裹拣货
+        mailPickingService.updatePickingFinishState(pickNo, excludeMails);
+    }
+
+    /**
      * 配货单检测结束
      * @param pickNo
      * @return
@@ -109,6 +180,8 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         // 检出拣货单基本信息
         PickingBill pickingBill = checkOutPickBill(pickNo);
 
+        // 更新订单状态 -> 打包中。。。
+        baseMapper.updateOrderBillState(pickNo, BillState.order_packing.getCode(),BillState.order_cancel.getCode());
         // 统计拣货单所有订单商品未分拣完成
         List<Map> omitOrderCommodities = mailPickingService.omitOrderCommodityList(pickNo, StateEnum.normal.getCode());
 
@@ -267,8 +340,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         List<String> customerCodes = baseMapper.customerCodes(wrapper);
 
         if (customerCodes != null && customerCodes.size() > 0) {
-//            customerCodes.stream().forEach(customerCode -> generatorPickingBill(customerCode, 1, Constants.TIMING_GENERATOR_PICK_USER));
-            customerCodes.stream().forEach(customerCode -> generatorAreaPickingBill(customerCode, 1, operator));
+            customerCodes.stream().forEach(customerCode -> generatorAreaPickingBill(customerCode, MAX_BASKET_NUM, operator));
         }
 
     }
@@ -313,78 +385,6 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     }
 
     /**
-     * 自动生成拣货单
-     * @param customerCode
-     * @param executeSize
-     * @param operator
-     */
-    @Synchronized
-    public void generatorPickingBill(String customerCode, Integer executeSize, String operator) {
-        //触发规则生成拣货单 （满足20 生成拣货单）
-        // 获取（满足要求）的订单数据
-        List<Map> virtualMails = mailPickingDetailService.virtualMails(customerCode, executeSize);
-
-
-        if (CollectionUtils.isEmpty(virtualMails)) return;
-
-        //生成拣货单 时间戳 年月日时分秒 + 随机四位数
-        String pickNo = GeneratorCodeUtil.dataTime(4);
-        PickingBill pickingBill = new PickingBill();
-        pickingBill.setPickNo(pickNo);
-        pickingBill.setProcessStage(BillState.pick_process_new.getCode()); // 新的拣货单
-        pickingBill.setBillState(BillState.pick_save.getCode());// 设置拣货单状态 save
-        PoUtil.add(pickingBill, operator);
-
-        if (this.baseMapper.insert(pickingBill) < 1) return;
-
-        //生成快递拣货篮 20
-        Map<String, Order> ordersMap = orderService.ordersMap(
-                virtualMails.
-                        stream().
-                        map(virtualMail ->
-                                virtualMail.get("systemOrderNo").toString()
-                        ).
-                        collect(Collectors.toList()));
-        for (int basketNum = 1; basketNum <= virtualMails.size(); basketNum++) {
-            Map virtualMail = virtualMails.get(basketNum - 1);
-            final String systemOrderNo = MapUtils.getString(virtualMail, "systemOrderNo");
-            final String virtualMailNo = MapUtils.getString(virtualMail, "mailNo");
-            Order order = ordersMap.get(systemOrderNo);
-            //获取快递单号
-            String realMail = expressProviderManager.useExpressNo(order.getExpressKey());
-
-            MailPicking mailPicking = new MailPicking();
-            mailPicking.setOrderNo(order.getSystemOrderNo());
-            mailPicking.setPickNo(pickingBill.getPickNo());
-            mailPicking.setBasketNum(basketNum);
-            mailPicking.setMailNo(realMail);
-            //获取订单标准重量
-            mailPicking.setPresetWeight(mailPickingDetailService.mailPickingWeight(virtualMailNo));
-            mailPicking.setWeightUnit("kg");
-            mailPickingService.generatorMailPicking(mailPicking, operator);
-
-            // region 更新拣货篮详情信息
-            EntityWrapper wrapper = new EntityWrapper();
-            wrapper.eq("mail_no",  virtualMailNo).eq("state", StateEnum.normal.getCode());
-            MailPickingDetail mailPickingDetail = new MailPickingDetail();
-            mailPickingDetail.setMailNo(mailPicking.getMailNo());
-            mailPickingDetail.setPickNo(mailPicking.getPickNo());
-            PoUtil.update(mailPickingDetail, operator);
-            mailPickingDetailService.update(mailPickingDetail, wrapper);
-            // endregion
-            // region 更新订单状态（已生成拣货单数据）
-            order.setState(StateEnum.order_pick.getCode());
-            order.setUpdateTime(new Date());
-            order.setUpdateUser(operator);
-            orderService.updateById(order);
-            // endregion
-        }
-
-        // 拣货区库存对应减少，若拣货区库存小于拣货单所需值怎已负值形式展现，同时库存是否充足，若不足则通知补货
-        mailPickingDetailService.needNoticeReplenishment(pickNo);
-    }
-
-    /**
      * 自动生成区域拣货单
      * @param customerCode
      * @param executeSize
@@ -392,10 +392,11 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      */
     @Synchronized
     public void generatorAreaPickingBill(String customerCode, Integer executeSize, String operator) {
-        Map<String, List<Map>> areaVirtualMails = mailPickingDetailService.areaVirtualMails(customerCode, executeSize);
-        areaVirtualMails.forEach((area, virtualMails) -> {
+        Map<String, List<List<Map>>> areaVirtualMails = mailPickingDetailService.areaVirtualMails(customerCode, executeSize);
+        areaVirtualMails.forEach((area, packageVirtualMails) ->
+            packageVirtualMails.forEach(virtualMails -> {
+                if (CollectionUtils.isEmpty(virtualMails)) return;
 
-            if (CollectionUtils.isNotEmpty(virtualMails)) {
                 //生成拣货单 时间戳 年月日时分秒 + 随机四位数
                 String pickNo = GeneratorCodeUtil.dataTime(4);
                 PickingBill pickingBill = new PickingBill();
@@ -443,6 +444,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
                     mailPickingDetailService.update(mailPickingDetail, wrapper);
                     // endregion
                     // region 更新订单状态（已生成拣货单数据）
+                    order.setBillState(BillState.order_picking.getCode());
                     order.setState(StateEnum.order_pick.getCode());
                     order.setUpdateTime(new Date());
                     order.setUpdateUser(operator);
@@ -452,9 +454,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
 
                 // 拣货区库存对应减少，若拣货区库存小于拣货单所需值怎已负值形式展现，同时库存是否充足，若不足则通知补货
                 mailPickingDetailService.needNoticeReplenishment(pickNo);
-            }
-
-        });
+            }));
     }
 
     /**

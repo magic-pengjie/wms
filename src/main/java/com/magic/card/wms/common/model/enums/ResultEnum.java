@@ -61,6 +61,7 @@ public enum ResultEnum {
 	store_house_error(20009, "仓库信息异常"),
 	query_role_failed(200010,"查询角色列表失败"),
 	add_role_failed(200011,"新增角色失败"),
+	split_rule_exist( 200012, "拆包规则已存在！"),
 
 
 	excel_import_storehouse(300000,"Excel导入仓库库位信息失败！"),
@@ -102,6 +103,7 @@ public enum ResultEnum {
 	order_lock(50010, "订单超过15分钟已锁定"),
 	order_package_no_exist(50011, "订单包裹不存在，请核实包裹快递单号！"),
 	order_excel_import_err(500012, "Excel订单导入失败"),
+	order_excel_export_err( 500013, "订单Excel数据导出失败"),
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),
 

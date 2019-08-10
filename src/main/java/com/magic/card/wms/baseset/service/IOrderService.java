@@ -1,5 +1,6 @@
 package com.magic.card.wms.baseset.service;
 
+import com.alibaba.excel.metadata.BaseRowModel;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
@@ -116,4 +117,18 @@ public interface IOrderService extends IService<Order> {
          * 订单超时预警
      */
     void runOrderTimeOutWarning();
+
+    /**
+     * 导出订单数据
+     * @param orderNos
+     * @return
+     */
+    List<? extends BaseRowModel> excelExport(List<String> orderNos);
+
+    /**
+     * 获取订单详情（商品 以及 对应的包裹信息）
+     * @param orderNo 系统订单号
+     * @return
+     */
+    Map loadDetails(String orderNo);
 }

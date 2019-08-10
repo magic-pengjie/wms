@@ -6,16 +6,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.magic.card.wms.common.annotation.ExcelDataConvertor;
+import com.magic.card.wms.common.annotation.ExcelExportDataHandle;
+import com.magic.card.wms.common.annotation.ExcelImportDataHandle;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +37,8 @@ import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.magic.card.wms.common.model.EasyExcelParams;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillExcelVO;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.util.CollectionUtils;
 
 /**
  * excel处理工具
@@ -87,7 +94,7 @@ public class EasyExcelUtil {
 			@Override
 			public void invoke(T object, AnalysisContext context) {
 				for (Method method : object.getClass().getMethods()) {
-					if (method.getAnnotation(ExcelDataConvertor.class) != null) {
+					if (method.getAnnotation(ExcelImportDataHandle.class) != null) {
 						try {
 							method.invoke(object, null);
 						} catch (Exception e) {
@@ -127,6 +134,7 @@ public class EasyExcelUtil {
 		Validate.isTrue(excelParams.isValid(), "easyExcel params is not valid");
 		HttpServletResponse response = excelParams.getResponse();
 		ServletOutputStream out = response.getOutputStream();
+		exportDataHandle(excelParams.getData(), excelParams.getDataModelClazz());
 		ExcelWriter writer = new ExcelWriter(out, typeEnum, excelParams.isNeedHead());
 		prepareResponds(excelParams.getRequest(), response, excelParams.getExcelNameWithoutExt(), typeEnum);
 		Sheet sheet1 = new Sheet(1, 0, excelParams.getDataModelClazz());
@@ -222,5 +230,57 @@ public class EasyExcelUtil {
 		if (!fileName.toLowerCase().endsWith(ExcelTypeEnum.XLS.getValue()) && !fileName.toLowerCase().endsWith(ExcelTypeEnum.XLSX.getValue())) {
 			throw OperationException.customException(ResultEnum.upload_file_suffix_err);
 		}
+	}
+
+	/**
+	 * EXCEL 导入数据处理 无参方法使用@ExcelImportDataHandle
+	 * @param dataList
+	 * @param tClass
+	 * @param <T>
+	 */
+	public static void importDataHandle(List<? extends BaseRowModel> dataList, Class<? extends BaseRowModel> tClass) {
+		dataHandle(dataList, tClass, ExcelImportDataHandle.class);
+	}
+
+	/**
+	 * Excel 导出数据处理 无参方法使用@ExcelExportDataHandle
+	 * @param <T>
+	 * @param dataList
+	 * @param tClass
+	 */
+	public static void exportDataHandle(List<? extends BaseRowModel> dataList, Class<? extends BaseRowModel> tClass) {
+		dataHandle(dataList, tClass, ExcelExportDataHandle.class);
+	}
+
+	/**
+	 * 数据注解处理
+	 * @param handleData 待处理数据
+	 * @param handleDataClass 待处理数据引用类型
+	 * @param handleTypeClass 待处理类型 Class
+	 * @param <T> 待处理数据类型
+	 * @param <A> 处理数据的方式类型
+	 */
+	private static void dataHandle(List<? extends BaseRowModel> handleData, Class<? extends BaseRowModel> handleDataClass, Class<? extends Annotation> handleTypeClass) {
+		if (CollectionUtils.isEmpty(handleData)) return;
+
+		Method[] tClassMethods = handleDataClass.getMethods();
+
+		if (tClassMethods == null || tClassMethods.length == 0) return;
+
+		List<Method> handleDataClassMethods = Arrays.stream(handleDataClass.getMethods()).
+				filter(handleDataClassMethod -> handleDataClassMethod.getAnnotation(handleTypeClass) != null).
+				collect(Collectors.toList());
+
+		if (CollectionUtils.isEmpty(handleDataClassMethods)) return;
+
+		handleData.forEach(data -> handleDataClassMethods.forEach(importDataHandleMethod -> {
+			try {
+				importDataHandleMethod.invoke(data, null);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		}));
 	}
 }

@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.magic.card.wms.baseset.mapper.OrderInfoMapper">
-	 <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.OrderInfoDTO">
-        <id column="id" property="id" />
-        <result column="mail_no" property="mailNo" />
-        <result column="order_no" property="orderNo" />
-        <result column="customer_code" property="customerCode" />
-        <result column="customer_name" property="customerName" />
-        <result column="recipt_name" property="reciptName" />
-        <result column="post_code" property="postCode" />
-        <result column="prov" property="prov" />
-        <result column="city" property="city" />
-        <result column="recipt_addr" property="reciptAddr" />
-        <result column="recipt_phone" property="reciptPhone" />
-        <result column="express_key" property="expressKey" />
-        <result column="is_b2b" property="isB2b" />
-        <result column="goods_value" property="goodsValue" />
-        <result column="bill_state" property="billState" />
-        <result column="state" property="state" />
-        <result column="create_time" property="createTime" />
-        <result column="create_user" property="createUser" />
-        <result column="update_time" property="updateTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="remark" property="remark" />
-        <result column="preset_weight" property="presetWeight" />
-        <result column="send_nums" property="sendNums" />
-        <result column="fail_reason" property="failReason" />
-        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.OrderCommodityDTO" column="order_no">
-        	<result column="order_no" property="orderNo" />
-	        <result column="customer_code" property="customerCode" />
-	        <result column="bar_code" property="barCode" />
-	        <result column="model_no" property="modelNo" />
-	        <result column="spec" property="spec" />
-	        <result column="sku_name" property="commodityName" />
-	        <result column="numbers" property="numbers" />
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.OrderInfoDTO">
+        <id column="id" property="id"/>
+        <result column="mail_no" property="mailNo"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="recipt_name" property="reciptName"/>
+        <result column="post_code" property="postCode"/>
+        <result column="prov" property="prov"/>
+        <result column="city" property="city"/>
+        <result column="recipt_addr" property="reciptAddr"/>
+        <result column="recipt_phone" property="reciptPhone"/>
+        <result column="express_key" property="expressKey"/>
+        <result column="is_b2b" property="isB2b"/>
+        <result column="goods_value" property="goodsValue"/>
+        <result column="bill_state" property="billState"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="remark" property="remark"/>
+        <result column="preset_weight" property="presetWeight"/>
+        <result column="send_nums" property="sendNums"/>
+        <result column="fail_reason" property="failReason"/>
+        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.OrderCommodityDTO"
+                    column="order_no">
+            <result column="order_no" property="orderNo"/>
+            <result column="customer_code" property="customerCode"/>
+            <result column="bar_code" property="barCode"/>
+            <result column="model_no" property="modelNo"/>
+            <result column="spec" property="spec"/>
+            <result column="sku_name" property="commodityName"/>
+            <result column="numbers" property="numbers"/>
         </collection>
     </resultMap>
     <sql id="orderCommodityInfoSQL">
@@ -65,27 +66,29 @@
     <select id="orderCommodityWeightMap" resultType="java.util.Map">
         <include refid="orderCommodityInfoSQL"/>
         WHERE
-            woc.order_no = #{orderNo} AND woc.customer_code = #{customerCode}
+        woc.order_no = #{orderNo} AND woc.customer_code = #{customerCode}
     </select>
     <select id="loadGrid" resultType="java.util.Map">
         SELECT
-            woi.id,
-            woi.order_no orderNo,
-            woi.system_order_no systemOrderNo,
-            woi.customer_code customerCode,
-            wcbi.customer_name customerName,
-            woi.recipt_name reciptName,
-            woi.recipt_phone reciptPhone,
-            woi.recipt_addr reciptAddr,
-            woi.express_key expressKey,
-            woi.prov prov,
-            woi.is_b2b isB2b,
-            woi.is_batch isBatch,
-            woi.bill_state billState,
-            woi.create_time createTime
+        woi.id,
+        woi.order_no orderNo,
+        woi.system_order_no systemOrderNo,
+        woi.customer_code customerCode,
+        wcbi.customer_name customerName,
+        woi.recipt_name reciptName,
+        woi.recipt_phone reciptPhone,
+        woi.recipt_addr reciptAddr,
+        woi.express_key expressKey,
+        woi.prov prov,
+        woi.is_lock,
+        woi.is_matched,
+        woi.is_b2b isB2b,
+        woi.is_batch isBatch,
+        woi.bill_state billState,
+        woi.create_time createTime
         FROM
-            wms_order_info woi
-            LEFT JOIN wms_customer_base_info wcbi ON woi.customer_code = wcbi.customer_code
+        wms_order_info woi
+        LEFT JOIN wms_customer_base_info wcbi ON woi.customer_code = wcbi.customer_code
         <where>
             ${ew.sqlSegment}
         </where>
@@ -94,87 +97,123 @@
         <include refid="orderCommodityInfoSQL"/>
         WHERE woc.order_no = #{orderNo}
     </select>
-    
-    <!-- 根据拣货单查询订单及商品信息 -->
-     <select id="selectOrderByNo" resultMap="BaseResultMap" >
-         SELECT
-             pi.id,
-             pi.mail_no,
-             pi.pick_no,
-             pi.preset_weight,
-             pi.send_nums,
-             pi.fail_reason,
-             oi.order_no,
-             oi.customer_code,
-             oi.customer_name,
-             oi.recipt_name,
-             oi.post_code,
-             oi.prov,
-             oi.city,
-             oi.recipt_addr,
-             oi.recipt_phone,
-             oi.express_key,
-             oi.is_b2b,
-             oi.goods_value,
-             oi.bill_state,
-             oi.remark,
 
-             pd.commodity_code,
-             sku.bar_code,
-             sku.model_no,
-             sku.spec,
-             pd.package_nums numbers,
-             sku.sku_name
-         FROM
-             wms_mail_picking_info pi
-         LEFT JOIN  wms_mail_picking_detail pd  ON pd.mail_no = pi.mail_no
-         LEFT JOIN wms_order_info oi ON oi.system_order_no = pi.order_no
-         LEFT JOIN wms_commodity_sku sku ON pd.commodity_code = sku.bar_code
-         <where>
-                1= 1
-             <if test="pickNo != null and pickNo != '' ">
-                 AND pi.pick_no=#{pickNo}
-             </if>
-             <if test="orderNo != null and orderNo != '' ">
-                 AND pi.order_no=#{orderNo}
-             </if>
-             <if test="sendState != null and sendState != '' ">
-                 AND pi.send_state=#{sendState}
-             </if>
-         </where>
+    <!-- 根据拣货单查询订单及商品信息 -->
+    <select id="selectOrderByNo" resultMap="BaseResultMap">
+        SELECT
+        pi.id,
+        pi.mail_no,
+        pi.pick_no,
+        pi.preset_weight,
+        pi.send_nums,
+        pi.fail_reason,
+        oi.order_no,
+        oi.customer_code,
+        oi.customer_name,
+        oi.recipt_name,
+        oi.post_code,
+        oi.prov,
+        oi.city,
+        oi.recipt_addr,
+        oi.recipt_phone,
+        oi.express_key,
+        oi.is_b2b,
+        oi.goods_value,
+        oi.bill_state,
+        oi.remark,
+
+        pd.commodity_code,
+        sku.bar_code,
+        sku.model_no,
+        sku.spec,
+        pd.package_nums numbers,
+        sku.sku_name
+        FROM
+        wms_mail_picking_info pi
+        LEFT JOIN wms_mail_picking_detail pd ON pd.mail_no = pi.mail_no
+        LEFT JOIN wms_order_info oi ON oi.system_order_no = pi.order_no
+        LEFT JOIN wms_commodity_sku sku ON pd.commodity_code = sku.bar_code
+        <where>
+            1= 1
+            <if test="pickNo != null and pickNo != '' ">
+                AND pi.pick_no=#{pickNo}
+            </if>
+            <if test="orderNo != null and orderNo != '' ">
+                AND pi.order_no=#{orderNo}
+            </if>
+            <if test="sendState != null and sendState != '' ">
+                AND pi.send_state=#{sendState}
+            </if>
+        </where>
     </select>
     <select id="loadPackageGrid" resultType="java.util.Map">
         SELECT wmpi.id,
-            wmpi.order_no,
-            wmpi.mail_no,
-            wmpi.pick_no,
-            wmpi.basket_num,
-            wmpi.preset_weight,
-            wmpi.real_weight,
-            wmpi.express_fee,
-            wmpi.weight_unit,
-            wmpi.is_finish,
-            woi.id,
-            woi.order_no,
-            woi.system_order_no,
-            woi.customer_code,
-            woi.customer_name,
-            woi.recipt_name,
-            woi.post_code,
-             woi.prov,
-             woi.city,
-             woi.recipt_addr,
-             woi.recipt_phone,
-             woi.express_key,
-             woi.is_batch,
-             woi.is_b2b,
-             woi.goods_value,
-             woi.bill_state,
-             woi.state
-         FROM wms_mail_picking_info wmpi LEFT JOIN  wms_order_info woi ON woi.system_order_no = wmpi.order_no
+        wmpi.order_no,
+        wmpi.mail_no,
+        wmpi.pick_no,
+        wmpi.basket_num,
+        wmpi.preset_weight,
+        wmpi.real_weight,
+        wmpi.express_fee,
+        wmpi.weight_unit,
+        wmpi.is_finish,
+        woi.id,
+        woi.order_no,
+        woi.system_order_no,
+        woi.customer_code,
+        woi.customer_name,
+        woi.recipt_name,
+        woi.post_code,
+        woi.prov,
+        woi.city,
+        woi.recipt_addr,
+        woi.recipt_phone,
+        woi.express_key,
+        woi.is_batch,
+        woi.is_b2b,
+        woi.goods_value,
+        woi.bill_state,
+        woi.state
+        FROM wms_mail_picking_info wmpi LEFT JOIN wms_order_info woi ON woi.system_order_no = wmpi.order_no
         <where>
             ${ew.sqlSegment}
         </where>
+    </select>
+    <select id="excelExport" resultType="com.magic.card.wms.baseset.model.vo.ExcelOrderImport">
+        select woi.id,
+               woi.order_no,
+               woi.system_order_no,
+               woi.customer_code,
+               woi.customer_name,
+               woi.recipt_name,
+               woi.post_code,
+               woi.prov,
+               woi.city,
+               woi.recipt_addr,
+               woi.recipt_phone,
+               woi.express_key,
+               woi.is_batch,
+               woi.is_b2b,
+               woi.goods_value,
+               woi.is_lock,
+               woi.is_matched,
+               woi.bill_state,
+               woi.state,
+               woi.create_time,
+               woi.create_user,
+               woi.update_time,
+               woi.update_user,
+               woi.remark,
+               woc.bar_code,
+               woc.model_no,
+               woc.spec,
+               woc.numbers
+        from wms_order_info woi
+                 left join wms_order_commodity woc on woc.order_no = woi.system_order_no
+        where woi.system_order_no in
+        <foreach collection="orderNos" item="orderNo" separator=","  close=")" open="(">
+            #{orderNo}
+        </foreach>
     </select>
 
 </mapper>

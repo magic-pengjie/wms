@@ -1,15 +1,13 @@
 package com.magic.card.wms.baseset.model.vo;
 
-import com.alibaba.excel.annotation.ExcelColumnNum;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.metadata.BaseRowModel;
-import com.magic.card.wms.common.annotation.ExcelDataConvertor;
+import com.magic.card.wms.common.annotation.ExcelExportDataHandle;
+import com.magic.card.wms.common.annotation.ExcelImportDataHandle;
 import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.utils.DataConvertUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.Encoder;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -141,16 +139,18 @@ public class ExcelOrderImport extends BaseRowModel implements Serializable {
     private Integer numbers;
     // endregion
 
-    @ExcelDataConvertor
+    @ExcelImportDataHandle
     public void excelDataConvertor() {
         isB2b = DataConvertUtil.isValue(targetIsB2b);
         isBatch = DataConvertUtil.isValue(targetIsBatch);
+        billState = BillState.orderCode(billState);
+    }
 
-        if (StringUtils.equals("取消", billState)) {
-            billState = BillState.order_cancel.getCode();
-        } else {
-            billState = BillState.order_save.getCode();
-        }
+    @ExcelExportDataHandle
+    public void excelExportDataHandle() {
+        targetIsB2b = DataConvertUtil.isValue(isB2b);
+        targetIsBatch = DataConvertUtil.isValue(isBatch);
+        billState = BillState.orderDesc(billState);
     }
 
 }
