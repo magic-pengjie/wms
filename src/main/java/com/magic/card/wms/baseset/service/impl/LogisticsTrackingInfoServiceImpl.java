@@ -60,46 +60,68 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	private IMailPickingService mailPickingService;
 	@Autowired
 	private MailPickingMapper mailPickingMapper;
+	@Autowired
+	private LogisticsTrackingInfoMapper logisticsTrackingInfoMapper;
 	
 	@Override
-	public ResponseData getTrackingInfo(List<String> mailNos) throws UnsupportedEncodingException {
+	public ResponseData getTrackingInfo(List<MailPicking> list) throws UnsupportedEncodingException {
 		LogisticsReqHeader header = new LogisticsReqHeader();
-		String msgBody = JSONObject.toJSONString(mailNos);
-		String dataDigest = Digest.Md5Base64(msgBody+header.getReceiveID());
-		StringBuffer sb = new StringBuffer(postUrl);
-		sb.append("?sendID=").append(header.getSendID())
+		String msgBody = JSONObject.toJSONString(list.stream().map(e->e.getMailNo()).collect(Collectors.toList()));
+		String dataDigest = Digest.Md5Base64(msgBody+header.getSendID());
+		StringBuffer sb = new StringBuffer();
+		sb.append("sendID=").append(header.getSendID())
 		  .append("&proviceNo=").append(header.getProviceNo())
 		  .append("&msgKind=").append(header.getMsgKind())
-		  .append("&serialNo=").append(header.getReceiveID()+header.getSendDate())
+		  .append("&serialNo=").append(header.getSendID()+header.getSendDate())
 		  .append("&sendDate=").append(header.getSendDate())
 		  .append("&receiveID=").append(header.getReceiveID())
 		  .append("&dataType=").append(header.getDataType())
 		  .append("&dataDigest=").append(dataDigest)
 		  .append("&msgBody=").append(Digest.urlEncode(msgBody));
 		log.info("reuqest url:{}",sb.toString());
-		String resultStr = HttpUtil.restGet(sb.toString());
-		LogisticsRepHeader rspHeader = JSONObject.parseObject(resultStr,LogisticsRepHeader.class);
+		String resultStr = HttpUtil.httpPost(postUrl,sb.toString());
 		log.info("response result:{}",resultStr);
+		LogisticsRepHeader rspHeader = JSONObject.parseObject(resultStr,LogisticsRepHeader.class);
 		if(rspHeader.getResponseState()) {
+			dealResult(rspHeader);
 			return ResponseData.ok(rspHeader.getResponseItems());
 		}
 		return ResponseData.ok(rspHeader.getErrorDesc());
 	}
+	
+	@Override
+	public List<LogisticsTrackingInfo> getTrackingInfoByMailOrOrderNo(String orderNo, String mailNo) {
+		return logisticsTrackingInfoMapper.getTrackingInfoByMailOrOrderNo(orderNo, mailNo);
+	}
+	
 	/***
 	 * 查询无物流信息的快递单
 	 */
 	@Override
-	public Page<MailDetailVO> selectNonLogisticsInfoList(MailDTO dto,PageInfo pageInfo) {
-		if(ObjectUtils.isEmpty(dto.getIsFinish())) {
-			dto.setIsFinish(1);
-		}
-		if(ObjectUtils.isEmpty(dto.getLogisticsState())) {
-			dto.setLogisticsState(0);
-		}
+	public Page<MailDetailVO> selectPickInfoList(MailDTO dto,PageInfo pageInfo) {
 		Page<MailDetailVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
-		Integer counts = mailPickingMapper.getNonLogisticsInfoCounts(dto);
+		if(1==dto.getType()) {
+			//查询包裹信息
+			
+		}else {
+			String endDateStr = DateUtil.getStringDateShort();
+			String startDateStr = DateUtil.getNextDay(endDateStr, "-1");
+			Date startDate = DateUtil.strToDateLong(startDateStr+food_warning_time);
+			Date endDate = DateUtil.strToDateLong(endDateStr+food_warning_time);
+			dto.setIsFinish(Constants.ONE);
+			dto.setLogisticsState(Constants.ZERO);
+			if(2==dto.getType()) {
+				//查询当天无物流信息包裹
+				dto.setStartDate(startDate);
+				dto.setEndDate(endDate);
+			}else if(3==dto.getType()){
+				//查询历史无物流信息包裹
+				dto.setStartDate(startDate);
+			}
+		}
+		int counts = mailPickingMapper.selectPickInfoListCounts(dto);
 		if(counts>0) {
-			page = mailPickingMapper.getNonLogisticsInfoList(page, dto);
+			page.setRecords(mailPickingMapper.selectPickInfoList(page, dto));
 		}
 		return page;
 	}
@@ -118,26 +140,17 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		int current = 1;
 		while(!ObjectUtils.isEmpty(list)) {
 			log.info("runLogisticsInfo select size:{}",list.size());
-			List<String> mailNos = list.stream().map(e->e.getMailNo()).collect(Collectors.toList());
 			try {
 				//发送邮政
-				ResponseData<LogisticsTrackingInfo> data = getTrackingInfo(mailNos);
-				if(data.getStatus()==0) {
-					List<LogisticsTrackingInfo> logisticsList = (List<LogisticsTrackingInfo>)data.getData();
-					mailNos = logisticsList.stream().map(e->e.getTraceNo()).collect(Collectors.toList());
-					Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
-					w.in("trace_no", mailNos);
-					this.delete(w);
-					this.insertBatch(logisticsList);
-					//修改快递单状态
-					updateMialState(list, mailNos);
-				}
+				getTrackingInfo(list);
 				if(list.size()<30) {
 					break;
 				}
 				pageInfo.setCurrent(++current);
 				list = selectNonLogisticsInfoListToPost(pageInfo).getRecords();
 			} catch (Exception e) {
+				pageInfo.setCurrent(++current);
+				list = selectNonLogisticsInfoListToPost(pageInfo).getRecords();
 				log.error("runLogisticsInfo getTrackingInfo error:{}",e);
 			}
 		}
@@ -198,23 +211,17 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		warningAgentInfo.insert();
 	}
 	
-	/***
-	 * 修改快递单物流状态
-	 * @param list
-	 * @param mailNos
-	 */
-	public void updateMialState(List<MailPicking> list,List<String> mailNos) {
-		List<MailPicking> updateList = new ArrayList<>();
-		for (String mailNo : mailNos) {
-			for (MailPicking mailPicking : list) {
-				if(mailNo.equals(mailPicking.getMailNo())) {
-					mailPicking.setLogisticsState(Constants.STATE_1);
-					mailPicking.setUpdateTime(new Date());
-					updateList.add(mailPicking);
-				}
-			}
+	public void dealResult(LogisticsRepHeader rspHeader) {
+		if(rspHeader.getResponseState()) {
+			List<LogisticsTrackingInfo> logisticsList = rspHeader.getResponseItems();
+			List mailNos = logisticsList.stream().map(e->e.getTraceNo()).collect(Collectors.toList());
+			Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
+			w.in("trace_no", mailNos);
+			this.delete(w);
+			this.insertBatch(logisticsList);
+			//修改快递单状态
+			mailPickingMapper.updateBatchByMailNos(mailNos);
 		}
-		mailPickingService.updateBatchById(updateList);
 	}
-
+	
 }

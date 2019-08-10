@@ -1,81 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.magic.card.wms.warehousing.mapper.PurchaseBillMapper">
+<mapper
+	namespace="com.magic.card.wms.warehousing.mapper.PurchaseBillMapper">
 
-    <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.magic.card.wms.warehousing.model.vo.PurchaseBillVO">
-        <id column="id" property="id" />
-        <result column="purchase_no" property="purchaseNo" />
-        <result column="name" property="name" />
-        <result column="receiv_no" property="receivNo" />
-        <result column="warehousing_no" property="warehousingNo" />
-        <result column="customer_code" property="customerCode" />
-        <result column="customer_name" property="customerName" />
-        <result column="is_food" property="isFood" />
-        <result column="purchase_date" property="purchaseDate" />
-        <result column="contacts" property="contacts" />
-        <result column="contacts_tel" property="contactsTel" />
-        <result column="address" property="address" />
-        <result column="maker" property="maker" />
-        <result column="make_date" property="makeDate" />
-        <result column="receiv_date" property="receivDate" />
-        <result column="receiv_user" property="receivUser" />
-        <result column="warehousing_date" property="warehousingDate" />
-        <result column="storehouse_code" property="storehouseCode" />
-        <result column="approver" property="approver" />
-        <result column="approve_time" property="approveTime" />
-        <result column="approve_desc" property="approveDesc" />
-        <result column="bill_state" property="billState" />
-        <result column="state" property="state" />
-        <result column="create_time" property="createTime" />
-        <result column="create_user" property="createUser" />
-        <result column="update_time" property="updateTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="premark" property="remark" />
-        <collection property="detailList" ofType="com.magic.card.wms.warehousing.model.po.PurchaseBillDetail" column="id">
-        	<id column="sid" property="id" />
-        	<result column="purchase_id" property="purchaseId" />
-        	<result column="commodity_name" property="commodityName" />
-	        <result column="model_no" property="modelNo" />
-	        <result column="spec" property="spec" />
-	        <result column="unit" property="unit" />
-	        <result column="bar_code" property="barCode" />
-	        <result column="weight" property="weight" />
-	        <result column="volume" property="volume" />
-	        <result column="purchase_nums" property="purchaseNums" />
-	        <result column="receiv_nums" property="receivNums" />
-	        <result column="receiv_remark" property="receivRemark" />
-	        <result column="warehousing_nums" property="warehousingNums" />
-	        <result column="arrival_date" property="arrivalDate" />
-	        <result column="production_date" property="productionDate" />
-	        <result column="shilf_life" property="shilfLife" />
-	        <result column="aremark" property="remark" />
-	        <result column="storehouse_info" property="storehouseInfo" />
-	        <result column="commodity_id" property="commodityId" />
-        </collection>
-    </resultMap>
-    
-    
-    <sql id="bill_Column_List">
-         wb.id as id, purchase_no,name,receiv_no,warehousing_no, 
-         customer_code,customer_name, is_food,purchase_date, contacts, contacts_tel, address, maker, make_date,
-         receiv_date,receiv_user,warehousing_date,storehouse_code,approver,approve_time,
-         bill_state,wb.remark premark
-    </sql>
-    
-	<select id="selectPurchaseBillList" resultMap="BaseResultMap" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
-		select   <include refid="bill_Column_List"/>,
-				bd.id sid, bd.purchase_id, bd.bar_code,  bd.purchase_nums,bd.arrival_date, bd.commodity_id,
-				bd.production_date, bd.shilf_life,bd.receiv_nums,bd.receiv_remark,bd.warehousing_nums,
-				bd.warehousing_remark, bd.storehouse_info, bd.remark sremark,
-				sku.sku_name as commodity_name, sku.model_no, sku.spec, sku.single_unit unit, 
-				sku.single_weight*bd.purchase_nums weight, sku.single_volume*bd.purchase_nums volume
-		from wms_purchase_bill wb 
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="com.magic.card.wms.warehousing.model.vo.PurchaseBillVO">
+		<id column="id" property="id" />
+		<result column="purchase_no" property="purchaseNo" />
+		<result column="name" property="name" />
+		<result column="receiv_no" property="receivNo" />
+		<result column="warehousing_no" property="warehousingNo" />
+		<result column="customer_code" property="customerCode" />
+		<result column="customer_name" property="customerName" />
+		<result column="is_food" property="isFood" />
+		<result column="purchase_date" property="purchaseDate" />
+		<result column="contacts" property="contacts" />
+		<result column="contacts_tel" property="contactsTel" />
+		<result column="address" property="address" />
+		<result column="maker" property="maker" />
+		<result column="make_date" property="makeDate" />
+		<result column="receiv_date" property="receivDate" />
+		<result column="receiv_user" property="receivUser" />
+		<result column="warehousing_date" property="warehousingDate" />
+		<result column="storehouse_code" property="storehouseCode" />
+		<result column="approver" property="approver" />
+		<result column="approve_time" property="approveTime" />
+		<result column="approve_desc" property="approveDesc" />
+		<result column="bill_state" property="billState" />
+		<result column="state" property="state" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user" property="createUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="premark" property="remark" />
+		<collection property="detailList"
+			ofType="com.magic.card.wms.warehousing.model.po.PurchaseBillDetail"
+			column="id">
+			<id column="sid" property="id" />
+			<result column="purchase_id" property="purchaseId" />
+			<result column="commodity_name" property="commodityName" />
+			<result column="model_no" property="modelNo" />
+			<result column="spec" property="spec" />
+			<result column="unit" property="unit" />
+			<result column="bar_code" property="barCode" />
+			<result column="weight" property="weight" />
+			<result column="volume" property="volume" />
+			<result column="purchase_nums" property="purchaseNums" />
+			<result column="receiv_nums" property="receivNums" />
+			<result column="receiv_remark" property="receivRemark" />
+			<result column="warehousing_nums" property="warehousingNums" />
+			<result column="arrival_date" property="arrivalDate" />
+			<result column="production_date" property="productionDate" />
+			<result column="shilf_life" property="shilfLife" />
+			<result column="aremark" property="remark" />
+			<result column="storehouse_info" property="storehouseInfo" />
+			<result column="commodity_id" property="commodityId" />
+		</collection>
+	</resultMap>
+
+	<!-- 商品上架映射结果 -->
+	<resultMap id="WarehousingResultMap"
+		type="com.magic.card.wms.warehousing.model.vo.PurchaseWarehousingVO">
+		<id column="id" property="id" />
+		<result column="purchase_no" property="purchaseNo" />
+		<result column="name" property="name" />
+		<result column="receiv_no" property="receivNo" />
+		<result column="warehousing_no" property="warehousingNo" />
+		<result column="customer_code" property="customerCode" />
+		<result column="customer_name" property="customerName" />
+		<result column="is_food" property="isFood" />
+		<result column="purchase_date" property="purchaseDate" />
+		<result column="contacts" property="contacts" />
+		<result column="contacts_tel" property="contactsTel" />
+		<result column="address" property="address" />
+		<result column="maker" property="maker" />
+		<result column="make_date" property="makeDate" />
+		<result column="receiv_date" property="receivDate" />
+		<result column="receiv_user" property="receivUser" />
+		<result column="p_bill_state" property="billState" />
+		<result column="state" property="state" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user" property="createUser" />
+		<result column="update_time" property="updateTime" />
+		<result column="update_user" property="updateUser" />
+		<result column="premark" property="remark" />
+		<association  property="detail" javaType="com.magic.card.wms.warehousing.model.po.PurchaseBillDetail">
+			<id column="sid" property="id" />
+			<result column="purchase_id" property="purchaseId" />
+			<result column="commodity_name" property="commodityName" />
+			<result column="model_no" property="modelNo" />
+			<result column="spec" property="spec" />
+			<result column="unit" property="unit" />
+			<result column="bar_code" property="barCode" />
+			<result column="weight" property="weight" />
+			<result column="volume" property="volume" />
+			<result column="purchase_nums" property="purchaseNums" />
+			<result column="receiv_nums" property="receivNums" />
+			<result column="receiv_remark" property="receivRemark" />
+			<result column="warehousing_nums" property="warehousingNums" />
+			<result column="arrival_date" property="arrivalDate" />
+			<result column="production_date" property="productionDate" />
+			<result column="shilf_life" property="shilfLife" />
+			<result column="aremark" property="remark" />
+			<result column="storehouse_info" property="storehouseInfo" />
+			<result column="commodity_id" property="commodityId" />
+			<result column="approver" property="approver" />
+			<result column="approve_time" property="approveTime" />
+			<result column="approve_desc" property="approveDesc" />
+			<result column="s_bill_state" property="billState" />
+		</association>
+	</resultMap>
+
+
+	<select id="selectPurchaseBillList" resultMap="BaseResultMap"
+		parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
+		select wb.id as id,
+			wb.purchase_no,wb.name,receiv_no,wb.warehousing_no,
+			wb.customer_code,wb.customer_name, wb.is_food,wb.purchase_date,
+			wb.contacts, wb.contacts_tel, wb.address, wb.maker, wb.make_date,
+			wb.receiv_date,wb.receiv_user,wb.remark premark,wb.bill_state,
+			bd.id sid, bd.purchase_id, bd.bar_code, bd.purchase_nums,bd.arrival_date,
+			bd.commodity_id,bd.production_date, bd.shilf_life,bd.receiv_nums,bd.receiv_remark,
+			bd.warehousing_nums,bd.warehousing_remark, bd.storehouse_info, bd.remark sremark,
+			sku.sku_name as commodity_name, sku.model_no, sku.spec,sku.single_unit unit,
+			sku.single_weight*bd.purchase_nums weight, sku.single_volume*bd.purchase_nums volume
+		from
+		wms_purchase_bill wb
 			left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and bd.state=1
 			left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and sku.state=1
 		<where>
 			<if test="id != null and id != '' ">
-					and wb.id = #{id}
+				and wb.id = #{id}
 			</if>
 			<if test="purchaseNo != null and purchaseNo != '' ">
 				and wb.purchase_no = #{purchaseNo}
@@ -87,45 +143,46 @@
 				and wb.warehousing_no = #{warehousingNo}
 			</if>
 			<if test="customerName != null and customerName != '' ">
-				and wb.customer_name like concat(concat("%",#{customerName}),"%")
+				and wb.customer_name like
+				concat(concat("%",#{customerName}),"%")
 			</if>
 			<if test="purchaseDate != null and purchaseDate != '' ">
-				and	wb.purchase_date = #{purchaseDate}
+				and wb.purchase_date = #{purchaseDate}
 			</if>
 			<if test="receivDate != null and receivDate != '' ">
-				and	wb.receiv_date = #{receivDate}
+				and wb.receiv_date = #{receivDate}
 			</if>
 			<if test="warehousingDate != null and warehousingDate != '' ">
-				and	wb.warehousing_date = #{warehousingDate}
+				and wb.warehousing_date = #{warehousingDate}
 			</if>
 			<if test="commodityName != null and commodityName != '' ">
-				and sku.sku_name like concat(concat("%",#{commodityName}),"%")
+				and sku.sku_name like
+				concat(concat("%",#{commodityName}),"%")
 			</if>
 			<if test="billState != null and billState != '' ">
-				and	wb.bill_state = #{billState}
+				and wb.bill_state = #{billState}
 			</if>
 			<if test="makeDate != null and makeDate != '' ">
-				and	wb.make_date = #{makeDate}
-			</if>
-			<if test="billType==1">
-				and	wb.bill_state in ('save','cancel')
-			</if>
-			<if test="billType==2">
-				and	wb.bill_state in ('recevied','stored','approved','approve_fail')
+				and wb.make_date = #{makeDate}
 			</if>
 			and wb.state=1
-			order by wb.create_time,wb.update_time,wb.customer_code,wb.customer_name
+			order by wb.create_time desc,wb.update_time
+			desc,wb.customer_code,wb.customer_name
 		</where>
 	</select>
-	
-	<select id="selectPurchaseBillListCount" resultType="java.lang.Long" parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
-		select  count(distinct wb.purchase_no)
-		from wms_purchase_bill wb 
-			left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and bd.state=1
-			left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and sku.state=1
+
+	<select id="selectPurchaseBillListCount"
+		resultType="java.lang.Long"
+		parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
+		select count(distinct wb.purchase_no)
+		from wms_purchase_bill wb
+		left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and
+		bd.state=1
+		left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and
+		sku.state=1
 		<where>
 			<if test="id != null and id != '' ">
-					and wb.id = #{id}
+				and wb.id = #{id}
 			</if>
 			<if test="purchaseNo != null and purchaseNo != '' ">
 				and wb.purchase_no = #{purchaseNo}
@@ -137,44 +194,153 @@
 				and wb.warehousing_no = #{warehousingNo}
 			</if>
 			<if test="customerName != null and customerName != '' ">
-				and wb.customer_name like concat(concat("%",#{customerName}),"%")
+				and wb.customer_name like
+				concat(concat("%",#{customerName}),"%")
 			</if>
 			<if test="purchaseDate != null and purchaseDate != '' ">
-				and	wb.purchase_date = #{purchaseDate}
+				and wb.purchase_date = #{purchaseDate}
 			</if>
 			<if test="receivDate != null and receivDate != '' ">
-				and	wb.receiv_date = #{receivDate}
+				and wb.receiv_date = #{receivDate}
 			</if>
 			<if test="warehousingDate != null and warehousingDate != '' ">
-				and	wb.warehousing_date = #{warehousingDate}
+				and wb.warehousing_date = #{warehousingDate}
 			</if>
 			<if test="commodityName != null and commodityName != '' ">
-				and sku.sku_name like concat(concat("%",#{commodityName}),"%")
+				and sku.sku_name like
+				concat(concat("%",#{commodityName}),"%")
 			</if>
 			<if test="billState != null and billState != '' ">
-				and	wb.billState = #{billState}
+				and wb.billState = #{billState}
 			</if>
 			<if test="makeDate != null and makeDate != '' ">
-				and	wb.make_date = #{makeDate}
-			</if>
-			<if test="billType==1">
-				and	wb.bill_state in ('save','cancel')
-			</if>
-			<if test="billType==2">
-				and	wb.bill_state in ('recevied','stored','approved','approve_fail')
+				and wb.make_date = #{makeDate}
 			</if>
 			and wb.state=1
 		</where>
 	</select>
-	
-	<select id="getFoodWarningList" resultType="com.magic.card.wms.warehousing.model.po.PurchaseBill">
-		select   wb.* 
-		from wms_purchase_bill wb 
-		left join wms_purchase_bill_detail bd 
-				on wb.id=bd.purchase_id and bd.state=1 
-				and (select datediff(DATE_FORMAT(SYSDATE(),'%Y-%m-%d'),bd.production_date))>(bd.shilf_life/2)
+
+	<select id="selectWarehousingList"
+		resultMap="WarehousingResultMap"
+		parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
+		select
+			wb.id as id, wb.purchase_no,wb.name,receiv_no,wb.warehousing_no,
+			wb.customer_code,wb.customer_name, wb.is_food,wb.purchase_date,
+			wb.contacts, wb.contacts_tel, wb.address, wb.maker, wb.make_date,
+			wb.receiv_date,wb.receiv_user,wb.bill_state as p_bill_state,
+			bd.id sid, bd.purchase_id, bd.bar_code, bd.purchase_nums,bd.arrival_date,bd.commodity_id,
+			bd.production_date, bd.shilf_life,bd.receiv_nums,bd.receiv_remark,bd.warehousing_nums,
+			bd.warehousing_remark, bd.storehouse_info, bd.remark sremark,
+			bd.approver,bd.approve_time,bd.bill_state as s_bill_state,
+			sku.sku_name as commodity_name, sku.model_no, sku.spec, sku.single_unit unit,
+			sku.single_weight*bd.purchase_nums weight,
+			sku.single_volume*bd.purchase_nums volume
+		from wms_purchase_bill wb
+		left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and
+		bd.state=1
+		left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and
+		sku.state=1
+		<where>
+			<if test="id != null and id != '' ">
+				and wb.id = #{id}
+			</if>
+			<if test="purchaseNo != null and purchaseNo != '' ">
+				and wb.purchase_no = #{purchaseNo}
+			</if>
+			<if test="receivNo != null and receivNo != '' ">
+				and wb.receiv_no = #{receivNo}
+			</if>
+			<if test="warehousingNo != null and warehousingNo != '' ">
+				and wb.warehousing_no = #{warehousingNo}
+			</if>
+			<if test="customerName != null and customerName != '' ">
+				and wb.customer_name like
+				concat(concat("%",#{customerName}),"%")
+			</if>
+			<if test="purchaseDate != null and purchaseDate != '' ">
+				and wb.purchase_date = #{purchaseDate}
+			</if>
+			<if test="receivDate != null and receivDate != '' ">
+				and wb.receiv_date = #{receivDate}
+			</if>
+			<if test="warehousingDate != null and warehousingDate != '' ">
+				and wb.warehousing_date = #{warehousingDate}
+			</if>
+			<if test="commodityName != null and commodityName != '' ">
+				and sku.sku_name like
+				concat(concat("%",#{commodityName}),"%")
+			</if>
+			<if test="billState != null and billState != '' ">
+				and bd.bill_state = #{billState}
+			</if>
+			<if test="makeDate != null and makeDate != '' ">
+				and wb.make_date = #{makeDate}
+			</if>
+			and wb.state=1
+			order by wb.create_time
+			desc,wb.update_time
+			desc,wb.customer_code,wb.customer_name,sku.sku_name
+		</where>
+	</select>
+	<select id="selectWarehousingListCount"
+		resultType="java.lang.Long"
+		parameterType="com.magic.card.wms.warehousing.model.dto.BillQueryDTO">
+		select count(*)
+		from wms_purchase_bill wb
+		left join wms_purchase_bill_detail bd on wb.id=bd.purchase_id and
+		bd.state=1
+		left join wms_commodity_sku sku on bd.bar_code=sku.bar_code and
+		sku.state=1
+		<where>
+			<if test="id != null and id != '' ">
+				and wb.id = #{id}
+			</if>
+			<if test="purchaseNo != null and purchaseNo != '' ">
+				and wb.purchase_no = #{purchaseNo}
+			</if>
+			<if test="receivNo != null and receivNo != '' ">
+				and wb.receiv_no = #{receivNo}
+			</if>
+			<if test="warehousingNo != null and warehousingNo != '' ">
+				and wb.warehousing_no = #{warehousingNo}
+			</if>
+			<if test="customerName != null and customerName != '' ">
+				and wb.customer_name like
+				concat(concat("%",#{customerName}),"%")
+			</if>
+			<if test="purchaseDate != null and purchaseDate != '' ">
+				and wb.purchase_date = #{purchaseDate}
+			</if>
+			<if test="receivDate != null and receivDate != '' ">
+				and wb.receiv_date = #{receivDate}
+			</if>
+			<if test="warehousingDate != null and warehousingDate != '' ">
+				and wb.warehousing_date = #{warehousingDate}
+			</if>
+			<if test="commodityName != null and commodityName != '' ">
+				and sku.sku_name like
+				concat(concat("%",#{commodityName}),"%")
+			</if>
+			<if test="billState != null and billState != '' ">
+				and bd.billState = #{billState}
+			</if>
+			<if test="makeDate != null and makeDate != '' ">
+				and wb.make_date = #{makeDate}
+			</if>
+			and wb.state=1
+		</where>
+	</select>
+
+	<select id="getFoodWarningList"
+		resultType="com.magic.card.wms.warehousing.model.po.PurchaseBill">
+		select wb.*
+		from wms_purchase_bill wb
+		left join wms_purchase_bill_detail bd
+		on wb.id=bd.purchase_id and bd.state=1
+		and (select
+		datediff(DATE_FORMAT(SYSDATE(),'%Y-%m-%d'),bd.production_date))>(bd.shilf_life/2)
 		where wb.is_food=1
-		  and wb.state=1
+		and wb.state=1
 	</select>
 
 </mapper>

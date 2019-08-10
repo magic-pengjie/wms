@@ -33,5 +33,20 @@
     <sql id="Base_Column_List">
         id, serial_no, batch_no, trace_no, op_time, op_code, op_name, op_desc, op_org_prov_name, op_org_city, op_org_code, op_org_name, operator_no, operator_name, response_state, errorDesc, state, create_time, create_user, update_time, update_user, remark
     </sql>
+    
+    <select id="getTrackingInfoByMailOrOrderNo" resultMap="BaseResultMap">
+    	select <include refid="Base_Column_List"/>
+    	from wms_logistics_tracking_info lti
+    	left join wms_mail_picking_info mpi on lti.trace_no=mpi.mail_no and mpi.state=1
+    	<where>
+    		<if test="orderNo != null and orderNo != ''">
+    			and mpi.order_no = #{orderNo}
+    	   </if>
+    	   <if test="mailNo != null and mailNo != ''">
+    			and lti.trace_no = #{mailNo}
+    	   </if>
+    	</where> 
+    	  
+    </select>
 
 </mapper>

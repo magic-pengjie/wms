@@ -3,6 +3,8 @@ package com.magic.card.wms.baseset.model.vo;
 import java.util.Date;
 import java.util.List;
 
+import com.magic.card.wms.baseset.model.po.LogisticsTrackingInfo;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -62,8 +64,23 @@ public class MailDetailVO {
 	@ApiModelProperty("快递单生成日期")
 	private Date mailDate;
 	/**
+	 * 收件人姓名
+	 */
+	@ApiModelProperty("收件人姓名")
+	private String reciptName;
+	/**
+	 * 收件人电话
+	 */
+	@ApiModelProperty("收件人电话")
+	private String reciptPhone;
+	/**
 	 * 商品信息
 	 */
-	List<MailCommodityDetail> detal;
+	List<MailCommodityDetail> detailList;
+	
+	/**
+	 * 物流信息
+	 */
+	private LogisticsTrackingInfo logisticsInfo;
 	
 }

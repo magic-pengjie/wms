@@ -1,6 +1,7 @@
 package com.magic.card.wms.warehousing.model.po;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -132,10 +133,37 @@ public class PurchaseBillDetail extends BasePo implements Serializable {
      */
     @ApiModelProperty("商品id")
     private String commodityId;
+    
+    /**
+         *  单据状态(保存:save ;已收货:recevied ;已入库:stored;已审核:approved;审核失败:approve_fail 作废:cancel )
+     */
+    @ApiModelProperty("单据状态(保存:save ;已收货:recevied ;已入库:stored;已审核:approved;审核失败:approve_fail 作废:cancel )")
+    private String billState;
+    
+    /**
+         * 审核人
+     */
+    @ApiModelProperty("单据状态(保存:save ;已收货:recevied ;已入库:stored;已审核:approved;审核失败:approve_fail 作废:cancel )")
+    private String approver;
+    
+    /**
+	  * 审核时间
+	 */
+	@ApiModelProperty("审核时间")
+	private Date approveTime;
+	
+	/**
+	 * 审核意见
+	*/
+	@ApiModelProperty("审核意见")
+	private String approveDesc;
+    
     /**
      * 入库库位信息--修改库存表使用
      */
     @ApiModelProperty("入库库位信息格式：库位Id1:数量1;库位Id2:数量2")
     @TableField(exist = false)
     private String storehouseInfoId;
+    
+   
 }

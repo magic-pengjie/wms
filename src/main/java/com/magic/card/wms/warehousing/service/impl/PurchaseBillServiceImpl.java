@@ -40,11 +40,13 @@ import com.magic.card.wms.warehousing.mapper.PurchaseBillMapper;
 import com.magic.card.wms.warehousing.model.BillStateEnum;
 import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
 import com.magic.card.wms.warehousing.model.dto.ComfirmReqDTO;
+import com.magic.card.wms.warehousing.model.dto.GroundingReqDTO;
 import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
 import com.magic.card.wms.warehousing.model.po.PurchaseBill;
 import com.magic.card.wms.warehousing.model.po.PurchaseBillDetail;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillExcelVO;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
+import com.magic.card.wms.warehousing.model.vo.PurchaseWarehousingVO;
 import com.magic.card.wms.warehousing.service.IPurchaseBillDetailService;
 import com.magic.card.wms.warehousing.service.IPurchaseBillService;
 
@@ -87,6 +89,18 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		Page<PurchaseBillVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
 		if (total > 0) {
 			page.setRecords(purchaseBillMapper.selectPurchaseBillList(page, dto));
+		}
+		page.setTotal(total);
+		return page;
+	}
+	
+	@Override
+	public Page<PurchaseWarehousingVO> selectWarehousingList(BillQueryDTO dto, PageInfo pageInfo) {
+		long total = purchaseBillMapper.selectWarehousingListCount(dto);
+		log.info("PurchaseBillServiceImpl selectWarehousingList counts={}", total);
+		Page<PurchaseWarehousingVO> page = new Page<>(pageInfo.getCurrent(), pageInfo.getPageSize());
+		if (total > 0) {
+			page.setRecords(purchaseBillMapper.selectWarehousingList(page, dto));
 		}
 		page.setTotal(total);
 		return page;
@@ -273,63 +287,27 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			throw new OperationException(ResultEnum.select_purchase_failed);
 		}
 		String warningStr = null;
-		/*
-		 * if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
-		 * if(!bill.getBillState().equals(dto.getBillState())) { throw new
-		 * OperationException(ResultEnum.purchase_recevie_failed); }
-		 * bill.setBillState(BillStateEnum.recevieing.getCode()); }else
-		 */if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
+		
+		if(BillStateEnum.save.getCode().equals(dto.getBillState())) {
 			if(!bill.getBillState().equals(dto.getBillState())) {
 				throw new OperationException(ResultEnum.purchase_comfirm_failed);
+			}
+			bill.setBillState(BillStateEnum.confirm.getCode());
+		}else if(BillStateEnum.confirm.getCode().equals(dto.getBillState())) {
+			if(!bill.getBillState().equals(dto.getBillState())) {
+				throw new OperationException(ResultEnum.purchase_recevie_failed);
 			}
 			bill.setBillState(BillStateEnum.recevied.getCode());
 			bill.setReceivUser(Constants.DEFAULT_USER);
 			bill.setReceivDate(DateUtil.getStringDateShort());
 			bill.setReceivNo(Constants.BILL_TYPE_FLAG_R+bill.getPurchaseNo().substring(2, bill.getPurchaseNo().length()));
-			//修改收货商品数量
 			List<PurchaseBillDetail> detailList = dto.getDetailList();
-			purchaseBillDetailService.updateBatchById(detailList);
-		}else if(BillStateEnum.recevied.getCode().equals(dto.getBillState())) {
-			if(!bill.getBillState().equals(dto.getBillState())) {
-				throw new OperationException(ResultEnum.purchase_in_failed);
-			}
-			bill.setBillState(BillStateEnum.stored.getCode());
-			//生成入库单
-			bill.setWarehousingNo(Constants.BILL_TYPE_FLAG_S+bill.getPurchaseNo().substring(2, bill.getPurchaseNo().length()));
-			bill.setWarehousingDate(new Date());
-			List<PurchaseBillDetail> detailList = dto.getDetailList();
+			detailList.forEach(e->{
+				e.setBillState(BillStateEnum.recevied.getCode());
+			});
+			//判断是否需要预警
 			warning(bill, detailList);
-			//入库后修改商品库存
-			for (PurchaseBillDetail detail : detailList) {
-				if(!ObjectUtils.isEmpty(detail.getStorehouseInfo())) {
-					//增加商品对应库位库存
-					String storehouseInfo = detail.getStorehouseInfoId();
-					String[] houses = storehouseInfo.split(";");
-					for(int i=0;i<houses.length;i++) {
-						if( houses[i].indexOf(":")>-1) {
-							String storehouseId = houses[i].split(":")[0];
-							int numbers = Integer.parseInt(houses[i].split(":")[1]);
-							storehouseConfigService.save(String.valueOf(detail.getCommodityId()), storehouseId, numbers);
-						}
-					}
-				}
-				//增加总库存
-				commodityStockService.addCommodityStock(bill.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getReceivNums()),Constants.DEFAULT_USER);
-				
-			}
 			purchaseBillDetailService.updateBatchById(detailList);
-			
-		}else if(BillStateEnum.stored.getCode().equals(dto.getBillState())) {
-			if(!bill.getBillState().equals(dto.getBillState())) {
-				throw new OperationException(ResultEnum.purchase_approve_failed);
-			}
-			bill.setBillState(BillStateEnum.approved.getCode());
-			/*
-			 * if(!"1".equals(dto.getApproveResult())) {
-			 * bill.setBillState(BillStateEnum.approve_fail.getCode()); }
-			 */
-			bill.setApprover(Constants.DEFAULT_USER);
-			bill.setApproveTime(now);
 		}else {
 			throw new OperationException(ResultEnum.opr_type_error); 
 		}
@@ -339,6 +317,83 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		this.updateById(bill);
 		log.info("recevied confirm PurchaseBill  success id:{}",dto.getId());
 		return warningStr;
+	}
+	
+	@Override
+	public void grounding(GroundingReqDTO dto) {
+		PurchaseBillDetail detail = dto.getDetail();
+		//增加商品对应库位库存
+		String storehouseInfo = detail.getStorehouseInfoId();
+		String[] houses = storehouseInfo.split(";");
+		for(int i=0;i<houses.length;i++) {
+			if( houses[i].indexOf(":")>-1) {
+				String storehouseId = houses[i].split(":")[0];
+				int numbers = Integer.parseInt(houses[i].split(":")[1]);
+				storehouseConfigService.save(String.valueOf(detail.getCommodityId()), storehouseId, numbers);
+			}
+		}
+		//增加总库存
+		
+		commodityStockService.addCommodityStock(dto.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getReceivNums()),Constants.DEFAULT_USER);
+		log.info("增加总库存 success!");
+		Date now = new Date();
+		detail.setUpdateTime(now);
+		detail.setUpdateUser(Constants.DEFAULT_USER);
+		detail.setBillState(BillStateEnum.stored.getCode());
+		purchaseBillDetailService.updateById(detail);
+		log.info("商品上架完成purchaseId :{} detail id:{}",dto.getId(),detail.getId());
+		
+		setBillState(dto.getId(), BillStateEnum.stored.getCode(), BillStateEnum.stored.getCode());
+		
+	}
+
+	@Override
+	public void approve(long purchaseId,long id,int result, String approveDesc) {
+		String billState = BillStateEnum.approved.getCode();
+		PurchaseBillDetail detail = purchaseBillDetailService.selectById(id);
+		if(ObjectUtils.isEmpty(detail)) {
+			throw new OperationException(ResultEnum.select_purchase_failed);
+		}
+		if(!BillStateEnum.stored.getCode().equals(detail.getBillState()) &&
+				!BillStateEnum.approve_fail.getCode().equals(detail.getBillState())) {
+			throw new OperationException(ResultEnum.purchase_approve_failed);
+		}
+		detail.setId(id);
+		if(Constants.ZERO == result) {
+			billState = BillStateEnum.approve_fail.getCode();
+		}
+		detail.setBillState(billState);
+		detail.setApproveDesc(approveDesc);
+		detail.setApprover(Constants.DEFAULT_USER);
+		detail.setApproveTime(new Date());
+		purchaseBillDetailService.updateById(detail);
+		log.info("商品approve完成detail id:{}",id);
+		
+		setBillState(purchaseId, billState, billState);
+		
+	}
+	
+	/**
+	 * 判断采购单商品是否都操作完成完成，如果是采购单状态
+	 * @param id
+	 * @param checkState
+	 * @param updateState
+	 */
+	public void setBillState(long id,String checkState,String updateState) {
+		Wrapper<PurchaseBillDetail> w = new EntityWrapper<>();
+		w.eq("purchase_id", id);
+		w.eq("state", Constants.STATE_1);
+		List<PurchaseBillDetail> list = purchaseBillDetailService.selectList(w);
+		list.forEach(d->{
+			if(!checkState.equals(d.getBillState()))
+				return;
+		});
+		PurchaseBill bill = new PurchaseBill();
+		bill.setBillState(updateState);
+		bill.setUpdateTime(new Date());
+		bill.setId(id);
+		this.updateById(bill);
+		log.info("采购单操作完成 purchaseId id:{}",id);
 	}
 	
 	/**
@@ -419,6 +474,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 		}
 		
 	}
-	
+
+
 	
 }

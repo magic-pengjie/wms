@@ -5,6 +5,12 @@ import lombok.Data;
 
 @Data
 public class MailCommodityDetail {
+	
+	/**
+	 * 商品id
+	 */
+	@ApiModelProperty("商品id")
+	private long commodityId;
 	/**
      * 拣货单号
      */

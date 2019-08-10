@@ -280,25 +280,48 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		}
 		//组装订单xml格式报文
 		OrderDTO order = new OrderDTO();
-		order.setEcCompanyId(Constants.ECCOMPANY_ID);
-		order.setMsg_type(Constants.MSG_TYPE_CREATE); //创建订单
+		order.setEcCompanyId(Digest.urlEncode(Constants.ECCOMPANY_ID));
+		order.setMsg_type(Digest.urlEncode(Constants.MSG_TYPE_CREATE)); //创建订单
 		for (OrderInfoDTO orderInfoDTO : orderInfo) {
 			//订单无商品，则无需发送
 			if(ObjectUtils.isEmpty(orderInfoDTO.getCommodities())) {
 				continue;
 			}
 			String xml = getXmlBaseInfo(orderInfoDTO);
-			
+			/*
+			 * String xml="<RequestOrder> \n" + "<ecCompanyId >TAOBAO</ecCompanyId> \n" +
+			 * "<logisticProviderID>POSTB</logisticProviderID> \n" +
+			 * "<customerId>a92266073246b3ed2a2f0ff4d0b2bf5e</customerId> \n" +
+			 * "<txLogisticID>LP07082300225709</txLogisticID> \n" +
+			 * "<mailNo>124579546621</mailNo> \n" +
+			 * "<totalServiceFee>3200</totalServiceFee> \n" +
+			 * "<codSplitFee>2000</codSplitFee> \n" +
+			 * "<buyServiceFee>1000</buyServiceFee> \n" + "<orderType>1</orderType> \n" +
+			 * "<serviceType>0</serviceType> \n" + "<sender> \n" + "<name>张三</name> \n" +
+			 * "<postCode>310013</postCode> \n" + "<phone>231234134</phone> \n" +
+			 * "<mobile>13575745195</mobile> \n" + "<prov>浙江</prov> \n" +
+			 * "<city>杭州,西湖区</city> \n" + "<address>华星科技大厦9层</address> \n" + "</sender> \n"
+			 * + "<receiver> \n" + "<name>李四</name> \n" + "<postCode>100000</postCode> \n" +
+			 * "<phone>231234134</phone> \n" + "<mobile>13575745195</mobile> \n" +
+			 * "<prov>北京</prov> \n" + "<city>北京市</city> \n" +
+			 * "<address>华星科技大厦9层</address> \n" + "</receiver> \n" +
+			 * "<goodsValue>1900</goodsValue> \n" + "<items> \n" + "<item> \n" +
+			 * "<itemName>Nokia N73</itemName> \n" + "<number>2</number> \n" +
+			 * "<itemValue>2</itemValue> \n" + "</item> \n" + "<item> \n" +
+			 * "<itemName>Nokia N72</itemName> \n" + "<number>1</number> \n" +
+			 * "<itemValue>2</itemValue> \n" + "</item> \n" + "</items> \n" +
+			 * "<special>0</special> \n" + "<remark>易碎品</remark> \n" +
+			 * "<weight>10</weight >\n" + "</RequestOrder> ";
+			 */
 			log.info("订单xml:\n{}",xml);
+			order.setData_digest(signature(xml+Constants.PARTNERED));
 			order.setLogistics_interface(Digest.urlEncode(xml));
-			order.setData_digest(signature(order));
-			//TODO 推送数据至邮政
 			String reason = "数据推送异常";
 			try {
-				String result = HttpUtil.restPost(postUrl, order);
+				String result = HttpUtil.httpPost(postUrl,getData(order));
 				log.info("restPost finish result:{}",result);
 				ResponsesXml response = new ResponsesXml();
-				response = (ResponsesXml) XmlUtil.parseXml(response, xml);
+				response = (ResponsesXml) XmlUtil.parseXml(response, result);
 				boolean success = response.getResponseItems().get(0).getSuccess();
 				if(success) {
 					reason = response.getResponseItems().get(0).getReason();
@@ -378,9 +401,19 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		requestOrderXml.setServiceType(Constants.ORDER_TYPE);
 		requestOrderXml.setWeight(orderInfoDTO.getPresetWeight().longValue());
 		//收货人信息
+		PersionXml receiver = new PersionXml();
+		receiver.setName(orderInfoDTO.getReciptName());
+		receiver.setPostCode("100000");
+		receiver.setPhone(orderInfoDTO.getReciptPhone());
+		receiver.setMobile(orderInfoDTO.getReciptPhone());
+		receiver.setProv(orderInfoDTO.getProv());
+		receiver.setCity(orderInfoDTO.getCity());
+		receiver.setAddress(orderInfoDTO.getReciptAddr());
+		requestOrderXml.setReceiver(receiver);
+		//发货人信息
 		PersionXml sender = new PersionXml();
-		sender.setName(orderInfoDTO.getReciptName());
-		sender.setPostCode(orderInfoDTO.getPostCode());
+		sender.setName(orderInfoDTO.getCustomerName());
+		sender.setPostCode("100000");
 		sender.setPhone(orderInfoDTO.getReciptPhone());
 		sender.setMobile(orderInfoDTO.getReciptPhone());
 		sender.setProv(orderInfoDTO.getProv());
@@ -402,18 +435,21 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	}
 	
 	/**
-	 * 订单签名
+	 * 订单签名及url编码
 	 * @param order
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	public String signature(OrderDTO order) throws UnsupportedEncodingException {
-		StringBuffer checkStr = new StringBuffer();
-		checkStr.append(order.getEcCompanyId())
-				.append(order.getMsg_type())
-				.append(order.getLogistics_interface());
-		String signature = Digest.urlEncode(Digest.Md5Base64(checkStr.toString()));
-		return signature;
+	public String signature(String json) throws UnsupportedEncodingException {
+		return Digest.urlEncode(Digest.Md5Base64(json));
+	}
+	public String getData(OrderDTO order) {
+		StringBuffer url = new StringBuffer();
+		url.append("logistics_interface=").append(order.getLogistics_interface())
+			.append("&data_digest=").append(order.getData_digest())
+			.append("&msg_type=").append(order.getMsg_type())
+			.append("&ecCompanyId=").append(order.getEcCompanyId());
+		return url.toString();
 	}
 	
 	/**

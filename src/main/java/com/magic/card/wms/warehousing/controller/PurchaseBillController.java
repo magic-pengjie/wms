@@ -12,7 +12,6 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.ObjectUtils;
@@ -27,16 +26,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.plugins.Page;
-import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.utils.EasyExcelUtil;
-import com.magic.card.wms.warehousing.model.dto.ComfirmReqDTO;
-import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
 import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
+import com.magic.card.wms.warehousing.model.dto.ComfirmReqDTO;
+import com.magic.card.wms.warehousing.model.dto.GroundingReqDTO;
+import com.magic.card.wms.warehousing.model.dto.PurchaseBillDTO;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
+import com.magic.card.wms.warehousing.model.vo.PurchaseWarehousingVO;
 import com.magic.card.wms.warehousing.service.IPurchaseBillService;
 
 import io.swagger.annotations.Api;
@@ -73,6 +73,18 @@ public class PurchaseBillController {
 			return ResponseData.ok(page);
 		} catch (Exception e) {
 			log.error("查询采购单据列表失败:{}",e);
+			return ResponseData.error(ResultEnum.query_error);
+		}
+		
+	}
+	@ApiOperation(value = "上架商品列表查询", notes = "上架商品列表查询")
+	@RequestMapping(value = "/selectWarehousingList", method = RequestMethod.POST)
+	public ResponseData selectWarehousingList(@RequestBody BillQueryDTO dto,PageInfo pageInfo) {
+		try {
+			Page<PurchaseWarehousingVO> page = purchaseBillService.selectWarehousingList(dto, pageInfo);
+			return ResponseData.ok(page);
+		} catch (Exception e) {
+			log.error("上架商品列表查询失败:{}",e);
 			return ResponseData.error(ResultEnum.query_error);
 		}
 		
@@ -179,7 +191,7 @@ public class PurchaseBillController {
 		
 	}
 	
-	@ApiOperation(value = "开始收货操作", notes = "开始收货操作")
+	@ApiOperation(value = "收货操作", notes = "收货操作")
 	@RequestMapping(value = "/confirm", method = RequestMethod.POST)
 	public ResponseData confirm(@RequestBody @Valid ComfirmReqDTO dto,BindingResult bindingResult) {
 		String warningStr = null;
@@ -194,6 +206,40 @@ public class PurchaseBillController {
 			return ResponseData.error(b.getErrCode(),b.getErrMsg());
 		} catch (Exception e) {
 			log.error("采购单据失败:{}",e);
+			return ResponseData.error(ResultEnum.update_error);
+		}
+		
+	}
+	
+	@ApiOperation(value = "上架操作", notes = "上架操作")
+	@RequestMapping(value = "/grounding", method = RequestMethod.POST)
+	public ResponseData grounding(@RequestBody @Valid GroundingReqDTO dto,BindingResult bindingResult) {
+		try {
+			purchaseBillService.grounding(dto);
+			return ResponseData.ok();
+		}catch (OperationException b) {
+			log.error("采购单上架作失败:{}",b);
+			return ResponseData.error(b.getErrCode(),b.getErrMsg());
+		} catch (Exception e) {
+			log.error("采购单上架失败:{}",e);
+			return ResponseData.error(ResultEnum.update_error);
+		}
+		
+	}
+	@ApiOperation(value = "审批操作", notes = "审批")
+	@RequestMapping(value = "/approve", method = RequestMethod.GET)
+	public ResponseData approve(@RequestParam(value="purchaseId",required = true) long purchaseId,
+								@RequestParam(value="id",required = true) long id,
+								@RequestParam(value="result",required = true) int result, 
+								@RequestParam(value="approveDesc",required = false) String approveDesc) {
+		try {
+			purchaseBillService.approve(purchaseId,id,result,approveDesc);
+			return ResponseData.ok();
+		}catch (OperationException b) {
+			log.error("审批操作失败:{}",b);
+			return ResponseData.error(b.getErrCode(),b.getErrMsg());
+		} catch (Exception e) {
+			log.error("审批操作失败:{}",e);
 			return ResponseData.error(ResultEnum.update_error);
 		}
 		

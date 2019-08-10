@@ -24,19 +24,25 @@ public interface ILogisticsTrackingInfoService extends IService<LogisticsTrackin
 
 	/***
 	 * 根据快递单号实时查询邮政物流信息
-	 * @param mailNos 快递单号
+	 * @param list 快递单
 	 * @return
 	 */
-	ResponseData getTrackingInfo(List<String> mailNos) throws UnsupportedEncodingException;
+	ResponseData getTrackingInfo(List<MailPicking> list) throws UnsupportedEncodingException;
+	/**
+	 * 查询本地物流信息
+	 * @param orderNo 订单
+	 * @param mailNo 包裹单
+	 * @return
+	 */
+	List<LogisticsTrackingInfo> getTrackingInfoByMailOrOrderNo(String orderNo,String mailNo);
 	
 	/***
-     * 查询无物流信息的快递单
+     * 查询包裹信息列表
      * @param pageInfo
      * @param dto
-     * @param isSend  是否发送邮政
      * @return
      */
-	Page<MailDetailVO> selectNonLogisticsInfoList(MailDTO dto,PageInfo pageInfo);
+	Page<MailDetailVO> selectPickInfoList(MailDTO dto,PageInfo pageInfo);
     /**
      * 快递单物流信息批量查询
      */

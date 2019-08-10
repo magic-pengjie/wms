@@ -97,6 +97,13 @@ public class RequestOrderXml implements Serializable {
      */
     @XStreamAlias("sender")
     private PersionXml sender;
+    
+    /**
+     * 收件人员信息
+     */
+    @XStreamAlias("receiver")
+    private PersionXml receiver;
+    
     @XStreamAlias("items")
     List<OrderCommodityXml> commodityList;
     

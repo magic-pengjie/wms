@@ -18,7 +18,7 @@ public class WarningAgentQueryDTO {
     /**
      * 预警类型名称
      */
-	@ApiModelProperty("仓库功能编码")
+	@ApiModelProperty("预警类型名称")
     private String typeName;
     /**
      * 预警任务编码

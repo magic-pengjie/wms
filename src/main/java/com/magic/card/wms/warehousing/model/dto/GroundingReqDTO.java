@@ -1,8 +1,5 @@
 package com.magic.card.wms.warehousing.model.dto;
 
-import java.util.List;
-
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.magic.card.wms.warehousing.model.po.PurchaseBillDetail;
@@ -17,8 +14,8 @@ import lombok.Data;
  * @date 2019年6月22日
  */
 @Data
-@ApiModel("确认收货模型")
-public class ComfirmReqDTO {
+@ApiModel("上架模型")
+public class GroundingReqDTO {
 	
 	 /**
      * 采购单id
@@ -26,17 +23,17 @@ public class ComfirmReqDTO {
 	@ApiModelProperty("采购单id")
 	@NotNull(message = "采购单id不能为空")
 	private Long id;
-	/**
-     * 采购单状态
+	 /**
+	   * 商家编码
      */
-	@ApiModelProperty("采购单状态save(保存):显示开始收货按钮、删除按钮;recevied(已收货):显示入库按钮;stored(已入库):显示审核按钮")
-	@NotBlank(message = "采购单状态不能为空")
-	private String billState;
+	@ApiModelProperty("商家编码")
+	@NotNull(message = "商家编码不能为空")
+	private String customerCode;
 	
 	/**
      * 商品明细
      */
 	@ApiModelProperty("采购单商品明细 not null")
-    private List<PurchaseBillDetail> detailList;
+    private PurchaseBillDetail detail;
 
 }

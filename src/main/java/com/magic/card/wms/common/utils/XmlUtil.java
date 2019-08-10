@@ -17,6 +17,7 @@ public class XmlUtil {
 	 * @return
 	 */
 	public static Object parseXml(Object object,String xml) {
+		xml = xml.substring(xml.indexOf(">")+1);
 		XStream xstream = new XStream(new DomDriver());
 		xstream.autodetectAnnotations(true);
 		xstream.processAnnotations(object.getClass());

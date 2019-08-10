@@ -10,7 +10,7 @@ public class LogisticsReqHeader {
 	/**
 	 * 发送方标识 Y
 	 */
-	private String sendID;
+	private String sendID="BZ";
 	/**
 	 * 数据生产的省公司代码
 	 */
@@ -18,7 +18,7 @@ public class LogisticsReqHeader {
 	/**
 	 * 消息类别
 	 */
-	private String msgKind="JDPT_XXX_TRACE";
+	private String msgKind="BZ_JDPT_TRACE";
 	/**
 	 * 消息唯一序列号
 	 */
