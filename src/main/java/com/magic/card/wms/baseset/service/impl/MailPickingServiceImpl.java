@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.baseset.service.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.joda.time.DateTime;
@@ -34,10 +35,6 @@ import com.magic.card.wms.baseset.model.xml.OrderDTO;
 import com.magic.card.wms.baseset.model.xml.PersionXml;
 import com.magic.card.wms.baseset.model.xml.RequestOrderXml;
 import com.magic.card.wms.baseset.model.xml.ResponsesXml;
-import com.magic.card.wms.baseset.service.ICommodityStockService;
-import com.magic.card.wms.baseset.service.IMailPickingDetailService;
-import com.magic.card.wms.baseset.service.IMailPickingService;
-import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.enums.BillState;
@@ -75,6 +72,8 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	private IMailPickingDetailService mailPickingDetailService;
     @Autowired(required = false)
     private OrderInfoMapper orderInfoMapper;
+    @Autowired
+    private IOrderService orderService;
     @Autowired
     private WebUtil webUtil;
     @Value("${post.order.push.url}")
@@ -159,26 +158,26 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
             throw OperationException.addException("配货单生成异常，数据为空请核实数据！");
         }
 
-        //补货预警提示
-        List<Map> replenishmentNotices = Lists.newLinkedList();
-        invoiceList.forEach(invoice->{
-            int bayNums = MapUtils.getIntValue(invoice, "bayNums");
-            int availableNums = MapUtils.getIntValue(invoice, "availableNums");
-            // 可用量小于购买量
-            if (availableNums < bayNums) {
-                replenishmentNotices.add(invoice);
-            }
-        });
-
-        new Thread(() -> {
-            //TODO 拣货区库存不足 补货提醒功能待实现
-            if (CollectionUtils.isNotEmpty(replenishmentNotices)) {
-                replenishmentNotices.forEach(map -> {
-                    log.warn("拣货区库存不足请及时补货： 商品条形码：{}", map.get("barCode"));
-                });
-            }
-
-        }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
+//        //补货预警提示
+//        List<Map> replenishmentNotices = Lists.newLinkedList();
+//        invoiceList.forEach(invoice->{
+//            int bayNums = MapUtils.getIntValue(invoice, "bayNums");
+//            int availableNums = MapUtils.getIntValue(invoice, "availableNums");
+//            // 可用量小于购买量
+//            if (availableNums < bayNums) {
+//                replenishmentNotices.add(invoice);
+//            }
+//        });
+//
+//        new Thread(() -> {
+//            //TODO 拣货区库存不足 补货提醒功能待实现
+//            if (CollectionUtils.isNotEmpty(replenishmentNotices)) {
+//                replenishmentNotices.forEach(map -> {
+//                    log.warn("拣货区库存不足请及时补货： 商品条形码：{}", map.get("barCode"));
+//                });
+//            }
+//
+//        }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
 
         return invoiceList;
     }
