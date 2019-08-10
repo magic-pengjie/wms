@@ -102,9 +102,9 @@ public class OrderInfoDTO implements Serializable {
     @ApiModelProperty("商品金额")
     private BigDecimal goodsValue;
     /**
-     * 单据状态(保存:save确认:confirm 作废及退单:cancel )
+     * 单据状态
      */
-    @ApiModelProperty("单据状态，默认：save / 确认:confirm 作废及退单:cancel ")
+    @ApiModelProperty("单据状态")
     private String billState;
 
     
@@ -125,7 +125,7 @@ public class OrderInfoDTO implements Serializable {
     /**
      * 发送次数
      */
-    private Integer sendNums;
+    private int sendNums;
     /**
      * 发送失败原因
      */

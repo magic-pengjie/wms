@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.magic.card.wms.warehousing.mapper.ReturnGoodsRecordsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.warehousing.model.po.ReturnGoodsRecords">
+        <id column="id" property="id" />
+        <result column="customer_code" property="customerCode" />
+        <result column="commodity_code" property="commodityCode" />
+        <result column="mail_no" property="mailNo" />
+        <result column="order_no" property="orderNo" />
+        <result column="system_order_no" property="systemOrderNo" />
+        <result column="delivery_nums" property="deliveryNums" />
+        <result column="commodity_state" property="commodityState" />
+        <result column="return_nums" property="returnNums" />
+        <result column="residual_nums" property="residualNums" />
+        <result column="normal_nums" property="normalNums" />
+        <result column="residual_storehouse" property="residualStorehouse" />
+        <result column="normal_storehouse" property="normalStorehouse" />
+        <result column="return_remark" property="returnRemark" />
+        <result column="recipt_name" property="reciptName" />
+        <result column="recipt_phone" property="reciptPhone" />
+        <result column="state" property="state" />
+        <result column="create_time" property="createTime" />
+        <result column="create_user" property="createUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, customer_code, commodity_code, mail_no, order_no, system_order_no, delivery_nums, commodity_state, return_nums, residual_nums, normal_nums, residual_storehouse, normal_storehouse, return_remark, recipt_name, recipt_phone, state, create_time, create_user, update_time, update_user, remark
+    </sql>
+    
+    <select id="selectReturnList"	resultType="com.magic.card.wms.warehousing.model.vo.ReturnGoodsVO"	
+    				parameterType="com.magic.card.wms.warehousing.model.dto.ReturnGoodsDTO">
+    	SELECT rgr.*,cbi.customer_name,cs.sku_name,cs.spec,cs.model_no,cs.banner
+    		from  wms_return_goods_records rgr
+			left join wms_customer_base_info cbi on rgr.customer_code=cbi.customer_code and cbi.state=1
+			left join wms_commodity_sku cs on rgr.commodity_code=cs.bar_code and cs.state=1
+ 		where rgr.state=1
+ 			 <if test="orderNo != null and orderNo != '' ">
+				and rgr.order_no = #{orderNo}
+			</if>
+			 <if test="mailNo != null and mailNo != '' ">
+				and rgr.mail_no = #{mailNo}
+			</if>
+			 <if test="systemOrderNo != null and systemOrderNo != '' ">
+				and rgr.system_order_no = #{systemOrderNo}
+			</if>
+			<if test="customerName != null and customerName != '' ">
+				and cbi.customer_name like concat(concat("%",#{customerName}),"%")
+			</if>
+			 <if test="commodityCode != null and commodityCode != '' ">
+				and rgr.commodity_code = #{commodityCode}
+			</if>
+			<if test="commodityName != null and commodityName != '' ">
+				and cs.sku_name like concat(concat("%",#{commodityName}),"%")
+			</if>
+			<if test="reciptName != null and reciptName != '' ">
+				and rgr.recipt_name like concat(concat("%",#{reciptName}),"%")
+			</if>
+			<if test="reciptPhone != null and reciptPhone != '' ">
+				and rgr.recipt_phone = #{reciptPhone}
+			</if>
+			
+    </select>
+    <select id="selectReturnListCount"	resultType="java.lang.Long"
+    				parameterType="com.magic.card.wms.warehousing.model.dto.ReturnGoodsDTO">
+    SELECT count(*)
+    		from  wms_return_goods_records rgr
+			left join wms_customer_base_info cbi on rgr.customer_code=cbi.customer_code and cbi.state=1
+			left join wms_commodity_sku cs on rgr.commodity_code=cs.bar_code and cs.state=1
+ 		where rgr.state=1
+ 			 <if test="orderNo != null and orderNo != '' ">
+				and rgr.order_no = #{orderNo}
+			</if>
+			 <if test="mailNo != null and mailNo != '' ">
+				and rgr.mail_no = #{mailNo}
+			</if>
+			 <if test="systemOrderNo != null and systemOrderNo != '' ">
+				and rgr.system_order_no = #{systemOrderNo}
+			</if>
+			<if test="customerName != null and customerName != '' ">
+				and cbi.customer_name like concat(concat("%",#{customerName}),"%")
+			</if>
+			 <if test="commodityCode != null and commodityCode != '' ">
+				and rgr.commodity_code = #{commodityCode}
+			</if>
+			<if test="commodityName != null and commodityName != '' ">
+				and cs.sku_name like concat(concat("%",#{commodityName}),"%")
+			</if>
+			<if test="reciptName != null and reciptName != '' ">
+				and rgr.recipt_name like concat(concat("%",#{reciptName}),"%")
+			</if>
+			<if test="reciptPhone != null and reciptPhone != '' ">
+				and rgr.recipt_phone = #{reciptPhone}
+			</if>
+			
+    </select>
+
+</mapper>

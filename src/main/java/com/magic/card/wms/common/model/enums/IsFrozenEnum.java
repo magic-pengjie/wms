@@ -10,7 +10,7 @@ import lombok.Getter;
 public enum IsFrozenEnum {
 
 	UNFROZEN(0,"未冻结"),
-	FROZEN(1,"正常");
+	FROZEN(1,"冻结");
 	
 	private int code;
 	private String desc;

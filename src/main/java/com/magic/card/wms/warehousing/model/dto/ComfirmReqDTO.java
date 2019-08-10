@@ -32,15 +32,6 @@ public class ComfirmReqDTO {
 	@ApiModelProperty("采购单状态save(保存):显示开始收货按钮、删除按钮;recevied(已收货):显示入库按钮;stored(已入库):显示审核按钮")
 	@NotBlank(message = "采购单状态不能为空")
 	private String billState;
-	/**
-     * 审批结果1-通过 0-不通过
-     */
-	private String approveResult;
-	/**
-     * 审批意见
-     */
-	@ApiModelProperty("审批意见")
-	private String approveDesc;
 	
 	/**
      * 商品明细

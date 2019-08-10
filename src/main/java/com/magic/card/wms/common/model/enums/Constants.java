@@ -52,7 +52,11 @@ public class Constants {
 	/**
 	 * 电商标识
 	 */
-	public static final String ECCOMPANY_ID = "TAOBAO";
+	public static final String ECCOMPANY_ID = "SHAIBICIJIAJU";
+	/**
+	 * 数字签名
+	 */
+	public static final String PARTNERED = "IFQXpswT3Bsg";
 	/**
 	 * 客户标识
 	 */

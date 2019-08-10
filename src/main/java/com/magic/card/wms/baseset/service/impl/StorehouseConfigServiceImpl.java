@@ -241,12 +241,30 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
    	}
 
 	@Override
-	public List<StorehouseConfigVO> recommendStore(String customerCode,String barCode) {
-		List<StorehouseConfigVO> configList = storehouseConfigMapper.recommendStore(customerCode,barCode);
-		if(ObjectUtils.isEmpty(configList)) {
+	public List recommendStore(String type,String customerCode,String barCode) {
+		//List<StorehouseConfigVO> configList = storehouseConfigMapper.recommendStore(customerCode,barCode);
+		EntityWrapper entityWrapper = new EntityWrapper();
+		entityWrapper.eq("wcbi.customer_code", customerCode);
+		entityWrapper.eq("wci.commodity_code", barCode);
+		entityWrapper.eq("wsi.state", StateEnum.normal.getCode());
+		entityWrapper.ne("wsi.is_frozen", 1);
+		// 类型为1或者未传类型之，默认查询入库上架存储区库位
+		if("1".equals(type) || org.springframework.util.StringUtils.isEmpty(type)) {
+			entityWrapper.eq("wsc.available_nums", 0);
+			entityWrapper.eq("wsi.house_code", StoreTypeEnum.CCQ.getCode());
+		}else if("2".equals(type)) {
+			//查询捡货去库位
+			entityWrapper.eq("wsi.house_code", StoreTypeEnum.JHQ.getCode());
+		}else if("3".equals(type)) {
+			//查询次品区库位
+			entityWrapper.eq("wsi.house_code", StoreTypeEnum.CPQ.getCode());
+		}
+		entityWrapper.orderBy("wsc.entry_time, wsc.end_time, wsc.available_nums");
+		List result = baseMapper.loadGrid(new Page(), entityWrapper);
+		if(ObjectUtils.isEmpty(result)) {
 			throw new OperationException(-1,"该商品无可用库位");
 		}
-		return configList;
+		return result;
 	}
 
     /**

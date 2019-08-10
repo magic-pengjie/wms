@@ -108,6 +108,7 @@
     <select id="loadGrid" resultType="java.util.Map">
 		SELECT
 			wsc.id,
+			wsc.storehouse_id storehouseId,
 			wsc.state,
 			wsc.customer_id customerId,
 			wsc.store_nums storeNums,
@@ -122,17 +123,17 @@
 			wci.id commodityId
 		FROM
 			wms_storehouse_config wsc
-			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
-			LEFT JOIN wms_commodity_info wci ON wsc.commodity_id = wci.id
-			LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code
-			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
+			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id and wsi.state=1
+			LEFT JOIN wms_commodity_info wci ON wsc.commodity_id = wci.id and wci.state=1
+			LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code and wcs.state=1
+			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id and wcbi.state=1
 
 		<where>
 			${ew.sqlSegment}
 		</where>
 	</select>
 
-	<select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
+	<!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
 		select  sc.storehouse_id,
 				si.area_code,
 				si.house_code,
@@ -145,12 +146,18 @@
 				inner join wms_commodity_info ci on ci.id=sc.commodity_id and ci.state=1
 				where
 				   sc.state=1
-				   and sc.available_nums=0
-				   and si.is_frozen!=1
-				   and si.house_code='CK-GN-CCQ'
-				   and customer_code=#{customerCode}
+				   <if test="type='1' or type='' or type=null">
+				   	and sc.available_nums=0
+				   	and si.house_code='CK-GN-CCQ'
+				   </if>
+				   <if test="type='2' ">
+				   	and si.house_code='CK-GN-JHQ'
+				   </if>
 				   <if test="barCode !=null and barCode != '' ">
 				   		and ci.commodity_code=#{barCode}
 				   </if>
-	</select>
+				   and si.is_frozen!=1
+				   and customer_code=#{customerCode}
+				   order by priority_value 
+	</select> -->
 </mapper>

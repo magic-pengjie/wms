@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.MailDTO;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 import com.magic.card.wms.baseset.model.vo.MailDetailVO;
+import com.magic.card.wms.common.model.enums.Constants;
 
 /**
  * com.magic.card.wms.baseset.mapper
@@ -98,11 +100,17 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
      * 包裹单列表展示
      * @return
      */
-    Page<MailDetailVO> getNonLogisticsInfoList(Page page,MailDTO dto);
+    List<MailDetailVO> selectPickInfoList(Page page,MailDTO dto);
     /**
      * 包裹单列表展示条数
      * @return
      */
-    Integer getNonLogisticsInfoCounts(MailDTO dto);
+    Integer selectPickInfoListCounts(MailDTO dto);
+    
+    /**
+     * 根据快递单修改物流状态
+     * @param mailNos
+     */
+    void updateBatchByMailNos(List<String> mailNos);
 
 }

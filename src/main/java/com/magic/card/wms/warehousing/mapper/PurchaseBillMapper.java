@@ -5,9 +5,12 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.plugins.pagination.Pagination;
+import com.magic.card.wms.statistic.model.dto.ParchaseBillResponseDto;
 import com.magic.card.wms.warehousing.model.dto.BillQueryDTO;
 import com.magic.card.wms.warehousing.model.po.PurchaseBill;
 import com.magic.card.wms.warehousing.model.vo.PurchaseBillVO;
+import com.magic.card.wms.warehousing.model.vo.PurchaseWarehousingVO;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -32,6 +35,19 @@ public interface PurchaseBillMapper extends BaseMapper<PurchaseBill> {
 	 */
 	Long selectPurchaseBillListCount(BillQueryDTO dto);
 	/**
+	  * 查询上架商品列表
+	 * @param dto 请求参数
+	 * @param page 分页对象
+	 * @return
+	 */
+	List<PurchaseWarehousingVO> selectWarehousingList(Pagination page ,BillQueryDTO dto);
+	/**
+	 *  查询上架商品列表
+	 * @param dto 请求参数
+	 * @return
+	 */
+	Long selectWarehousingListCount(BillQueryDTO dto);
+	/**
 	 * 采购单验重
 	 * @return 大于0表示重复
 	 */
@@ -43,4 +59,15 @@ public interface PurchaseBillMapper extends BaseMapper<PurchaseBill> {
 	 * @return
 	 */
 	List<PurchaseBill> getFoodWarningList(Pagination page);
+
+
+	/**
+	 * 入库报表统计查询
+	 * @param customerCode
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	List<ParchaseBillResponseDto> queryPurchaseBillCountList(@Param("customerCode")String customerCode,@Param("startDate")String startDate,@Param("endDate")String endDate);
+
 }

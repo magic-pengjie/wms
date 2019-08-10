@@ -8,6 +8,11 @@ import lombok.Data;
 @Data
 public class MailDTO {
 	/**
+     * 查询类型
+     */
+	@ApiModelProperty("查询类型1:包裹信息 2:当天无物流信息3:历史无物流信息")
+	private int type;
+	/**
      * 快递单号
      */
 	@ApiModelProperty("快递单号")
@@ -40,11 +45,6 @@ public class MailDTO {
 	@ApiModelProperty("物流状态")
 	private Integer logisticsState;
 	/**
-     * 是否历史纪录
-     */
-	@ApiModelProperty("是否历史纪录")
-	private Integer isHistory;
-	/**
 	 * 查询开始时间
 	 */
 	@ApiModelProperty("查询开始时间")
@@ -54,4 +54,15 @@ public class MailDTO {
 	 */
 	@ApiModelProperty("查询结束时间")
 	private Date endDate;
+	
+	/**
+	 * 收件人姓名
+	 */
+	@ApiModelProperty("收件人姓名")
+	private String reciptName;
+	/**
+	 * 收件人电话
+	 */
+	@ApiModelProperty("收件人电话")
+	private String reciptPhone;
 }
