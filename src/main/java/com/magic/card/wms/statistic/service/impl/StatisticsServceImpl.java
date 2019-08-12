@@ -6,8 +6,6 @@ import com.magic.card.wms.check.mapper.CheckRecordMapper;
 import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.EasyExcelParams;
-import com.magic.card.wms.common.model.PageInfo;
-import com.magic.card.wms.common.model.PageInfoArgumentResolver;
 import com.magic.card.wms.common.model.po.BasePageResponse;
 import com.magic.card.wms.common.utils.BeanCopyUtil;
 import com.magic.card.wms.common.utils.DateUtil;
@@ -16,7 +14,6 @@ import com.magic.card.wms.statistic.model.dto.*;
 import com.magic.card.wms.statistic.service.StatisticsService;
 import com.magic.card.wms.warehousing.mapper.PurchaseBillMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -52,11 +49,12 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<ParchaseBillResponseDto> list  = purchaseBillMapper.queryPurchaseBillCountList(dto.getCustomerCode(),dto.getStartDate(),dto.getEndDate());
         if (!CollectionUtils.isEmpty(list)){
-            pageResponse.setTotalCount(list.size());
-            pageResponse.setData(list);
+            pageResponse.setTotal(list.size());
+            pageResponse.setRecords(list);
 
         }
-        pageResponse.setPageCount(dto.getCurrent());
+        pageResponse.setCurrent(dto.getCurrent());
+        pageResponse.setPageSize(dto.getPageSize());
         log.info("===>> queryParchaseBill.response:{}",list);
         return pageResponse;
 
@@ -93,10 +91,11 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<OutStorehouseResponseDto> outStoresList = checkRecordMapper.queryOutStorehouseList(dto.getCustomerCode(), dto.getStartDate(), dto.getEndDate());
         if(!CollectionUtils.isEmpty(outStoresList)){
-            pageResponse.setTotalCount(outStoresList.size());
-            pageResponse.setData(outStoresList);
+            pageResponse.setTotal(outStoresList.size());
+            pageResponse.setRecords(outStoresList);
         }
-        pageResponse.setPageCount(dto.getCurrent());
+        pageResponse.setCurrent(dto.getCurrent());
+        pageResponse.setPageSize(dto.getPageSize());
         return pageResponse;
     }
 
@@ -132,10 +131,11 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<StorehouseCountResponseDto> storeCountList = checkRecordMapper.queryStorehouseCountList(dto.getCustomerCode());
         if(!CollectionUtils.isEmpty(storeCountList)){
-            pageResponse.setTotalCount(storeCountList.size());
-            pageResponse.setData(storeCountList);
+            pageResponse.setTotal(storeCountList.size());
+            pageResponse.setRecords(storeCountList);
         }
-        pageResponse.setPageCount(dto.getCurrent());
+        pageResponse.setCurrent(dto.getCurrent());
+        pageResponse.setPageSize(dto.getPageSize());
         return pageResponse;
     }
 
@@ -169,10 +169,11 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<StorehouseUsedResponseDto> storeUsedlist = checkRecordMapper.queryStorehouseUsedList(dto.getCustomerCode());
         if(!CollectionUtils.isEmpty(storeUsedlist)){
-            pageResponse.setTotalCount(storeUsedlist.size());
-            pageResponse.setData(storeUsedlist);
+            pageResponse.setTotal(storeUsedlist.size());
+            pageResponse.setRecords(storeUsedlist);
         }
-        pageResponse.setPageCount(dto.getCurrent());
+        pageResponse.setCurrent(dto.getCurrent());
+        pageResponse.setPageSize(dto.getPageSize());
         return null;
     }
 
