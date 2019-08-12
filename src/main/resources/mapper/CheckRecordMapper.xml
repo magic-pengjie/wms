@@ -67,7 +67,7 @@
 
     <select id="queryStorehouseCountList" resultType="com.magic.card.wms.statistic.model.dto.StorehouseCountResponseDto">
         select
-            wsc.customer_id as customerId,
+            cbi.customer_code as customerCode,
             cbi.customer_name as customerName,
             cs.sku_code as skuCode,
             cs.sku_name as commodityName,
@@ -86,7 +86,7 @@
         <if test="null !=customerCode and ''!=customerCode">
             and cbi.customer_code= #{customerCode}
         </if>
-        GROUP BY wsc.customer_id,wsc.commodity_id,cbi.customer_name,cs.sku_name,cs.sku_code,cs.spec,cs.banner,cs.model_no
+        GROUP BY cbi.customer_code, wsc.commodity_id,cbi.customer_name,cs.sku_name,cs.sku_code,cs.spec,cs.banner,cs.model_no
     </select>
 
     <select id="queryStorehouseUsedList" resultType="com.magic.card.wms.statistic.model.dto.StorehouseUsedResponseDto">

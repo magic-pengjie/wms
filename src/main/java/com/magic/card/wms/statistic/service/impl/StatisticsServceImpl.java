@@ -174,7 +174,7 @@ public class StatisticsServceImpl implements StatisticsService {
         }
         pageResponse.setCurrent(dto.getCurrent());
         pageResponse.setPageSize(dto.getPageSize());
-        return null;
+        return pageResponse;
     }
 
     //库位使用报表导出excel

@@ -36,6 +36,7 @@ public class CheckCountDto implements Serializable{
 	/**
 	 * 商家Code
 	 */
+	@ApiModelProperty("商家编码")
 	private String customerCode;
 
     /**

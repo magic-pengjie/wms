@@ -13,6 +13,9 @@ public class StorehouseCountResponseDto implements Serializable {
     @ApiModelProperty(value = "商家ID")
     private String customerId;
 
+    @ApiModelProperty(value = "商家编码")
+    private String customerCode;
+
     @ApiModelProperty(value = "商家名称")
     private String customerName;
 
@@ -62,6 +65,7 @@ public class StorehouseCountResponseDto implements Serializable {
     public String toString() {
         final StringBuffer sb = new StringBuffer("StorehouseCountResponseDto{");
         sb.append("customerId='").append(customerId).append('\'');
+        sb.append(", customerCode='").append(customerCode).append('\'');
         sb.append(", customerName='").append(customerName).append('\'');
         sb.append(", commodityId='").append(commodityId).append('\'');
         sb.append(", banner='").append(banner).append('\'');

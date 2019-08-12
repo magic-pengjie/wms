@@ -12,8 +12,11 @@ public class StorehouseCountResponseVO extends BaseRowModel implements Serializa
 
     private static final long serialVersionUID = 1454890930546889153L;
 
-    @ExcelProperty(value = "商家ID", index = 0)
+//    @ExcelProperty(value = "商家ID", index = 0)
     private String customerId;
+
+    @ExcelProperty(value = "商家编码", index = 0)
+    private String customerCode;
 
     @ExcelProperty(value = "商家名称", index = 1)
     private String customerName;
@@ -62,8 +65,9 @@ public class StorehouseCountResponseVO extends BaseRowModel implements Serializa
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("StorehouseCountResponseDto{");
+        final StringBuffer sb = new StringBuffer("StorehouseCountResponseVO{");
         sb.append("customerId='").append(customerId).append('\'');
+        sb.append(", customerCode='").append(customerCode).append('\'');
         sb.append(", customerName='").append(customerName).append('\'');
         sb.append(", commodityId='").append(commodityId).append('\'');
         sb.append(", banner='").append(banner).append('\'');
