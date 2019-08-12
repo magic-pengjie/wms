@@ -10,7 +10,7 @@ public class ParchaseBillResponseDto implements Serializable {
 
     private static final long serialVersionUID = -2178647092498673122L;
 
-    @ApiModelProperty(value = "商家ID")
+    @ApiModelProperty(value = "商家Code")
     private String customerCode;
 
     @ApiModelProperty(value = "商家名称")

@@ -1,9 +1,14 @@
 package com.magic.card.wms.statistic.service.impl;
 
 
+import com.baomidou.mybatisplus.plugins.pagination.PageHelper;
 import com.magic.card.wms.check.mapper.CheckRecordMapper;
+import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.EasyExcelParams;
+import com.magic.card.wms.common.model.PageInfo;
+import com.magic.card.wms.common.model.PageInfoArgumentResolver;
+import com.magic.card.wms.common.model.po.BasePageResponse;
 import com.magic.card.wms.common.utils.BeanCopyUtil;
 import com.magic.card.wms.common.utils.DateUtil;
 import com.magic.card.wms.common.utils.EasyExcelUtil;
@@ -11,6 +16,7 @@ import com.magic.card.wms.statistic.model.dto.*;
 import com.magic.card.wms.statistic.service.StatisticsService;
 import com.magic.card.wms.warehousing.mapper.PurchaseBillMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -41,11 +47,18 @@ public class StatisticsServceImpl implements StatisticsService {
 
     //查询入库报表
     @Override
-    public List<ParchaseBillResponseDto> queryParchaseBill(ParchaseBillDto dto) {
-
+    public BasePageResponse<ParchaseBillResponseDto> queryParchaseBill(ParchaseBillDto dto) {
+        BasePageResponse<ParchaseBillResponseDto> pageResponse = new BasePageResponse<>();
+        PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<ParchaseBillResponseDto> list  = purchaseBillMapper.queryPurchaseBillCountList(dto.getCustomerCode(),dto.getStartDate(),dto.getEndDate());
+        if (!CollectionUtils.isEmpty(list)){
+            pageResponse.setTotalCount(list.size());
+            pageResponse.setData(list);
+
+        }
+        pageResponse.setPageCount(dto.getCurrent());
         log.info("===>> queryParchaseBill.response:{}",list);
-        return list;
+        return pageResponse;
 
     }
 
@@ -75,10 +88,18 @@ public class StatisticsServceImpl implements StatisticsService {
 
     //查询出库报表
     @Override
-    public List<OutStorehouseResponseDto> queryOutStorehouseList(ParchaseBillDto dto) {
-
-        return checkRecordMapper.queryOutStorehouseList(dto.getCustomerCode(),dto.getStartDate(),dto.getEndDate());
+    public BasePageResponse<OutStorehouseResponseDto> queryOutStorehouseList(ParchaseBillDto dto) {
+        BasePageResponse<OutStorehouseResponseDto> pageResponse = new BasePageResponse<>();
+        PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
+        List<OutStorehouseResponseDto> outStoresList = checkRecordMapper.queryOutStorehouseList(dto.getCustomerCode(), dto.getStartDate(), dto.getEndDate());
+        if(!CollectionUtils.isEmpty(outStoresList)){
+            pageResponse.setTotalCount(outStoresList.size());
+            pageResponse.setData(outStoresList);
+        }
+        pageResponse.setPageCount(dto.getCurrent());
+        return pageResponse;
     }
+
 
     //出库报表导出excel
     @Override
@@ -106,8 +127,16 @@ public class StatisticsServceImpl implements StatisticsService {
 
     //查询库存报表
     @Override
-    public List<StorehouseCountResponseDto> queryStorehouseCountList(ParchaseBillDto dto) {
-        return checkRecordMapper.queryStorehouseCountList(dto.getCustomerCode());
+    public BasePageResponse<StorehouseCountResponseDto> queryStorehouseCountList(ParchaseBillDto dto) {
+        BasePageResponse<StorehouseCountResponseDto> pageResponse = new BasePageResponse<>();
+        PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
+        List<StorehouseCountResponseDto> storeCountList = checkRecordMapper.queryStorehouseCountList(dto.getCustomerCode());
+        if(!CollectionUtils.isEmpty(storeCountList)){
+            pageResponse.setTotalCount(storeCountList.size());
+            pageResponse.setData(storeCountList);
+        }
+        pageResponse.setPageCount(dto.getCurrent());
+        return pageResponse;
     }
 
     //导出库存报表excel
@@ -135,9 +164,16 @@ public class StatisticsServceImpl implements StatisticsService {
 
     //库位使用报表
     @Override
-    public List<StorehouseUsedResponseDto> queryStorehouseUsedList(ParchaseBillDto dto) {
-
-        return checkRecordMapper.queryStorehouseUsedList(dto.getCustomerCode());
+    public BasePageResponse<StorehouseUsedResponseDto> queryStorehouseUsedList(ParchaseBillDto dto) {
+        BasePageResponse<StorehouseUsedResponseDto> pageResponse = new BasePageResponse<>();
+        PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
+        List<StorehouseUsedResponseDto> storeUsedlist = checkRecordMapper.queryStorehouseUsedList(dto.getCustomerCode());
+        if(!CollectionUtils.isEmpty(storeUsedlist)){
+            pageResponse.setTotalCount(storeUsedlist.size());
+            pageResponse.setData(storeUsedlist);
+        }
+        pageResponse.setPageCount(dto.getCurrent());
+        return null;
     }
 
     //库位使用报表导出excel
@@ -163,5 +199,12 @@ public class StatisticsServceImpl implements StatisticsService {
             }
         }
 
+    }
+
+    //库存报表，库位使用报表， 查询库位信息List
+    @Override
+    public BasePageResponse<CheckRecordInfoDto> queryStoreDetailsInfo(ParchaseBillDto dto) {
+        //调用盘点查询库位接口
+        return null;
     }
 }

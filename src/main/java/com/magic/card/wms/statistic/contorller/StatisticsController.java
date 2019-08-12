@@ -45,8 +45,7 @@ public class StatisticsController {
     @RequestMapping(value = "/query/purchaseBill", method = RequestMethod.GET)
     public ResponseData queryPurchaseBill(@Valid ParchaseBillDto dto) {
         log.info("===>> 入库报表查询queryPurchaseBill.request:{}", dto);
-        List<ParchaseBillResponseDto> responseDtoList = statisticsService.queryParchaseBill(dto);
-        return ResponseData.ok(responseDtoList);
+        return ResponseData.ok(statisticsService.queryParchaseBill(dto));
     }
 
     @ApiOperation(value = "入库报表导出excel", notes = "入库报表导出excel")
@@ -91,6 +90,7 @@ public class StatisticsController {
             statisticsService.exportStorehouseCountExcel(dto,request,response);
     }
 
+
     /**
      * 库位使用报表；各商家分配的库位，使用情况，共多个，已用多少个，剩余多少个；点击数量可查询库位相关明细
      * @param dto
@@ -107,6 +107,19 @@ public class StatisticsController {
     @RequestMapping(value = "/export/storeUsedExcel", method = RequestMethod.GET)
     public void exportStorehouseUsed(@Valid ParchaseBillDto dto,HttpServletRequest request, HttpServletResponse response) throws BusinessException {
         statisticsService.exportStorehouseUsedExcel(dto,request,response);
+    }
+
+
+    /**
+     * 库存报表，库位使用报表，点击“库存数量“可查看库位相关信息
+     * @param dto
+     * @return
+     */
+    @ApiOperation(value = "库存报表查看库位相关信息", notes = "库存报表查看库位相关信息")
+    @RequestMapping(value = "/query/storeDetailsInfo", method = RequestMethod.GET)
+    public ResponseData queryStoreDetailsInfo(@Valid ParchaseBillDto dto) {
+
+        return ResponseData.ok();
     }
 
 }

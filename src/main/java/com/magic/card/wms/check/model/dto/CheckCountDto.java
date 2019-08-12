@@ -33,6 +33,11 @@ public class CheckCountDto implements Serializable{
 	@NotBlank(message = "商家不能为空")
     private String customerId;
 
+	/**
+	 * 商家Code
+	 */
+	private String customerCode;
+
     /**
      * 	库区(A,B,C,D。。。)
      */
@@ -44,21 +49,17 @@ public class CheckCountDto implements Serializable{
      */
     @ApiModelProperty("商品id列表")
     private List<Integer> commodityId;
-    
+
+
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("CheckCountDto [");
-		if (checkType != null)
-			builder.append("checkType=").append(checkType).append(", ");
-		if (areaCode != null)
-			builder.append("areaCode=").append(areaCode).append(", ");
-		if (customerId != null)
-			builder.append("customerId=").append(customerId).append(", ");
-		if (commodityId != null)
-			builder.append("commodityId=").append(commodityId);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("CheckCountDto{");
+		sb.append("checkType='").append(checkType).append('\'');
+		sb.append(", customerId='").append(customerId).append('\'');
+		sb.append(", customerCode='").append(customerCode).append('\'');
+		sb.append(", areaCode=").append(areaCode);
+		sb.append(", commodityId=").append(commodityId);
+		sb.append('}');
+		return sb.toString();
 	}
-
 }

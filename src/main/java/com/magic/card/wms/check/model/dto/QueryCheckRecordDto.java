@@ -12,6 +12,9 @@ public class QueryCheckRecordDto implements Serializable {
 	
 	//商家ID
 	private String customerId;
+
+	//商家Code
+	private String customerCode;
 	
 	//库位IDList
 	private List<Long> storeIdList;
@@ -20,17 +23,14 @@ public class QueryCheckRecordDto implements Serializable {
 	private List<Integer> commodityIdList;
 
 	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("QueryCheckRecordDto [");
-		if (customerId != null)
-			builder.append("customerId=").append(customerId).append(", ");
-		if (storeIdList != null)
-			builder.append("storeIdList=").append(storeIdList).append(", ");
-		if (commodityIdList != null)
-			builder.append("commodityIdList=").append(commodityIdList);
-		builder.append("]");
-		return builder.toString();
+	public String
+	toString() {
+		final StringBuffer sb = new StringBuffer("QueryCheckRecordDto{");
+		sb.append("customerId='").append(customerId).append('\'');
+		sb.append(", customerCode='").append(customerCode).append('\'');
+		sb.append(", storeIdList=").append(storeIdList);
+		sb.append(", commodityIdList=").append(commodityIdList);
+		sb.append('}');
+		return sb.toString();
 	}
-	
 }

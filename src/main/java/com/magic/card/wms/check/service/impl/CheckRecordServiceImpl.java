@@ -80,6 +80,9 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		if(!StringUtils.isEmpty(dto.getCustomerId())) {//按商家盘点
 			crDto.setCustomerId(dto.getCustomerId());
 		}
+		if(!StringUtils.isEmpty(dto.getCustomerCode())) {//按商家code查询
+			crDto.setCustomerCode(dto.getCustomerCode());
+		}
 		if(!CollectionUtils.isEmpty(dto.getCommodityId())) {//按商品盘点
 			crDto.setCommodityIdList(dto.getCommodityId());
 		}
@@ -197,11 +200,25 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public boolean saveCheckRecord(List<CheckRecord> checkRecordList)throws BusinessException{
 		log.info("===>> 保存盘点信息.saveCheckRecord start...");
+
+		List<CheckRecord> firstCheckList = checkRecordList.stream().filter(cr -> !StringUtils.isEmpty(cr.getFirstCheckNums())).collect(Collectors.toList());
+		List<CheckRecord> secondCheckList = checkRecordList.stream().filter(cr -> !StringUtils.isEmpty(cr.getSecondCheckNums())).collect(Collectors.toList());
+		List<CheckRecord> thirdCheckList = checkRecordList.stream().filter(cr -> !StringUtils.isEmpty(cr.getThirdCheckNums())).collect(Collectors.toList());
+
 		//获取当前登录人信息
 		UserSessionUo userSession = webUtil.getUserSession();
 		Date date = new Date();
 		boolean checkUpdate = false;
 		for (CheckRecord checkRecord : checkRecordList) {
+			if(!CollectionUtils.isEmpty(firstCheckList) && null == checkRecord.getFirstCheckNums()){
+				checkRecord.setFirstCheckNums(checkRecord.getStoreNums());
+			}
+			if(!CollectionUtils.isEmpty(secondCheckList) && null == checkRecord.getSecondCheckNums()){
+				checkRecord.setSecondCheckNums(checkRecord.getStoreNums());
+			}
+			if(!CollectionUtils.isEmpty(thirdCheckList) && null == checkRecord.getThirdCheckNums()){
+				checkRecord.setThirdCheckNums(checkRecord.getStoreNums());
+			}
 			checkRecord.setUpdateTime(date);
 			checkRecord.setUpdateUser(userSession.getName());
 			checkUpdate = this.updateById(checkRecord);

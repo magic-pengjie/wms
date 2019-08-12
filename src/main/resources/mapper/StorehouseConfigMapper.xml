@@ -54,6 +54,9 @@
 		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
 		where  sc.state = 1
 		and sc.commodity_id is not null
+		<if test="cr.customerCode != null and ''!=cr.customerCode">
+			and cbi.customer_code = #{cr.customerCode}
+		</if>
 		<if test="cr.customerId != null">
 			and sc.customer_id = #{cr.customerId}
 		</if>
