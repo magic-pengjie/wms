@@ -3,7 +3,9 @@ package com.magic.card.wms.baseset.service.impl;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -33,6 +35,7 @@ import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.AgentTypeEnum;
 import com.magic.card.wms.common.model.enums.Constants;
+import com.magic.card.wms.common.model.enums.LogisticsEnum;
 import com.magic.card.wms.common.utils.DateUtil;
 import com.magic.card.wms.common.utils.Digest;
 import com.magic.card.wms.common.utils.HttpUtil;
@@ -56,37 +59,54 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	
 	@Value("${post.query.trackingInfo.url}")
 	private String postUrl;
+	@Value("${post.query.trackingInfo.secret_key}")
+	private String secretKey;
 	@Autowired
 	private IMailPickingService mailPickingService;
 	@Autowired
 	private MailPickingMapper mailPickingMapper;
 	@Autowired
 	private LogisticsTrackingInfoMapper logisticsTrackingInfoMapper;
+	/**
+	 * 邮政物流收件状态
+	 */
+	public static final String[] recevie_code= new String[] {"203"};
+	/**
+	 * 邮政物流最终状态
+	 */
+	public static final String finish_code = "704-708-711-747-748-O_016-463";
 	
 	@Override
-	public ResponseData getTrackingInfo(List<MailPicking> list) throws UnsupportedEncodingException {
+	@Transactional
+	public ResponseData getTrackingInfo(String mailNo) throws Exception {
 		LogisticsReqHeader header = new LogisticsReqHeader();
-		String msgBody = JSONObject.toJSONString(list.stream().map(e->e.getMailNo()).collect(Collectors.toList()));
-		String dataDigest = Digest.Md5Base64(msgBody+header.getSendID());
+		header.setSerialNo(header.getSendID()+header.getSendDate());
+		Map map = new HashMap(1);
+		map.put("traceNo", mailNo);
+		String msgBody = JSONObject.toJSONString(map);
+		String dataDigest =Digest.md5_32Encrypt(msgBody+secretKey);
 		StringBuffer sb = new StringBuffer();
 		sb.append("sendID=").append(header.getSendID())
 		  .append("&proviceNo=").append(header.getProviceNo())
 		  .append("&msgKind=").append(header.getMsgKind())
-		  .append("&serialNo=").append(header.getSendID()+header.getSendDate())
+		  .append("&serialNo=").append(header.getSerialNo())
 		  .append("&sendDate=").append(header.getSendDate())
 		  .append("&receiveID=").append(header.getReceiveID())
 		  .append("&dataType=").append(header.getDataType())
 		  .append("&dataDigest=").append(dataDigest)
 		  .append("&msgBody=").append(Digest.urlEncode(msgBody));
-		log.info("reuqest url:{}",sb.toString());
+		log.info("reuqest params:{}",sb.toString());
 		String resultStr = HttpUtil.httpPost(postUrl,sb.toString());
 		log.info("response result:{}",resultStr);
 		LogisticsRepHeader rspHeader = JSONObject.parseObject(resultStr,LogisticsRepHeader.class);
 		if(rspHeader.getResponseState()) {
-			dealResult(rspHeader);
+			successResult(header,rspHeader);
 			return ResponseData.ok(rspHeader.getResponseItems());
+		}else {
+			failedResult(header,rspHeader,mailNo);
+			return ResponseData.error("查询物流信息失败:"+rspHeader.getErrorDesc());
 		}
-		return ResponseData.ok(rspHeader.getErrorDesc());
+		
 	}
 	
 	@Override
@@ -125,7 +145,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	}
 
 	/***
-	 * 对接邮政进行快递物流信息批量查询(每次30条)。
+	 * 对接邮政进行快递物流信息批量查询。
 	 */
 	@Override
 	@Transactional
@@ -133,15 +153,21 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		MailDTO dto = new MailDTO();
 		dto.setLogisticsState(Constants.ZERO);
 		PageInfo pageInfo = new PageInfo();
-		pageInfo.setPageSize(30);
+		pageInfo.setPageSize(100);
 		List<MailPicking> list = selectNonLogisticsInfoListToPost(pageInfo).getRecords();
 		int current = 1;
 		while(!ObjectUtils.isEmpty(list)) {
 			log.info("runLogisticsInfo select size:{}",list.size());
 			try {
 				//发送邮政
-				getTrackingInfo(list);
-				if(list.size()<30) {
+				for (MailPicking mailPicking : list) {
+					try {
+						getTrackingInfo(mailPicking.getMailNo());
+					} catch (Exception e) {
+						log.error("runLogisticsInfo query post trackingInfo  mailNo={},error={}",mailPicking.getMailNo(),e);
+					}
+				}
+				if(list.size()<100) {
 					break;
 				}
 				pageInfo.setCurrent(++current);
@@ -178,6 +204,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	 * 物流信息预警
 	 */
 	@Override
+	@Transactional
 	public void runLogisticsInfoWarning() {
 		//查询当天无物流信息数据
 		String endDateStr = DateUtil.getStringDateShort();
@@ -209,17 +236,60 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		warningAgentInfo.insert();
 	}
 	
-	public void dealResult(LogisticsRepHeader rspHeader) {
-		if(rspHeader.getResponseState()) {
-			List<LogisticsTrackingInfo> logisticsList = rspHeader.getResponseItems();
-			List mailNos = logisticsList.stream().map(e->e.getTraceNo()).collect(Collectors.toList());
-			Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
-			w.in("trace_no", mailNos);
-			this.delete(w);
-			this.insertBatch(logisticsList);
-			//修改快递单状态
-			mailPickingMapper.updateBatchByMailNos(mailNos);
+	/**
+	 * 查询成功处理
+	 * @param header
+	 * @param rspHeader
+	 */
+	public void successResult(LogisticsReqHeader header,LogisticsRepHeader rspHeader) {
+		List<LogisticsTrackingInfo> logisticsList = rspHeader.getResponseItems();
+		if(ObjectUtils.isEmpty(logisticsList)) {
+			return;
 		}
+		int state = LogisticsEnum.exist.getCode();
+		String mailNo = logisticsList.get(0).getTraceNo();
+		for (LogisticsTrackingInfo e : logisticsList) {
+			e.setSerialNo(header.getSerialNo());
+			e.setBatchNo(header.getBatchNo());
+			e.setErrorDesc(rspHeader.getErrorDesc());
+			if(rspHeader.getResponseState()) {
+				e.setResponseState(Constants.ONE);
+			}
+			if(finish_code.contains(e.getOpCode())) { 
+				state = LogisticsEnum.finish.getCode(); 
+			}
+		}
+		//修改快递单状态
+		mailPickingMapper.updateBatchByMailNo(mailNo,state);
+		
+		Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
+		w.in("trace_no", mailNo);
+		this.delete(w);
+		this.insertBatch(logisticsList);
+			
 	}
-	
+	/**
+	 * 查询失败处理
+	 * @param header
+	 * @param rspHeader
+	 */
+	public void failedResult(LogisticsReqHeader header,LogisticsRepHeader rspHeader,String mailNo) {
+		LogisticsTrackingInfo info = new LogisticsTrackingInfo();
+		info.setSerialNo(header.getSerialNo());
+		info.setBatchNo(header.getBatchNo());
+		info.setResponseState(Constants.ZERO);
+		info.setErrorDesc(rspHeader.getErrorDesc());
+		info.setTraceNo(mailNo);
+		
+		Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
+		w.in("trace_no", mailNo);
+		this.delete(w);
+		this.insert(info);
+			
+	}
+
+	@Override
+	public void trackingConfirm(String mailNo) {
+		mailPickingMapper.updateBatchByMailNo(mailNo,LogisticsEnum.confirm.getCode());
+	}
 }

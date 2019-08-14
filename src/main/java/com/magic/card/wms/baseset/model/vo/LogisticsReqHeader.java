@@ -10,7 +10,7 @@ public class LogisticsReqHeader {
 	/**
 	 * 发送方标识 Y
 	 */
-	private String sendID="BZ";
+	private String sendID="BINZHONGWMS";
 	/**
 	 * 数据生产的省公司代码
 	 */
@@ -18,7 +18,7 @@ public class LogisticsReqHeader {
 	/**
 	 * 消息类别
 	 */
-	private String msgKind="BZ_JDPT_TRACE";
+	private String msgKind="BINZHONGWMS_JDPT_TRACE";
 	/**
 	 * 消息唯一序列号
 	 */
@@ -30,11 +30,11 @@ public class LogisticsReqHeader {
 	/**
 	 * 代表接收方标识
 	 */
-	private String receiveID="滨中存储系统";
+	private String receiveID="JDPT";
 	/**
 	 * 批次号
 	 */
-	private String batchNo;
+	private String batchNo="999";
 	/**
 	 * 数据类型
 	 */

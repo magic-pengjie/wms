@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
+import com.magic.card.wms.baseset.model.vo.OrderStatisticsVO;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -44,4 +46,10 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
 
     List<ExcelOrderImport> excelExport(@Param("orderNos") List<String> orderNos);
 
+    /**
+     * 主页订单量统计
+     * @param orderDate 订单时间
+     * @return OrderStatisticsVO
+     */
+    OrderStatisticsVO selectOrderStatistics(String orderDate);
 }
