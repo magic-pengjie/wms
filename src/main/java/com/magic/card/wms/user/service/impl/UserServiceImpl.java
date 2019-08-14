@@ -61,7 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	private UserRoleMappingMapper userRoleMappingMapper;
 
 	@Resource
-	private RoleInfoMapper RoleInfoMapper;
+	private RoleInfoMapper roleInfoMapper;
 
 	@Resource
 	private MenuInfoMapper menuInfoMapper;
@@ -232,22 +232,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 		userRoleMenuList.setUserKey(userInfo.getId());
 
 		//根据userKey查询用户角色
-		List<RoleInfo> roleList = RoleInfoMapper.queryRoleByUserKey(userKey);
-		if(CollectionUtils.isEmpty(roleList)) {
-			log.info("===用户角色信息为空，请先添加用户角色！");
+		List<RoleInfo> roleList = roleInfoMapper.queryRoleByUserKey(userKey);
+		if(!CollectionUtils.isEmpty(roleList)) {
+
+			userRoleMenuList.setRoleList(roleList);
+			//查询角色菜单信息
+			List<Long> roleKeyList = roleList.stream().map(RoleInfo::getId).collect(Collectors.toList());
+			List<MenuInfo> menuList = menuInfoMapper.queryMenuByRoleKey(roleKeyList);
+			if(CollectionUtils.isEmpty(menuList)) {
+				log.info("===用户角色未配置菜单信息，请联系管理员配置角色菜单！");
+				throw new BusinessException(00, "用户角色未配置菜单信息，请联系管理员配置角色菜单！");
+			}
+			userRoleMenuList.setMenuList(menuList);
+			//将用户角色及菜单 放入redis
+			redisService.set(SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
+			log.info("===>> userRoleMenuSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
+//			log.info("===用户角色信息为空，请先添加用户角色！");
+//			throw new BusinessException(00, "用户未分配角色，请联系管理员先配置用户角色！");
 		}
-		userRoleMenuList.setRoleList(roleList);
-		//查询角色菜单信息
-		List<Long> roleKeyList = roleList.stream().map(RoleInfo::getId).collect(Collectors.toList());
-		List<MenuInfo> menuList = menuInfoMapper.queryMenuByRoleKey(roleKeyList);
-		if(CollectionUtils.isEmpty(menuList)) {
-			log.info("===用户角色未配置菜单信息，请联系管理员配置角色菜单！");
-			throw new BusinessException(00, "用户角色未配置菜单信息，请联系管理员配置角色菜单！");
-		}
-		userRoleMenuList.setMenuList(menuList);
-		//将用户角色及菜单 放入redis
-		redisService.set(SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
-		log.info("===>> userRoleMenuSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
 		return userRoleMenuList;
 	}
 
