@@ -99,5 +99,6 @@ public class Constants {
 	 * 单据类型表示-上架单
 	 */
 	public static final String BILL_TYPE_FLAG_S = "S-";
+	
 
 }

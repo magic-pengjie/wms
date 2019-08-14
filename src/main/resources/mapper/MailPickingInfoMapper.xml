@@ -220,15 +220,11 @@
 	</select>
 	
 	<!-- 根据快递单修改物流状态 -->
-	<update id="updateBatchByMailNos" parameterType="java.util.List">
-		update wms_mail_picking 
-		set logistics_state=1,
-		createTime=CURRENT_TIMESTAMP 
-		where mail_no in 
-			<foreach collection="list" item="mailNo" index="index" open="(" close=")" separator=",">
-	            #{mailNo}
-	        </foreach>
-		
+	<update id="updateBatchByMailNo">
+		update wms_mail_picking_info
+		set logistics_state=#{state},
+		update_time=CURRENT_TIMESTAMP 
+		where mail_no =#{mailNo}
 	</update>
 	
 	
