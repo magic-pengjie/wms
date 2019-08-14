@@ -12,7 +12,7 @@
         <result column="customer_id" property="customerId" />
         <result column="commodity_id" property="commodityId" />
         <result column="store_nums" property="storeNums" />
-        <result column="availabe_nums" property="availabeNums" />
+        <result column="availabe_nums" property="availableNums" />
         <result column="lock_nums" property="lockNums" />
         <result column="opr_type" property="oprType" />
         <result column="state" property="state" />
@@ -35,6 +35,7 @@
     			sc.customer_id as customerId,
     			sc.commodity_id as commodityId,
     			sc.store_nums as storeNums,
+    			sc.available_nums as availableNums,
 			 	cs.sku_name as commodityName,
 			 	cs.id as skuId,
 			 	cs.sku_code as skuCode,
@@ -73,6 +74,46 @@
 			</foreach>
 		</if>
 		ORDER BY sc.commodity_id
+    </select>
+
+	<select id="queryStoreInfoList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto" parameterType="java.lang.String">
+    	select
+			cbi.customer_code as customerCode,
+			cbi.customer_name as customerName,
+			cs.sku_code as skuCode,
+			cs.sku_name,
+			cs.banner,
+			cs.spec,
+			cs.model_no as modelNo,
+			di.dict_name as storeType,
+			si.store_code as storeCode,
+			sc.store_nums as storeNums,
+			sc.available_nums as availableNums
+		from wms_storehouse_config sc
+		LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
+		LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
+		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
+		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
+		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
+		where sc.state='1'
+		and cbi.customer_code = #{qsi.customerCode}
+		<!-- 该商家已用库存 -->
+		<if test="qsi.available">
+			and sc.commodity_id is not null
+		</if>
+		<!-- 该商家 未用库存 -->
+		<if test="qsi.unavailable">
+			and sc.commodity_id is null
+		</if>
+		<!-- 该商家，商品占用库存 -->
+		<if test="qsi.commodityId != null">
+			and sc.commodity_id = #{qsi.commodityId}
+		</if>
+		<!-- 该商家 占用库存 -->
+		<if test="qsi.usedStores">
+			and sc.available_nums >0
+		</if>
+		order by cs.sku_code desc,di.dict_name desc,sc.available_nums desc
     </select>
 
     <!--	库位配置信息加载 -->

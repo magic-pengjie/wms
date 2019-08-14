@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.magic.card.wms.statistic.model.dto.QueryStoreInfoBO;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
@@ -50,4 +51,14 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
      * @return
      */
     List<StorehouseConfigVO> recommendStore(@Param("type") String type, @Param("customerCode")String customerCode,@Param("barCode") String barCode);
+
+	/**
+	 * 查询商家库位信息List
+	 * @param available  该商家已用库存
+	 * @param unavailable 该商家 未用库存
+	 * @param commodityId 该商家，商品占用库存
+	 * @param usedStores 该商家 占用库存
+	 * @return list
+	 */
+	List<CheckRecordInfoDto> queryStoreInfoList(@Param("qsi")QueryStoreInfoBO storeInfoBO);
 }

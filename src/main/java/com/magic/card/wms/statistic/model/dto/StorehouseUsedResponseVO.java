@@ -15,20 +15,19 @@ public class StorehouseUsedResponseVO extends BaseRowModel implements Serializab
     @ExcelProperty(value = "商家Code", index = 0)
     private String customerCode;
 
-    @ExcelProperty(value = "商家名称", index = 0)
+    @ExcelProperty(value = "商家名称", index = 1)
     private String customerName;
 
-    @ExcelProperty(value = "库位类型", index = 0)
+    @ExcelProperty(value = "库位类型", index = 2)
     private String houseCode;
 
-    @ApiModelProperty(value = "")
-    @ExcelProperty(value = "总库位数量", index = 0)
+    @ExcelProperty(value = "总库位数量", index = 3)
     private String totalStoreNum;
 
-    @ExcelProperty(value = "已用库位数量", index = 0)
+    @ExcelProperty(value = "已用库位数量", index = 4)
     private String usedStoreNum;
 
-    @ExcelProperty(value = "剩余库位数量", index = 0)
+    @ExcelProperty(value = "剩余库位数量", index = 5)
     private String residuleStoreNum;
 
     @Override

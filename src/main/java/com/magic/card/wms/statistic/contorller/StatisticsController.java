@@ -5,6 +5,7 @@ import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.statistic.model.dto.ParchaseBillDto;
 import com.magic.card.wms.statistic.model.dto.ParchaseBillResponseDto;
+import com.magic.card.wms.statistic.model.dto.QueryStoreInfoDto;
 import com.magic.card.wms.statistic.service.StatisticsService;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -117,9 +118,9 @@ public class StatisticsController {
      */
     @ApiOperation(value = "库存报表查看库位相关信息", notes = "库存报表查看库位相关信息")
     @RequestMapping(value = "/query/storeDetailsInfo", method = RequestMethod.GET)
-    public ResponseData queryStoreDetailsInfo(@Valid ParchaseBillDto dto) {
+    public ResponseData queryStoreDetailsInfo(@Valid QueryStoreInfoDto dto) {
 
-        return ResponseData.ok();
+        return ResponseData.ok(statisticsService.queryStoreDetailsInfo(dto));
     }
 
 }

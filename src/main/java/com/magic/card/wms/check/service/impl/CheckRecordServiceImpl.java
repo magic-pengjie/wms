@@ -158,6 +158,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		commStoreList.forEach(cs->{
 			CheckRecord cr = new CheckRecord();
 			BeanUtils.copyProperties(cs, cr);
+			cr.setStoreNums(cs.getAvailableNums());//库存数量
 			cr.setCheckCode(checkCode);//生成盘点批次Code
 			cr.setStorehouseType(cs.getStoreType());
 			cr.setStorehouseCode(cs.getStoreCode());
@@ -431,10 +432,5 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		return updateStoreFrozen;
 	}
 
-
-	public static void main(String[] args) {
-		Date date = new Date();
-		System.out.println(date.getTime());
-	}
 
 }

@@ -52,9 +52,6 @@ public class StorehouseCountResponseDto implements Serializable {
     @ApiModelProperty(value = "不可用库存")
     private String notUsedStoreNums;
 
-    @ApiModelProperty(value = "出库数量")
-    private String outStorehouseNum;
-
     @ApiModelProperty(value = "库位可用天数")
     private String availableDay;
 
@@ -78,7 +75,6 @@ public class StorehouseCountResponseDto implements Serializable {
         sb.append(", usedAvailableNums='").append(usedAvailableNums).append('\'');
         sb.append(", totalStoreNums='").append(totalStoreNums).append('\'');
         sb.append(", notUsedStoreNums='").append(notUsedStoreNums).append('\'');
-        sb.append(", outStorehouseNum='").append(outStorehouseNum).append('\'');
         sb.append(", availableDay='").append(availableDay).append('\'');
         sb.append(", unsalableMark='").append(unsalableMark).append('\'');
         sb.append('}');
