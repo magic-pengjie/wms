@@ -62,6 +62,7 @@ public enum ResultEnum {
 	query_role_failed(200010,"查询角色列表失败"),
 	add_role_failed(200011,"新增角色失败"),
 	split_rule_exist( 200012, "拆包规则已存在！"),
+	split_rule_not_exist( 200013, "拆包规则不存在！"),
 
 
 	excel_import_storehouse(300000,"Excel导入仓库库位信息失败！"),
@@ -106,6 +107,11 @@ public enum ResultEnum {
 	order_excel_export_err( 500013, "订单Excel数据导出失败"),
 	order_excel_import_distinct( 500014, "订单Excel数据导入订单号有重复，请核实后在导入！"),
 	order_excel_import_exist(500015, "订单Excel数据导入订单号已存在，请勿重复导入！"),
+	order_commodity_no_exist( 500016, "订单商品不存在，无法完成分包！"),
+	order_had_split_package( 500017,  "订单已经拆包, 请勿重复操作！"),
+	package_had_weigh( 500018, "订单已经称重完毕，请勿重复操作"),
+	monitoring_type_no_exist( 500019, "包裹监控状态不存在！"),
+
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),
 

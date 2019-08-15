@@ -125,27 +125,28 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         WrapperUtil.autoSettingOrder(wrapper, defaultColumns, loadGrid.getOrder(), defaultSettingOrder -> defaultSettingOrder.orderBy("woi.create_time", false));
 
         List<Map> grid = baseMapper.loadGrid(page, wrapper);
-        Map<String, List> orderCommodities = Maps.newLinkedHashMap();
+//        Map<String, List> orderCommodities = Maps.newLinkedHashMap();
 
         if (CollectionUtils.isNotEmpty(grid)) {
-            List<String> orderNos = Lists.newLinkedList();
-            grid.stream().filter(map -> {
-                orderNos.add(map.get("systemOrderNo").toString());
-                return true;
-            }).collect(Collectors.toList()).stream().forEach(map -> {
 
-                if (CollectionUtils.sizeIsEmpty(orderCommodities)) {
-                    orderCommodities.putAll(orderCommodityService.loadBatchOrderCommodityGrid(orderNos));
-                }
-
-                if (!CollectionUtils.sizeIsEmpty(orderCommodities)) {
-                    map.put(
-                            "orderCommodities",
-                            orderCommodities.get(map.get("systemOrderNo").toString())
-                    );
-                }
-
-            });
+//            List<String> orderNos = Lists.newLinkedList();
+//            grid.stream().filter(map -> {
+//                orderNos.add(map.get("systemOrderNo").toString());
+//                return true;
+//            }).collect(Collectors.toList()).stream().forEach(map -> {
+//
+//                if (CollectionUtils.sizeIsEmpty(orderCommodities)) {
+//                    orderCommodities.putAll(orderCommodityService.loadBatchOrderCommodityGrid(orderNos));
+//                }
+//
+//                if (!CollectionUtils.sizeIsEmpty(orderCommodities)) {
+//                    map.put(
+//                            "orderCommodities",
+//                            orderCommodities.get(map.get("systemOrderNo").toString())
+//                    );
+//                }
+//
+//            });
         }
 
         loadGrid.finallyResult(page, grid);
@@ -452,11 +453,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         if (order.getIsB2b() == 1 || order.getIsBatch() == 1) return;
 
         if (supportMerge) return;
-
+        // 获取拆包规则
         List<List<OrderCommodityDTO>> orderSplitPackages = splitPackageRuleService.orderSplitPackages(orderCommodityDTOS);
 
         if (CollectionUtils.isNotEmpty(orderSplitPackages)) {
             order.setIsMatched(1);
+            // 订单拆包
             orderSplitPackages.forEach(packageCommodities-> {
                 String mailNo = UUID.randomUUID().toString();
                 packageCommodities.stream().forEach(orderCommodityDTO -> {
@@ -511,7 +513,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         if (StringUtils.equalsAnyIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
-            throw OperationException.addException("您客户的订单已近被取消请勿重复导入，如有疑问请核实后再重新导入");
+            throw OperationException.addException("您客户的订单已近被取消请勿操作，如有疑问请核实后再重新操作");
         }
 
         return order;
@@ -642,6 +644,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
                 excelOrderImportHandler(hOrders, customer, operator);
             }
         });
+
+        // 生成拣货单
         ThreadPool.excutor(() -> pickingBillService.triggerGenerator(customer.getCustomerCode(), 15));
     }
 
@@ -779,11 +783,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         if (CollectionUtils.isNotEmpty(list)) {
             list.stream().forEach(orderCommodity ->
-                    commodityStockService.releaseCommodityStock(
-                            orderCommodity.getCustomerCode(),
-                            orderCommodity.getBarCode(),
-                            orderCommodity.getNumbers().longValue(),
-                            operator)
+                commodityStockService.releaseCommodityStock(
+                        orderCommodity.getCustomerCode(),
+                        orderCommodity.getBarCode(),
+                        orderCommodity.getNumbers().longValue(),
+                        operator)
             );
         }
 
@@ -818,4 +822,40 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 		}
 		return orderInfoMapper.selectOrderStatistics(orderDate);
 	}
+
+    /**
+     * 订单拆包
+     * @param orderNo 订单号
+     * @param customerCode 商家CODE
+     * @param systemOrderNo 系统订单号
+     */
+    @Override
+    public void splitPackage(String orderNo, String customerCode, String systemOrderNo) {
+        Order order = checkOrder(customerCode, orderNo);
+
+        if (order.getIsMatched() == 1) {
+            throw OperationException.customException(ResultEnum.order_had_split_package);
+        }
+
+        // 获取订单拆包TOKEN
+        String ruleToken = orderCommodityService.ruleToken(orderNo, customerCode);
+        ArrayList<MailPickingDetail> mailPickingDetails = Lists.newArrayList();
+        MailPickingDetail baseInfo = new MailPickingDetail();
+        PoUtil.add(baseInfo, webUtil.operator());
+        splitPackageRuleService.orderSplitPackages(ruleToken).forEach(packageCommodities -> {
+            String mailNo = UUID.randomUUID().toString();
+            packageCommodities.forEach( splitCommodityDTO -> {
+                MailPickingDetail mailPickingDetail = new MailPickingDetail();
+                BeanUtils.copyProperties(baseInfo, mailPickingDetail);
+                mailPickingDetail.setOrderNo(systemOrderNo);
+                mailPickingDetail.setMailNo(mailNo);
+                mailPickingDetail.setCommodityCode(splitCommodityDTO.getCommodityCode());
+                mailPickingDetail.setPackageNums(splitCommodityDTO.getNums());
+                mailPickingDetails.add(mailPickingDetail);
+            });
+        });
+        order.setIsMatched(1);
+        updateById(order);
+        mailPickingDetailService.insertBatch(mailPickingDetails);
+    }
 }

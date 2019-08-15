@@ -266,5 +266,6 @@
 		where  DATE_FORMAT(oi.create_time,'%Y-%m-%d') = #{orderDate}
 		GROUP by oi.customer_code,oi.customer_name
 	</select>
+    <select id="commodityNumMap" resultType="java.util.TreeMap"></select>
 
 </mapper>

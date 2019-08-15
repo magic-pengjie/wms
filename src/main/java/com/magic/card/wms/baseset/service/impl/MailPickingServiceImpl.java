@@ -8,8 +8,10 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.magic.card.wms.baseset.service.*;
+import com.magic.card.wms.common.model.LoadGrid;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -218,6 +220,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 
 		MailPicking mailPicking = new MailPicking();
 		mailPicking.setIsFinish(1);
+		mailPicking.setProcessState(BillState.package_packing.getCode());
 		PoUtil.update(mailPicking, webUtil.operator());
 		EntityWrapper wrapper = new EntityWrapper();
 		wrapper.in("mail_no", mailNos).
@@ -244,6 +247,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
         if (baseMapper.countPackageCommodityUnfinished(mailNo) == 0) {
             // 设置状态
             mailPicking.setIsFinish(1);
+			mailPicking.setProcessState(BillState.package_packing.getCode());
             PoUtil.update(mailPicking, webUtil.operator());
             updateById(mailPicking);
         }
@@ -357,10 +361,15 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 			throw OperationException.customException(ResultEnum.order_package_no_exist);
 		}
 
+		if (StringUtils.endsWithIgnoreCase(mailPicking.getProcessState(), BillState.package_go_out.getCode())) {
+			throw OperationException.customException(ResultEnum.package_had_weigh);
+		}
+
 		//先校验包裹重量
 		BigDecimal differenceValue = mailPicking.getPresetWeight().subtract(realWeight).abs();
 		BigDecimal maxDifferenceValue = mailPicking.getPresetWeight().multiply(new BigDecimal("0.10"));
 		mailPicking.setRealWeight(realWeight);
+		mailPicking.setProcessState(BillState.package_go_out.getCode());
 
 		if (maxDifferenceValue.compareTo(differenceValue) < 0 && !ignore) {
 			throw OperationException.customException(ResultEnum.order_weight_warning);
@@ -410,7 +419,10 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 				notIn("mail_no", excludeMails).
 				ne("state", StateEnum.delete.getCode());
 		updateForSet(
-				String.format("is_finish = 1, update_user = '%s', update_time = '%s'", webUtil.operator(), DateTime.now().toString("yyyy-MM-dd HH:mm:ss")),
+				String.format("is_finish = 1, process_state = '%s', update_user = '%s', update_time = '%s'",
+						BillState.package_packing.getCode(),
+						webUtil.operator(),
+						DateTime.now().toString("yyyy-MM-dd HH:mm:ss")),
 				wrapper
 		);
 		EntityWrapper detailsWrapper = new EntityWrapper();
@@ -532,5 +544,89 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	@Override
 	public List<Map> loadOrderPackage(String systemOrderNo) {
 		return baseMapper.loadOrderPackage(systemOrderNo);
+	}
+
+	/**
+	 * 包裹信息
+	 *
+	 * @param mailNo 快递单号
+	 * @return
+	 */
+	@Override
+	public Object details(String mailNo) {
+		return baseMapper.loadMailDetails(mailNo);
+	}
+
+	/**
+	 * 包裹监控
+	 *
+	 * @return
+	 */
+	@Override
+	public Map monitoringFlow() {
+		DateTime now = DateTime.now();
+		String startTime = now.toString("yyyy-MM-dd") + " 00:00";
+		String endTime = now.plusDays(1).toString("yyyy-MM-dd") + " 00:00";
+
+		List<Map> flows = baseMapper.monitoringFlow(
+				startTime,
+				endTime,
+				BillState.package_packing.getCode(),
+				BillState.package_go_out.getCode());
+		HashMap<String, Integer> monitoringFlowMap = Maps.newHashMap();
+		monitoringFlowMap.put("pickNums", 0);
+		monitoringFlowMap.put("hadWeighNums", 0);
+		monitoringFlowMap.put("noWeighNums", 0);
+
+		if (CollectionUtils.isNotEmpty(flows)) {
+			flows.forEach( flow -> {
+				final String processState = MapUtils.getString(flow, "processState");
+				Integer flowValue = MapUtils.getInteger(flow, "flowValue");
+
+				// 打包中
+				if (StringUtils.equalsAnyIgnoreCase(BillState.package_packing.getCode(), processState)) {
+					monitoringFlowMap.put("noWeighNums", flowValue);
+				}
+				// 出库
+				if (StringUtils.equalsAnyIgnoreCase(BillState.package_go_out.getCode(), processState)) {
+					monitoringFlowMap.put("hadWeighNums", flowValue);
+				}
+
+				flowValue += monitoringFlowMap.get("pickNums");
+				monitoringFlowMap.put("pickNums", flowValue);
+			});
+		}
+
+		return monitoringFlowMap;
+	}
+
+	/**
+	 * 监控包裹数据详情数据列表
+	 *
+	 * @param monitoringType
+	 * @param loadGrid
+	 */
+	@Override
+	public void monitoringFlowDetails(String monitoringType, LoadGrid loadGrid) {
+		if (!StringUtils.equalsAnyIgnoreCase(monitoringType, "pickNums", "hadWeighNums", "noWeighNums")) {
+			throw OperationException.customException(ResultEnum.monitoring_type_no_exist);
+		}
+
+		DateTime now = DateTime.now();
+		String startTime = now.toString("yyyy-MM-dd") + " 00:00";
+		String endTime = now.plusDays(1).toString("yyyy-MM-dd") + " 00:00";
+		Page page = loadGrid.generatorPage();
+
+		if (StringUtils.equalsIgnoreCase(monitoringType, "pickNums")) {
+			loadGrid.finallyResult(page, baseMapper.monitoringFlowDetails(page, startTime, endTime, BillState.package_packing.getCode(), BillState.package_go_out.getCode()));
+		}
+
+		if (StringUtils.equalsIgnoreCase(monitoringType, "hadWeighNums")) {
+			loadGrid.finallyResult(page, baseMapper.monitoringFlowDetails(page, startTime, endTime, BillState.package_go_out.getCode()));
+		}
+
+		if (StringUtils.equalsIgnoreCase(monitoringType, "noWeighNums")) {
+			loadGrid.finallyResult(page, baseMapper.monitoringFlowDetails(page, startTime, endTime, BillState.package_packing.getCode()));
+		}
 	}
 }

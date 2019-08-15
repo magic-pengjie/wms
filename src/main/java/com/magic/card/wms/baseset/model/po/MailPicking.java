@@ -62,6 +62,13 @@ public class MailPicking extends BasePo implements Serializable {
      */
     private String weightUnit;
     /**
+     * 包裹处理流程状态
+     * picking - 拣货中 、
+     * packing - 打包中 、
+     * go_out - 出库
+     */
+    private String processState;
+    /**
      * 是否拣货完成(是:Y否:N)
      */
     private Integer isFinish;

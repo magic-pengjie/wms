@@ -80,7 +80,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
     @Override @Transactional
     public void add(MailPickingDetail mailPickingDetail) {
 //        webUtil.operator()
-        PoUtil.add(mailPickingDetail, Constants.DEFAULT_USER);
+        PoUtil.add(mailPickingDetail, webUtil.operator());
         insert(mailPickingDetail);
     }
 

@@ -72,6 +72,13 @@ public class OrderController {
         return ResponseData.ok(orderService.loadDetails(orderNo, customerCode, systemOrderNo));
     }
 
+    @ApiOperation("订单拆包")
+    @GetMapping("splitPackage")
+    public ResponseData orderSplitPackage(@RequestParam String orderNo, @RequestParam String customerCode, @RequestParam String systemOrderNo) {
+        orderService.splitPackage(orderNo, customerCode, systemOrderNo);
+        return ResponseData.ok();
+    }
+
     @PostMapping("excelExport")
     public void excelExport(@RequestBody List<String> orderNos, HttpServletResponse response, HttpServletRequest request) {
         EasyExcelParams easyExcelParams = new EasyExcelParams();

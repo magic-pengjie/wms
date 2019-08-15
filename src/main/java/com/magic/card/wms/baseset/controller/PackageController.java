@@ -2,15 +2,14 @@ package com.magic.card.wms.baseset.controller;
 
 import com.magic.card.wms.baseset.service.IMailPickingDetailService;
 import com.magic.card.wms.baseset.service.IMailPickingService;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
+import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.config.WmsBaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 
@@ -30,6 +29,22 @@ public class PackageController extends WmsBaseController {
     private IMailPickingDetailService mailPickingDetailService;
     @Autowired
     private IMailPickingService mailPickingService;
+
+    @GetMapping("details")
+    public ResponseData details(@RequestParam String mailNo) {
+       return ResponseData.ok(mailPickingService.details(mailNo));
+    }
+
+    @GetMapping("monitoringFlow")
+    public ResponseData monitoringFlow() {
+       return ResponseData.ok(mailPickingService.monitoringFlow());
+    }
+
+    @PostMapping("monitoringFlowDetails")
+    public ResponseData monitoringFlowDetails(@RequestJsonParam String monitoringType, @RequestJsonParam LoadGrid loadGrid) {
+        mailPickingService.monitoringFlowDetails(monitoringType, loadGrid);
+        return ResponseData.ok(loadGrid);
+    }
     /**
      * 包裹称重
      * @param mailNo 快递单号

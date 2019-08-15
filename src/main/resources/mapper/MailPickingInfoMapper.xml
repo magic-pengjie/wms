@@ -354,5 +354,30 @@
         from wms_mail_picking_info
         where order_no = #{systemOrderNo}
     </select>
+    <select id="loadMailDetails" resultType="java.util.Map">
+        select
+            wmpi.mail_no, wmpi.basket_num, wmpi.preset_weight, wmpi.real_weight,
+            woi.prov, woi.express_key
+        from wms_mail_picking_info wmpi
+        left join wms_order_info woi on woi.system_order_no = wmpi.order_no
+        where wmpi.mail_no = #{mailNo}
+    </select>
+    <select id="monitoringFlow" resultType="java.util.Map">
+        select process_state, count(process_state) flowValue
+        from wms_mail_picking_info
+        where create_time between #{startTime} and #{endTime} and process_state in
+        <foreach collection="processStates" item="processState" open="(" separator="," close=")">
+            #{processState}
+        </foreach>
+        group by process_state
+    </select>
+    <select id="monitoringFlowDetails" resultType="java.util.Map">
+        select *
+        from wms_mail_picking_info
+        where create_time between #{startTime} and #{endTime} and process_state in
+        <foreach collection="processStates" item="processState" open="(" separator="," close=")">
+            #{processState}
+        </foreach>
+    </select>
 
 </mapper>

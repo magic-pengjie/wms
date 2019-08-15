@@ -429,6 +429,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
                     mailPicking.setPickNo(pickingBill.getPickNo());
                     mailPicking.setBasketNum(basketNum);
                     mailPicking.setMailNo(realMail);
+                    mailPicking.setProcessState(BillState.package_picking.getCode());
                     //获取订单标准重量
                     mailPicking.setPresetWeight(mailPickingDetailService.mailPickingWeight(virtualMailNo));
                     mailPicking.setWeightUnit("kg");

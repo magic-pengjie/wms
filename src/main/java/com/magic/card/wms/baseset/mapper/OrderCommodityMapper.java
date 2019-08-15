@@ -29,4 +29,12 @@ public interface OrderCommodityMapper extends BaseMapper<OrderCommodity> {
      * @return
      */
     List<Map> loadBatchOrderCommodityGrid(@Param("orderNos") List<String> orderNos);
+
+    /**
+     * 订单商品信息
+     * @param orderNos
+     * @param customerCode
+     * @return
+     */
+    List<Map> orderCommodities(@Param("orderNos") String[] orderNos, @Param("customerCode") String customerCode);
 }

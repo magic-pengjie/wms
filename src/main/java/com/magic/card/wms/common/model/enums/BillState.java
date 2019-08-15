@@ -38,6 +38,11 @@ public enum BillState {
     order_finished("finished", "完成"),
     order_cancel("cancel", "取消"),
     //endregion
+    //region 包裹处理状态
+    package_picking("picking", "拣货中"),
+    package_packing("packing", "打包中"),
+    package_go_out("go_out", "出库"),
+    //endregion
     //region 补货单相关状态
     replenishment_process_create("save", "创建补货单"),
     replenishment_processing("ing", "正在补货"),

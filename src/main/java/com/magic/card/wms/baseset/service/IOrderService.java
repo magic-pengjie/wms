@@ -135,5 +135,12 @@ public interface IOrderService extends IService<Order> {
      * @return OrderStatisticsVO
      */
     OrderStatisticsVO orderStatistics(String orderDate);
-    
+
+    /**
+     * 订单拆包
+     * @param orderNo 订单号
+     * @param customerCode 商家CODE
+     * @param systemOrderNo 系统订单号
+     */
+    void splitPackage(String orderNo, String customerCode, String systemOrderNo);
 }

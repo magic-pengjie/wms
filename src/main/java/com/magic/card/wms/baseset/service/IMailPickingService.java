@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.po.MailPicking;
+import com.magic.card.wms.common.model.LoadGrid;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -104,4 +105,24 @@ public interface IMailPickingService extends IService<MailPicking> {
      * @return
      */
     List<Map> loadOrderPackage(String systemOrderNo);
+
+    /**
+     * 包裹信息
+     * @param mailNo 快递单号
+     * @return
+     */
+    Object details(String mailNo);
+
+    /**
+     * 包裹监控
+     * @return
+     */
+    Map monitoringFlow();
+
+    /**
+     * 监控包裹数据详情数据列表
+     * @param monitoringType
+     * @param loadGrid
+     */
+    void monitoringFlowDetails(String monitoringType, LoadGrid loadGrid);
 }
