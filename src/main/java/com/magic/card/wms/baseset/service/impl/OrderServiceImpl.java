@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.magic.card.wms.baseset.mapper.OrderInfoMapper;
 import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
@@ -26,6 +27,7 @@ import com.magic.card.wms.common.utils.*;
 import com.magic.card.wms.report.service.ExpressFeeConfigService;
 import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -35,15 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -151,6 +148,51 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         return loadGrid;
     }
 
+
+    /**
+     * 获取订单详情（商品 以及 对应的包裹信息）
+     * @param orderNo 系统订单号
+     * @param customerCode 商家Code
+     * @param systemOrderNo 系统订单号
+     * @return
+     */
+    @Override
+    public Map loadDetails(String orderNo, String customerCode, String systemOrderNo) {
+        HashMap<String, Object> orderDetailsMap = Maps.newHashMap();
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("system_order_no", systemOrderNo);
+        orderDetailsMap.put("orderInfo", checkOrder(customerCode, orderNo));
+
+        orderDetailsMap.put("orderDetails", baseMapper.loadCommodity(StringUtils.split(orderNo, ","), customerCode));
+        List<Map> orderMails = mailPickingService.loadOrderPackage(systemOrderNo);
+
+        if (CollectionUtils.isNotEmpty(orderMails)) {
+            List<Map> orderMailDetails = baseMapper.loadMailDetails(systemOrderNo);
+            HashMap<String, List<Map>> mailDetailMap = Maps.newHashMap();
+            orderMailDetails.forEach(mailDetails -> {
+                final String mailNo = MapUtils.getString(mailDetails, "mailNo");
+
+                if (mailDetailMap.containsKey(mailNo)) {
+                    mailDetailMap.get(mailNo).add(mailDetails);
+                } else {
+                    ArrayList<Map> mailCommodities = Lists.newArrayList();
+                    mailCommodities.add(mailDetails);
+                    mailDetailMap.put(mailNo, mailCommodities);
+
+                }
+            });
+            orderMails.forEach( orderMail -> {
+                final String mailNo = MapUtils.getString(orderMail, "mailNo");
+                orderMail.put("mailCommodities", mailDetailMap.get(mailNo));
+
+            });
+            orderDetailsMap.put("orderMails", orderMails);
+
+        }
+
+        return orderDetailsMap;
+    }
+
     /**
      * 获取订单商品
      *
@@ -173,24 +215,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         // 订单取消
         if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
             cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
+            return;
         }
 
         CustomerBaseInfo customerBaseInfo = checkOrder(orderInfoDTO);
-        Order order = new Order();
-        order.setSystemOrderNo(StringUtils.join(orderInfoDTO.getOrderNo(), orderInfoDTO.getCustomerCode()));
-        PoUtil.add(orderInfoDTO, order, operator);
+        orderHandler(orderInfoDTO.getOrderNo() + orderInfoDTO.getCustomerCode(), orderInfoDTO, customerBaseInfo, false, operator);
 
-        // 保存单号
-        if (this.baseMapper.insert(order) < 1) {
-            throw OperationException.addException("订单导入失败");
-        }
-
-        // 再次确认商品个数
-        if (CollectionUtils.isEmpty(orderInfoDTO.getCommodities())) {
-            throw OperationException.addException("订单不存在商品，请确认后再推送");
-        }
-
-        processOrderCommodities(orderInfoDTO.getCommodities(), order, customerBaseInfo.getId());
         // 触发生成拣货单 同检验拣货区商品是否充足
         ThreadPool.excutor(() -> pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 15));
     }
@@ -203,7 +233,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     @Override
     public void updateOrder(OrderUpdateDTO orderUpdateDTO) {
         Order order = checkoutOrder(orderUpdateDTO.getSystemOrderNo());
-        String operator = Constants.DEFAULT_USER;
+        String operator = webUtil.operator();
 
         // 取消订单
         if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderUpdateDTO.getBillState())) {
@@ -228,35 +258,34 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             mailPickingDetailService.delete(wrapper);
             // 检出商家信息
             CustomerBaseInfo customerBaseInfo = customerService.checkoutCustomer(order.getCustomerCode());
-            processOrderCommodities(orderUpdateDTO.getCommodities(), order, customerBaseInfo.getId());
+            processOrderCommodities(orderUpdateDTO.getCommodities(), order, customerBaseInfo.getId(), false, operator);
         }
 
     }
 
     /**
-     * 获取满足要求的所有订单
-     * 添加同步锁 预防触发、定时并发请求
-     * @param customerCode
-     * @return
+     * 订单数据处理
+     * @param systemSystemCode 系统订单号
+     * @param orderDTO 订单数据
+     * @param customer 客户信息
+     * @param supportMerge 是否支持合单操作
+     * @param operator 操作人
      */
-    @Override @Synchronized
-    public List<Order> obtainOrderList(String customerCode, Integer executeSize) {
-
-        if (StringUtils.isBlank(customerCode)) return null;
-
-        // 判定是否有满足 20 条数据 且订单已经锁定 15 分钟
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("customer_code", customerCode);
-        wrapper.eq("state", StateEnum.normal.getCode());
-        // 订单是否已经锁定 15
-        wrapper.lt("create_time", DateTime.now().minusMinutes(15).toDate());
-        wrapper.orderBy("create_time");
-
-        if (this.selectCount(wrapper) >= executeSize) {
-            return this.selectPage(new Page<>(1, 20), wrapper).getRecords();
+    private void orderHandler(String systemSystemCode, OrderInfoDTO orderDTO, CustomerBaseInfo customer, Boolean supportMerge, final String operator) {
+        Order order = new Order();
+        order.setSystemOrderNo(systemSystemCode);
+        PoUtil.add(orderDTO, order, operator);
+        // 保存单号
+        if (this.baseMapper.insert(order) < 1) {
+            throw OperationException.addException("订单导入失败");
         }
 
-        return null;
+        // 再次确认商品个数
+        if (CollectionUtils.isEmpty(orderDTO.getCommodities())) {
+            throw OperationException.addException("订单不存在商品，请确认后再推送");
+        }
+
+        processOrderCommodities(orderDTO.getCommodities(), order, customer.getId(), supportMerge, operator);
     }
 
     /**
@@ -362,7 +391,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         // 取消订单是否需要判断当前订单是否已经称重完毕
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("preset_weight", null).
-                eq("order_no", orderNo+customerCode).
+                eq("order_no", order.getSystemOrderNo()).
                 eq("state", StateEnum.normal.getCode());
 
         if (mailPickingService.selectCount(wrapper) > 0) {
@@ -404,9 +433,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * @param orderCommodityDTOS 订单商品信息
      * @param order              订单信息
      * @param customerId         商家ID
+     * @param supportMerge 是否支持合单
+     * @param operator 操作人
      */
-    private void processOrderCommodities(List<OrderCommodityDTO> orderCommodityDTOS, Order order, Long customerId) {
-        String operator = webUtil.operator();
+    private void processOrderCommodities(List<OrderCommodityDTO> orderCommodityDTOS, Order order, Long customerId, Boolean supportMerge, final String operator) {
         // 订单商品保存
         orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
             orderCommodityDTO.setOrderNo(order.getOrderNo());
@@ -416,6 +446,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         //TODO 目前不会处理/批量订单以及/B2B订单
         if (order.getIsB2b() == 1 || order.getIsBatch() == 1) return;
+
+        if (supportMerge) return;
 
         List<List<OrderCommodityDTO>> orderSplitPackages = splitPackageRuleService.orderSplitPackages(orderCommodityDTOS);
 
@@ -504,59 +536,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     /**
      * EXCEL 导入订单
      *
-     * @param excelOrderFiles
-     */
-//    @Override @Transactional
-    public void excelImport(MultipartFile[] excelOrderFiles) throws IOException {
-        if (excelOrderFiles != null && excelOrderFiles.length > 0) {
-            for (MultipartFile excelOrder :
-                    excelOrderFiles) {
-
-                EasyExcelUtil.validatorFileSuffix(excelOrder.getOriginalFilename());
-                List<ExcelOrderImport> excelOrders = EasyExcelUtil.readExcel(excelOrder.getInputStream(), ExcelOrderImport.class, 1, 1);
-                List<ExcelOrderCommodity> excelOrderCommodities = EasyExcelUtil.readExcel(excelOrder.getInputStream(), ExcelOrderCommodity.class, 2, 1);
-                Map<String, List<OrderCommodityDTO>> orderCmmodities = Maps.newHashMap();
-
-                if (CollectionUtils.isEmpty(excelOrders)) return;
-
-                if (CollectionUtils.isNotEmpty(excelOrderCommodities)) {
-                    excelOrderCommodities.forEach(excelOrderCommodity -> {
-                        final String orderNo = excelOrderCommodity.getOrderNo();
-                        OrderCommodityDTO orderCommodityDTO = new OrderCommodityDTO();
-                        BeanUtils.copyProperties(excelOrderCommodity, orderCommodityDTO);
-
-                        if (orderCmmodities.containsKey(orderNo)) {
-                            orderCmmodities.get(orderNo).add(orderCommodityDTO);
-                        } else {
-                            LinkedList<OrderCommodityDTO> orderCommodityDTOs = Lists.newLinkedList();
-                            orderCommodityDTOs.add(orderCommodityDTO);
-                            orderCmmodities.put(orderNo, orderCommodityDTOs);
-                        }
-
-                    });
-                }
-
-                excelOrders.forEach(excelOrderImport -> {
-                    final String orderNo = excelOrderImport.getOrderNo();
-                    OrderInfoDTO orderInfoDTO = new OrderInfoDTO();
-                    BeanUtils.copyProperties(excelOrderImport, orderInfoDTO);
-                    orderInfoDTO.setCommodities(orderCmmodities.get(orderNo));
-                    importOrder(orderInfoDTO);
-                });
-
-            }
-        }
-    }
-
-    /**
-     * EXCEL 导入订单
-     *
-     * @param excelOrders
+     * @param excelOrderFile
      */
     @Override @Transactional
     public void excelNewImport(MultipartFile excelOrderFile) throws IOException {
-
         if (excelOrderFile == null) return;
+        final String operator = webUtil.operator();
 
         // 验证文件后缀
         EasyExcelUtil.validatorFileSuffix(excelOrderFile.getOriginalFilename());
@@ -568,11 +553,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         LinkedList<OrderInfoDTO> orders = Lists.newLinkedList();
         // 不同商品不同条码
         Map<String, Map<String, ExcelCommodity>> excelOrderCommodityMap = Maps.newHashMap();
+        HashSet<String> orderNos = Sets.newHashSet();
 
         for (int i = 0; i < excelOrders.size(); i++) {
             final ExcelOrderImport excelOrder = excelOrders.get(i);
             final String orderNo = excelOrder.getOrderNo();
             final String commodityCode = excelOrder.getBarCode();
+            orderNos.add(excelOrder.getOrderNo());
 
             if (StringUtils.isAnyBlank(orderNo, excelOrder.getCustomerCode(), commodityCode)) continue;
 
@@ -603,19 +590,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 
         }
 
-        // region todo 订单合并处理
+        if (orders.stream().map(OrderInfoDTO::getOrderNo).distinct().count() < orders.size()) {
+            throw  OperationException.customException(ResultEnum.order_excel_import_distinct);
+        }
+
+        CustomerBaseInfo customer = customerService.checkoutCustomer(orders.get(0).getCustomerCode());
+
+        // 判断客户订单是否已经导入系统中
+        EntityWrapper checkOrder = new EntityWrapper();
+        checkOrder.in("order_no", orderNos).
+                eq("customer_code", customer.getCustomerCode()).
+                ne("state", StateEnum.delete.getCode());
+
+        if (selectCount(checkOrder) > 0) {
+            throw OperationException.customException(ResultEnum.order_excel_import_exist);
+        }
+
         // 统计可合单的订单
         // 判断是否有可合单 若可以合则执行合单导入从原有数据中移除，否则走拆单导入逻辑
-//        LinkedList<String> orderTokens = Lists.newLinkedList();
-//        Map<String, List<Integer>> canOrders = Maps.newHashMap();
-//        for (int i = 0; i < orders.size(); i++) {
-//            OrderInfoDTO orderInfoDTO = orders.get(i);
-//            final String orderToken = orderInfoDTO.orderToken();
-//
-//        }
-
-        for (int i = 0; i < orders.size(); i++) {
-            OrderInfoDTO order = orders.get(i);
+        Map<String, List<OrderInfoDTO>> ordersMap = Maps.newLinkedHashMap();
+        orders.forEach( order -> {
+            final String orderToken = order.orderToken();
             final String orderNo = order.getOrderNo();
             ArrayList<OrderCommodityDTO> orderCommodities = Lists.newArrayList();
             excelOrderCommodityMap.get(orderNo).forEach((commodityCode, excelCommodity) -> {
@@ -623,12 +618,53 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
                 BeanUtils.copyProperties(excelCommodity, orderCommodity);
                 orderCommodities.add(orderCommodity);
             });
+            order.setCommodities(orderCommodities);
 
-            if (orderCommodities.size() > 0) {
-                order.setCommodities(orderCommodities);
-                importOrder(order);
+            if (ordersMap.containsKey(orderToken)) {
+                ordersMap.get(orderToken).add(order);
+            } else {
+                ArrayList<OrderInfoDTO> hOrders = Lists.newArrayList();
+                hOrders.add(order);
+                ordersMap.put(orderToken, hOrders);
             }
-        }
+
+        });
+        ordersMap.forEach((key, hOrders) -> {
+
+            if (hOrders.size() > 1) {
+                // 可合单数据处理
+                mergeImportOrder(hOrders, customer, operator);
+            } else if (hOrders.size() == 1) {
+                excelOrderImportHandler(hOrders, customer, operator);
+            }
+        });
+        ThreadPool.excutor(() -> pickingBillService.triggerGenerator(customer.getCustomerCode(), 15));
+    }
+
+    /**
+     * Excel 订单导入处理
+     * @param orders
+     * @param customer
+     * @param operator
+     */
+    private void excelOrderImportHandler(List<OrderInfoDTO> orders, CustomerBaseInfo customer, String operator) {
+        if (CollectionUtils.isEmpty(orders)) return;
+
+        orders.forEach( orderInfoDTO -> {
+            if (orderInfoDTO.getCommodities().size() > 0) {
+                // 取消订单处理
+                if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
+                    cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
+                    return;
+                }
+
+                orderHandler(StringUtils.join(orderInfoDTO.getOrderNo(), orderInfoDTO.getCustomerCode()),
+                        orderInfoDTO,
+                        customer,
+                        false,
+                        operator);
+            }
+        });
     }
 
     /**
@@ -649,6 +685,80 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         return order;
+    }
+
+    /**
+     * 合并导入订单
+     * @param importOrders 导入订单数据
+     * @param customer 客户
+     * @param operator 操作人
+     */
+    @Transactional
+    public void mergeImportOrder(List<OrderInfoDTO> importOrders, CustomerBaseInfo customer, final String operator) {
+        if (CollectionUtils.isEmpty(importOrders)) return;
+
+        // 获取合单商品数据对比规则
+        TreeMap<String, Integer> commodityNumMap = Maps.newTreeMap();
+        final StringBuffer orderNos = new StringBuffer();
+        importOrders.forEach(orderInfoDTO -> {
+
+            if (StringUtils.isNotBlank(orderNos.toString())) {
+                orderNos.append(",");
+            }
+
+            orderNos.append(orderInfoDTO.getOrderNo());
+            orderInfoDTO.getCommodities().forEach( commodity-> {
+                final String commodityCode = commodity.getBarCode();
+                int nums = commodity.getNumbers();
+                if (commodityNumMap.containsKey(commodityCode)) {
+                    nums += commodityNumMap.get(commodityCode);
+                }
+
+                commodityNumMap.put(commodityCode, nums);
+
+            });
+        });
+        final StringBuffer splitToken = new StringBuffer();
+
+        commodityNumMap.forEach((key, value) -> {
+
+            if (StringUtils.isNotBlank(splitToken.toString())) {
+                splitToken.append(",");
+            }
+
+            splitToken.append(StringUtils.joinWith("+", key, value));
+        });
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("rule_token", splitToken.toString());
+        SplitPackageRule splitPackageRule = splitPackageRuleService.selectOne(wrapper);
+        Boolean mergeFlag = splitPackageRule == null ? false : true;
+
+        // 验证合单规则
+        if (mergeFlag) {
+            // 添加原始订单商品数据
+            final String systemOrderNo = GeneratorCodeUtil.dataTime(5);
+            Order order = new Order();
+            BeanUtils.copyProperties(importOrders.get(0), order);
+            order.setIsMerge(1);
+            order.setIsMatched(1);
+            PoUtil.add(order, operator);
+            order.setOrderNo(orderNos.toString());
+            order.setSystemOrderNo(systemOrderNo);
+            insert(order);
+            importOrders.forEach( orderInfoDTO ->  processOrderCommodities(orderInfoDTO.getCommodities(), order, customer.getId(), true, operator));
+
+            String mailNo = UUID.randomUUID().toString();
+            commodityNumMap.forEach((key, value) -> {
+                MailPickingDetail mailPickingDetail = new MailPickingDetail();
+                mailPickingDetail.setOrderNo(systemOrderNo);
+                mailPickingDetail.setMailNo(mailNo);
+                mailPickingDetail.setCommodityCode(key);
+                mailPickingDetail.setPackageNums(value);
+                mailPickingDetailService.add(mailPickingDetail);
+            });
+        } else {
+            excelOrderImportHandler(importOrders, customer, operator);
+        }
     }
 
     /**
@@ -695,17 +805,4 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         return baseMapper.excelExport(orderNos);
     }
 
-    /**
-     * 获取订单详情（商品 以及 对应的包裹信息）
-     *
-     * @param orderNo      系统订单号
-     * @param customerCode 商家Code
-     * @return
-     */
-    @Override
-    public Map loadDetails(String orderNo, String customerCode) {
-//        Maps.
-
-        return null;
-    }
 }

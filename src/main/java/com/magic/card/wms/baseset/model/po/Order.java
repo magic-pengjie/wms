@@ -41,6 +41,10 @@ public class Order extends BasePo implements Serializable {
      * 系统订单号 订单号 + 商家编码
      */
     private String systemOrderNo;
+    /**
+     * 系统是否智能合单
+     */
+    private int isMerge;
 
     /**
      * 商家编码

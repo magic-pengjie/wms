@@ -44,4 +44,18 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
 
     List<ExcelOrderImport> excelExport(@Param("orderNos") List<String> orderNos);
 
+    /**
+     * 加载原始订单商品数据
+     * @param orderNo 原始订单号
+     * @param customerCode 商家编号
+     * @return
+     */
+    List<Map> loadCommodity(@Param("orderNos") String[] orderNos, @Param("customerCode") String customerCode);
+
+    /**
+     * 加载系统订单包裹数据
+     * @param systemOrderNo
+     * @return
+     */
+    List<Map> loadMailDetails(@Param("systemOrderNo") String systemOrderNo);
 }

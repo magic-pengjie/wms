@@ -40,7 +40,7 @@ public class OrderUpdateDTO implements Serializable {
      * 收货人邮编
      */
     @ApiModelProperty("收货人邮编")
-    @NotNull(message = "收货人邮编")
+//    @NotNull(message = "收货人邮编")
     private String postCode;
     /**
      * 用户所在省

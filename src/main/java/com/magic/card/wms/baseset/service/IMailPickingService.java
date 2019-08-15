@@ -97,4 +97,11 @@ public interface IMailPickingService extends IService<MailPicking> {
      * @param excludeMails
      */
     void updatePickingFinishState(String pickNo, List<String> excludeMails);
+
+    /**
+     * 加载系统订单包裹数据
+     * @param systemOrderNo
+     * @return
+     */
+    List<Map> loadOrderPackage(String systemOrderNo);
 }

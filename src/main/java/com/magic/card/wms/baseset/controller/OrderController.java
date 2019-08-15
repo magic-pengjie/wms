@@ -67,9 +67,9 @@ public class OrderController {
     }
 
     @ApiOperation("获取订单商品信息以及包裹信息")
-    @PostMapping("loadDetails")
-    public ResponseData loadDetails(@RequestParam String orderNo, @RequestParam String customerCode) {
-        return ResponseData.ok(orderService.loadDetails(orderNo, customerCode));
+    @GetMapping("loadDetails")
+    public ResponseData loadDetails(@RequestParam String orderNo, @RequestParam String customerCode, @RequestParam String systemOrderNo) {
+        return ResponseData.ok(orderService.loadDetails(orderNo, customerCode, systemOrderNo));
     }
 
     @PostMapping("excelExport")
@@ -170,8 +170,8 @@ public class OrderController {
         return ResponseData.ok(pickingBillService.generatorInvoice(Constants.DEFAULT_USER, 1, pickNos));
     }
 
-    @ApiOperation("订单物品称重")
-    @GetMapping("weigh")
+//    @ApiOperation("订单物品称重")
+//    @GetMapping("weigh")
     public ResponseData orderWeigh(
             @ApiParam("订单号")@RequestParam String orderNo,
             @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
@@ -179,8 +179,8 @@ public class OrderController {
         return ResponseData.ok();
     }
 
-    @ApiOperation("订单物品称重忽略重量差异")
-    @GetMapping("weighIgnore")
+//    @ApiOperation("订单物品称重忽略重量差异")
+//    @GetMapping("weighIgnore")
     public ResponseData orderWeighIgnore(
             @ApiParam("订单号")@RequestParam String orderNo,
             @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
@@ -188,8 +188,8 @@ public class OrderController {
         return ResponseData.ok();
     }
 
-    @ApiOperation("订单打包材料提醒")
-    @GetMapping("package")
+//    @ApiOperation("订单打包材料提醒")
+//    @GetMapping("package")
     public ResponseData orderPackage(@ApiParam("订单号") @RequestParam String orderNo) {
         return ResponseData.ok(orderService.orderPackage(orderNo));
     }

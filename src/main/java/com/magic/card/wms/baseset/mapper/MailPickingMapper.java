@@ -113,4 +113,10 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
      */
     void updateBatchByMailNos(List<String> mailNos);
 
+    /**
+     * 获取系统订单包裹基本信息
+     * @param systemOrderNo
+     * @return
+     */
+    List<Map> loadOrderPackage(@Param("systemOrderNo") String systemOrderNo);
 }
