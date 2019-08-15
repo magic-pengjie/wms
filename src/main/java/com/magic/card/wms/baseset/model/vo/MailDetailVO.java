@@ -5,10 +5,12 @@ import java.util.List;
 
 import com.magic.card.wms.baseset.model.po.LogisticsTrackingInfo;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
+@ApiModel(description = "包裹信息模型")
 public class MailDetailVO {
 	
 	/**

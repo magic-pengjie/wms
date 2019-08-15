@@ -220,6 +220,14 @@
             and oi.create_time &lt;${startDate}
         </if>
     </select>
+	
+	<!-- 根据快递单修改物流状态 -->
+	<update id="updateBatchByMailNo">
+		update wms_mail_picking_info
+		set logistics_state=#{state},
+		update_time=CURRENT_TIMESTAMP 
+		where mail_no =#{mailNo}
+	</update>
 
     <!-- 根据快递单修改物流状态 -->
     <update id="updateBatchByMailNos" parameterType="java.util.List">

@@ -158,6 +158,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		commStoreList.forEach(cs->{
 			CheckRecord cr = new CheckRecord();
 			BeanUtils.copyProperties(cs, cr);
+			cr.setStoreNums(cs.getAvailableNums());//库存数量
 			cr.setCheckCode(checkCode);//生成盘点批次Code
 			cr.setStorehouseType(cs.getStoreType());
 			cr.setStorehouseCode(cs.getStoreCode());
@@ -174,6 +175,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		if(!CollectionUtils.isEmpty(crList)) {
 			boolean insertBatch = this.insertBatch(crList);
 			log.info("===>> 生成盘点记录结束：{}", insertBatch);
+			log.info("===>> 组装前端显示数据start....");
 			crResponse = BeanCopyUtil.copyList(crList, CheckRecordQueryResponse.class);
 			for (CheckRecordQueryResponse crr :crResponse) {
 				for (CheckRecordInfoDto css :commStoreList) {
@@ -391,11 +393,11 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 							scWrapper.eq("storehouse_id",storehouseInfo.getId());
 							//1.2.3盘 正确结束， 两个一样结束， 三盘为准。审核结束，取消冻结。
 							if(!StringUtils.isEmpty(checkRecordDto.getThirdCheckNums())){//终盘数量
-								sc.setStoreNums(checkRecordDto.getThirdCheckNums());
+								sc.setAvailableNums(checkRecordDto.getThirdCheckNums());
 							}else if (!StringUtils.isEmpty(checkRecordDto.getSecondCheckNums())){//复盘数量
-								sc.setStoreNums(checkRecordDto.getSecondCheckNums());
+								sc.setAvailableNums(checkRecordDto.getSecondCheckNums());
 							}else if (!StringUtils.isEmpty(checkRecordDto.getFirstCheckNums())){//初盘数量
-								sc.setStoreNums(checkRecordDto.getFirstCheckNums());
+								sc.setAvailableNums(checkRecordDto.getFirstCheckNums());
 							}
 							sc.setUpdateTime(nowDate);
 							sc.setUpdateUser(name);
@@ -431,10 +433,5 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		return updateStoreFrozen;
 	}
 
-
-	public static void main(String[] args) {
-		Date date = new Date();
-		System.out.println(date.getTime());
-	}
 
 }

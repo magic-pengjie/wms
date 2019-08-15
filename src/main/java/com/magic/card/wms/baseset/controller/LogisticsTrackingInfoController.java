@@ -41,9 +41,9 @@ public class LogisticsTrackingInfoController {
 	
 	@ApiOperation(value = "物流跟踪信息查询(查询邮政数据)", notes = "物流跟踪信息查询(查询邮政数据)")
 	@GetMapping(value = "/getLogisticsInfo")
-	public ResponseData getTrackingInfo(@RequestParam(required = true) List<MailPicking> list) {
+	public ResponseData getTrackingInfo(@RequestParam(required = true) String mailNo) {
 		try {
-			return logisticsTrackingInfoService.getTrackingInfo(list);
+			return logisticsTrackingInfoService.getTrackingInfo(mailNo);
 		} catch (Exception e) {
 			log.error("预警代办列表查询失败:{}",e);
 			return ResponseData.error(ResultEnum.query_error);
@@ -58,6 +58,19 @@ public class LogisticsTrackingInfoController {
 			return ResponseData.ok(page);
 		} catch (Exception e) {
 			log.error("物流信息列表查询失败:{}",e);
+			return ResponseData.error(ResultEnum.query_error);
+		}
+		
+	}
+	
+	@ApiOperation(value = "人工确认物流", notes = "人工确认物流")
+	@GetMapping(value = "/trackingConfirm")
+	public ResponseData trackingConfirm(@RequestParam(required = true)  String mailNo) {
+		try {
+			logisticsTrackingInfoService.trackingConfirm(mailNo);
+			return ResponseData.ok();
+		} catch (Exception e) {
+			log.error("物流信息手工确认失败:{}",e);
 			return ResponseData.error(ResultEnum.query_error);
 		}
 		

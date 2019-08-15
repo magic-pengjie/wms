@@ -15,6 +15,7 @@ import com.magic.card.wms.baseset.model.po.*;
 import com.magic.card.wms.baseset.model.vo.ExcelCommodity;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderCommodity;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
+import com.magic.card.wms.baseset.model.vo.OrderStatisticsVO;
 import com.magic.card.wms.baseset.service.*;
 import com.magic.card.wms.baseset.service.order.OrderExceptionService;
 import com.magic.card.wms.common.exception.OperationException;
@@ -34,6 +35,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -72,6 +74,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private ISplitPackageRuleService splitPackageRuleService;
     @Autowired
     private WebUtil webUtil;
+    @Autowired
+    private OrderInfoMapper orderInfoMapper;
     /**
      *
      */
@@ -805,4 +809,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         return baseMapper.excelExport(orderNos);
     }
 
+
+	@Override
+	public OrderStatisticsVO orderStatistics(String orderDate) {
+		//默认查询当天订单量
+		if(ObjectUtils.isEmpty(orderDate)) {
+			orderDate = DateUtil.getStringDateShort();
+		}
+		return orderInfoMapper.selectOrderStatistics(orderDate);
+	}
 }

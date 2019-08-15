@@ -54,6 +54,9 @@ public class CheckRecordInfoDto implements Serializable{
 	
 	@ApiModelProperty(value = "库存数量")
 	private Integer storeNums;//库存
+
+	@ApiModelProperty(value = "可用数量")
+	private Integer availableNums;
 	
 	@ApiModelProperty(value = "盘点数量")
 	private Integer checkNums;//盘点数量

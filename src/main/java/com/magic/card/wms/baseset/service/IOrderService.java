@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.po.Order;
+import com.magic.card.wms.baseset.model.vo.OrderStatisticsVO;
 import com.magic.card.wms.common.model.LoadGrid;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -127,4 +128,12 @@ public interface IOrderService extends IService<Order> {
      * @return
      */
     Map loadDetails(String orderNo, String customerCode, String systemOrderNo);
+    
+    /**
+     * 主页订单量统计
+     * @param orderDate 订单时间
+     * @return OrderStatisticsVO
+     */
+    OrderStatisticsVO orderStatistics(String orderDate);
+    
 }

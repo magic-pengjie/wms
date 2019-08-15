@@ -110,8 +110,9 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
     /**
      * 根据快递单修改物流状态
      * @param mailNos
+     * @param 状态
      */
-    void updateBatchByMailNos(List<String> mailNos);
+    void updateBatchByMailNo(@Param("mailNo") String mailNo, @Param("state") int state);
 
     /**
      * 获取系统订单包裹基本信息

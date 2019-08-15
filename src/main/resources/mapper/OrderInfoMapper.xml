@@ -255,4 +255,16 @@
         where wmpi.order_no = #{systemOrderNo}
     </select>
 
+	<!-- 订单量统计 总订单量、已分拣数量、已出库数量 -->
+	<select id="selectOrderStatistics" resultType="com.magic.card.wms.baseset.model.vo.OrderStatisticsVO">
+		select oi.customer_code,oi.customer_name,count(*) as "order_Nums",
+	   		(select count(*) from wms_order_info oi1 where  DATE_FORMAT(oi1.create_time,'%Y-%m-%d') = #{orderDate}
+	   			and oi1.bill_state='packing' and oi1.customer_code=oi.customer_code) as "pick_nums",
+	   		(select count(*) from wms_order_info oi2 where  DATE_FORMAT(oi2.create_time,'%Y-%m-%d') = #{orderDate} 
+	   			and oi2.bill_state='go_out' and oi2.customer_code=oi.customer_code) as "out_nums"
+	    from wms_order_info oi
+		where  DATE_FORMAT(oi.create_time,'%Y-%m-%d') = #{orderDate}
+		GROUP by oi.customer_code,oi.customer_name
+	</select>
+
 </mapper>

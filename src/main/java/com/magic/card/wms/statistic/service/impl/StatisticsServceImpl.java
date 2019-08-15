@@ -2,6 +2,7 @@ package com.magic.card.wms.statistic.service.impl;
 
 
 import com.baomidou.mybatisplus.plugins.pagination.PageHelper;
+import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
 import com.magic.card.wms.check.mapper.CheckRecordMapper;
 import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
 import com.magic.card.wms.common.exception.BusinessException;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,6 +43,10 @@ public class StatisticsServceImpl implements StatisticsService {
 
     @Autowired
     private CheckRecordMapper checkRecordMapper;
+
+    @Autowired
+    private StorehouseConfigMapper storehouseConfigMapper;
+
 
     //查询入库报表
     @Override
@@ -204,8 +210,30 @@ public class StatisticsServceImpl implements StatisticsService {
 
     //库存报表，库位使用报表， 查询库位信息List
     @Override
-    public BasePageResponse<CheckRecordInfoDto> queryStoreDetailsInfo(ParchaseBillDto dto) {
-        //调用盘点查询库位接口
-        return null;
+    public BasePageResponse<CheckRecordInfoDto> queryStoreDetailsInfo(QueryStoreInfoDto dto) {
+        QueryStoreInfoBO storeInfoBO = new QueryStoreInfoBO();
+        storeInfoBO.setCustomerCode(dto.getCustomerCode());
+        if(!StringUtils.isEmpty(dto.getCommodityId())){
+            storeInfoBO.setCommodityId(dto.getCommodityId());
+        }
+        if(!StringUtils.isEmpty(dto.getQueryType())){
+            if ("1".equals(dto.getQueryType())){//（1:已用库存,2:未用库存,3:占用库存）")
+                storeInfoBO.setAvailable(true);
+            }else if ("2".equals(dto.getQueryType())){
+                storeInfoBO.setUnavailable(true);
+            }else if ("3".equals(dto.getQueryType())){
+                storeInfoBO.setUsedStores(true);
+            }
+        }
+        BasePageResponse<CheckRecordInfoDto> pageResponse = new BasePageResponse<>();
+        PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
+        List<CheckRecordInfoDto> recordInfoDtos = storehouseConfigMapper.queryStoreInfoList(storeInfoBO);
+        if(!CollectionUtils.isEmpty(recordInfoDtos)){
+            pageResponse.setTotal(recordInfoDtos.size());
+            pageResponse.setRecords(recordInfoDtos);
+        }
+        pageResponse.setCurrent(dto.getCurrent());
+        pageResponse.setPageSize(dto.getPageSize());
+        return pageResponse;
     }
 }

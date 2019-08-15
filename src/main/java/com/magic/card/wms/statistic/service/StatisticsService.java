@@ -66,5 +66,5 @@ public interface StatisticsService {
      * @param dto
      * @return
      */
-    public BasePageResponse<CheckRecordInfoDto> queryStoreDetailsInfo(ParchaseBillDto dto);
+    public BasePageResponse<CheckRecordInfoDto> queryStoreDetailsInfo(QueryStoreInfoDto dto);
 }
