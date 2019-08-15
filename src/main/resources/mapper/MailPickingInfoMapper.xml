@@ -3,76 +3,77 @@
 <mapper namespace="com.magic.card.wms.baseset.mapper.MailPickingMapper">
 
     <!-- 开启二级缓存 -->
-<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+    <!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.MailPicking">
-        <id column="id" property="id" />
-        <result column="order_no" property="orderNo" />
-        <result column="mail_no" property="mailNo" />
-        <result column="pick_no" property="pickNo" />
-        <result column="basket_num" property="basketNum" />
-        <result column="preset_weight" property="presetWeight" />
-        <result column="real_weight" property="realWeight" />
-        <result column="is_finish" property="isFinish" />
-        <result column="merge_state" property="mergeState" />
-        <result column="merge_mail_no" property="mergeMailNo" />
-        <result column="send_state" property="sendState" />
-        <result column="send_nums" property="sendNums" />
-        <result column="fail_reason" property="failReason" />
-        <result column="logistics_state" property="logisticsState" />
-        <result column="state" property="state" />
-        <result column="create_time" property="createTime" />
-        <result column="create_user" property="createUser" />
-        <result column="update_time" property="updateTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="remark" property="remark" />
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="mail_no" property="mailNo"/>
+        <result column="pick_no" property="pickNo"/>
+        <result column="basket_num" property="basketNum"/>
+        <result column="preset_weight" property="presetWeight"/>
+        <result column="real_weight" property="realWeight"/>
+        <result column="is_finish" property="isFinish"/>
+        <result column="merge_state" property="mergeState"/>
+        <result column="merge_mail_no" property="mergeMailNo"/>
+        <result column="send_state" property="sendState"/>
+        <result column="send_nums" property="sendNums"/>
+        <result column="fail_reason" property="failReason"/>
+        <result column="logistics_state" property="logisticsState"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="remark" property="remark"/>
     </resultMap>
-    
+
     <resultMap id="MailResultMap" type="com.magic.card.wms.baseset.model.vo.MailDetailVO">
-        <id column="id" property="id" />
-        <result column="mail_no" property="mailNo" />
-        <result column="customer_code" property="customerCode" />
-        <result column="customer_name" property="customerName" />
-        <result column="order_no" property="orderNo" />
-        <result column="system_order_no" property="systemOrderNo" />
-        <result column="send_state" property="sendState" />
-        <result column="is_finish" property="isFinish" />
-        <result column="is_weight" property="isWeight" />
-        <result column="logistics_state" property="logisticsState" />
-        <result column="fail_reason" property="failReason" />
-        <result column="send_state" property="sendState" />
-        <result column="mail_date" property="mailDate" />
-        <result column="order_date" property="orderDate" />
-        <result column="recipt_name" property="reciptName" />
-        <result column="recipt_phone" property="reciptPhone" />
-        <result column="recipt_addr" property="reciptAddr" />
-        <association  property="logisticsInfo" javaType="com.magic.card.wms.baseset.model.po.LogisticsTrackingInfo">
-	        <result column="serial_no" property="serialNo" />
-	        <result column="batch_no" property="batchNo" />
-	        <result column="trace_no" property="traceNo" />
-	        <result column="op_time" property="opTime" />
-	        <result column="op_code" property="opCode" />
-	        <result column="op_name" property="opName" />
-	        <result column="op_desc" property="opDesc" />
-	        <result column="op_org_prov_name" property="opOrgProvName" />
-	        <result column="op_org_city" property="opOrgCity" />
-	        <result column="op_org_code" property="opOrgCode" />
-	        <result column="op_org_name" property="opOrgName" />
-	        <result column="operator_no" property="operatorNo" />
-	        <result column="operator_name" property="operatorName" />
-	        <result column="response_state" property="responseState" />
-	        <result column="errorDesc" property="errorDesc" />
-	        <result column="state" property="state" />
-	        <result column="create_time" property="createTime" />
-	        <result column="remark" property="remark" />
+        <id column="id" property="id"/>
+        <result column="mail_no" property="mailNo"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="system_order_no" property="systemOrderNo"/>
+        <result column="send_state" property="sendState"/>
+        <result column="is_finish" property="isFinish"/>
+        <result column="is_weight" property="isWeight"/>
+        <result column="logistics_state" property="logisticsState"/>
+        <result column="fail_reason" property="failReason"/>
+        <result column="send_state" property="sendState"/>
+        <result column="mail_date" property="mailDate"/>
+        <result column="order_date" property="orderDate"/>
+        <result column="recipt_name" property="reciptName"/>
+        <result column="recipt_phone" property="reciptPhone"/>
+        <result column="recipt_addr" property="reciptAddr"/>
+        <association property="logisticsInfo" javaType="com.magic.card.wms.baseset.model.po.LogisticsTrackingInfo">
+            <result column="serial_no" property="serialNo"/>
+            <result column="batch_no" property="batchNo"/>
+            <result column="trace_no" property="traceNo"/>
+            <result column="op_time" property="opTime"/>
+            <result column="op_code" property="opCode"/>
+            <result column="op_name" property="opName"/>
+            <result column="op_desc" property="opDesc"/>
+            <result column="op_org_prov_name" property="opOrgProvName"/>
+            <result column="op_org_city" property="opOrgCity"/>
+            <result column="op_org_code" property="opOrgCode"/>
+            <result column="op_org_name" property="opOrgName"/>
+            <result column="operator_no" property="operatorNo"/>
+            <result column="operator_name" property="operatorName"/>
+            <result column="response_state" property="responseState"/>
+            <result column="errorDesc" property="errorDesc"/>
+            <result column="state" property="state"/>
+            <result column="create_time" property="createTime"/>
+            <result column="remark" property="remark"/>
         </association>
-        <collection property="detailList" ofType="com.magic.card.wms.baseset.model.vo.MailCommodityDetail" column="mail_no">
-         	<result column="bar_code" property="barCode" />
-        	<result column="sku_name" property="commodityName" />
-	        <result column="model_no" property="modelNo" />
-	        <result column="spec" property="spec" />
-	        <result column="package_nums" property="packageNums" />
+        <collection property="detailList" ofType="com.magic.card.wms.baseset.model.vo.MailCommodityDetail"
+                    column="mail_no">
+            <result column="bar_code" property="barCode"/>
+            <result column="sku_name" property="commodityName"/>
+            <result column="model_no" property="modelNo"/>
+            <result column="spec" property="spec"/>
+            <result column="package_nums" property="packageNums"/>
         </collection>
     </resultMap>
 
@@ -184,40 +185,41 @@
     <!--  拣货单所有包裹基本信息  -->
     <select id="pickBillMails" resultType="java.util.Map">
         SELECT
-            wmpi.basket_num basketNum,
-            wmpi.mail_no mailNo,
-            woi.order_no orderNo,
-            woi.customer_code,
-            woi.system_order_no systemOrderNo,
-            woi.prov,
-            woi.express_key expressKey,
-            woi.bill_state,
-            wmpi.preset_weight presetWeight,
-            wmpi.real_weight realWeight,
-            wmpi.is_finish isFinish
+        wmpi.basket_num basketNum,
+        wmpi.mail_no mailNo,
+        woi.order_no orderNo,
+        woi.customer_code,
+        woi.system_order_no systemOrderNo,
+        woi.prov,
+        woi.express_key expressKey,
+        woi.bill_state,
+        woi.is_merge,
+        wmpi.preset_weight presetWeight,
+        wmpi.real_weight realWeight,
+        wmpi.is_finish isFinish
         FROM
-            wms_mail_picking_info wmpi
-            LEFT JOIN wms_order_info woi ON woi.system_order_no = wmpi.order_no
+        wms_mail_picking_info wmpi
+        LEFT JOIN wms_order_info woi ON woi.system_order_no = wmpi.order_no
         <where>
             ${ew.sqlSegment}
         </where>
     </select>
-    
+
     <select id="getLogisticsInfoWarningList" resultMap="BaseResultMap">
-	    select  mp.* 
-	    	from wms_mail_picking_info mp 
-			left join wms_order_info oi
-			on mp.order_no = oi.system_order_no and oi.state=1
-			where 
-				mp.state=1
-				and mp.logistics_state=0
-				<if test="startDate!=null and endDate!=null">
-				 and (oi.create_time BETWEEN ${startDate} AND ${endDate})
-				</if>
-				<if test="startDate!=null and endDate==null">
-				 and oi.create_time &lt;${startDate}
-				</if>
-	</select>
+        select mp.*
+        from wms_mail_picking_info mp
+        left join wms_order_info oi
+        on mp.order_no = oi.system_order_no and oi.state=1
+        where
+        mp.state=1
+        and mp.logistics_state=0
+        <if test="startDate!=null and endDate!=null">
+            and (oi.create_time BETWEEN ${startDate} AND ${endDate})
+        </if>
+        <if test="startDate!=null and endDate==null">
+            and oi.create_time &lt;${startDate}
+        </if>
+    </select>
 	
 	<!-- 根据快递单修改物流状态 -->
 	<update id="updateBatchByMailNo">
@@ -226,93 +228,131 @@
 		update_time=CURRENT_TIMESTAMP 
 		where mail_no =#{mailNo}
 	</update>
-	
-	
-	<select id="selectPickInfoList" resultMap="MailResultMap" parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
-   		select mpi.id,mpi.mail_no,mpi.is_finish,
-   		   case when mpi.real_weight is not null then 1 else 0 end is_weight,
-   		   mpi.logistics_state,mpi.send_state,mpi.fail_reason,mpi.create_time mail_date,
-	       woi.system_order_no, woi.order_no,woi.create_time order_date,woi.customer_code,woi.customer_name, woi.recipt_name,woi.recipt_phone,woi.recipt_addr,
-	       lti.serial_no,lti.batch_no,lti.op_time, lti.op_code, lti.op_name, lti.op_desc, lti.op_org_prov_name, lti.op_org_city, 
-	       lti.op_org_code, lti.op_org_name, lti.operator_no, lti.operator_name, lti.response_state, lti.errorDesc, lti.create_time,lti.remark,
-	       wcs.sku_name, wcs.bar_code,wcs.spec,wcs.model_no,
-	       wmpd.package_nums
-		 from wms_mail_picking_info mpi 
-		 left join wms_order_info woi on woi.system_order_no = mpi.order_no and woi.state!=0
-         left join wms_logistics_tracking_info lti on lti.trace_no = mpi.mail_no and lti.state=1
-		 left join wms_mail_picking_detail wmpd on mpi.mail_no=wmpd.mail_no and wmpd.state=1
-		 left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code and wcs.state=1
-         where mpi.state=1
-         	<if test="isFinish !=null">
-         		and mpi.is_finish=#{isFinish}
-         	</if>
-         	<if test="isWeight !=null and isWeight==1">
-         		and mpi.real_weight is not null
-         	</if>
-         	<if test="isWeight !=null and isWeight==0">
-         		and mpi.real_weight is null
-         	</if>
-         	<if test="logisticsState !=null">
-         		and mpi.logistics_state=#{logisticsState}
-         	</if>
-         	<if test="mailNo !=null and mailNo !='' ">
-         		and mpi.mail_no=#{mailNo}
-         	</if>
-         	<if test="orderNo !=null and orderNo !='' ">
-         		and woi.order_no=#{orderNo}
-         	</if>
-         	<if test="startDate !=null and endDate == null">
-         		 and woi.create_time &lt;#{startDate}
-         	</if>
-         	<if test="startDate !=null and endDate != null">
-         		 and (woi.create_time BETWEEN #{startDate} AND #{endDate})
-         	</if>
-         	<if test="reciptName !=null and reciptName !=''">
-         		 and woi.recipt_name=#{reciptName}
-         	</if>
-         	<if test="reciptPhone !=null and reciptPhone !=''">
-         		 and woi.recipt_phone=#{reciptPhone}
-         	</if>
-         	order by woi.create_time
-	</select>
-	<select id="selectPickInfoListCounts" resultType="java.lang.Integer" parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
-   		select count(distinct mpi.mail_no)
-		 from wms_mail_picking_info mpi 
-		 left join wms_order_info woi on woi.system_order_no = mpi.order_no and woi.state!=0
-         left join wms_logistics_tracking_info lti on lti.trace_no = mpi.mail_no and lti.state=1
-		 left join wms_mail_picking_detail wmpd on mpi.mail_no=wmpd.mail_no and wmpd.state=1
-		 left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code and wcs.state=1
-         where mpi.state=1
-         	<if test="isFinish !=null">
-         		and mpi.is_finish=#{isFinish}
-         	</if>
-         	<if test="isWeight !=null and isWeight==1">
-         		and mpi.real_weight is not null
-         	</if>
-         	<if test="isWeight !=null and isWeight==0">
-         		and mpi.real_weight is null
-         	</if>
-         	<if test="logisticsState !=null">
-         		and mpi.logistics_state=#{logisticsState}
-         	</if>
-         	<if test="mailNo !=null and mailNo !='' ">
-         		and mpi.mail_no=#{mailNo}
-         	</if>
-         	<if test="orderNo !=null and orderNo !='' ">
-         		and woi.order_no=#{orderNo}
-         	</if>
-         	<if test="startDate !=null and endDate == null">
-         		 and woi.create_time &lt;#{startDate}
-         	</if>
-         	<if test="startDate !=null and endDate != null">
-         		 and (woi.create_time BETWEEN #{startDate} AND #{endDate})
-         	</if>
-         	<if test="reciptName !=null and reciptName !=''">
-         		 and woi.recipt_name=#{reciptName}
-         	</if>
-         	<if test="reciptPhone !=null and reciptPhone !=''">
-         		 and woi.recipt_phone=#{reciptPhone}
-         	</if>
-	</select>
+
+    <!-- 根据快递单修改物流状态 -->
+    <update id="updateBatchByMailNos" parameterType="java.util.List">
+        update wms_mail_picking
+        set logistics_state=1,
+        createTime=CURRENT_TIMESTAMP
+        where mail_no in
+        <foreach collection="list" item="mailNo" index="index" open="(" close=")" separator=",">
+                        #{mailNo}
+                   
+        </foreach>
+
+    </update>
+
+
+    <select id="selectPickInfoList" resultMap="MailResultMap"
+            parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
+        select mpi.id,mpi.mail_no,mpi.is_finish,
+        case when mpi.real_weight is not null then 1 else 0 end is_weight,
+        mpi.logistics_state,mpi.send_state,mpi.fail_reason,mpi.create_time mail_date,
+        woi.system_order_no, woi.order_no,woi.create_time order_date,woi.customer_code,woi.customer_name,
+        woi.recipt_name,woi.recipt_phone,woi.recipt_addr,
+        lti.serial_no,lti.batch_no,lti.op_time, lti.op_code, lti.op_name, lti.op_desc, lti.op_org_prov_name,
+        lti.op_org_city,
+        lti.op_org_code, lti.op_org_name, lti.operator_no, lti.operator_name, lti.response_state, lti.errorDesc,
+        lti.create_time,lti.remark,
+        wcs.sku_name, wcs.bar_code,wcs.spec,wcs.model_no,
+        wmpd.package_nums
+        from wms_mail_picking_info mpi
+        left join wms_order_info woi on woi.system_order_no = mpi.order_no and woi.state!=0
+        left join wms_logistics_tracking_info lti on lti.trace_no = mpi.mail_no and lti.state=1
+        left join wms_mail_picking_detail wmpd on mpi.mail_no=wmpd.mail_no and wmpd.state=1
+        left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code and wcs.state=1
+        where mpi.state=1
+        <if test="isFinish !=null">
+            and mpi.is_finish=#{isFinish}
+        </if>
+        <if test="isWeight !=null and isWeight==1">
+            and mpi.real_weight is not null
+        </if>
+        <if test="isWeight !=null and isWeight==0">
+            and mpi.real_weight is null
+        </if>
+        <if test="logisticsState !=null">
+            and mpi.logistics_state=#{logisticsState}
+        </if>
+        <if test="mailNo !=null and mailNo !='' ">
+            and mpi.mail_no=#{mailNo}
+        </if>
+        <if test="orderNo !=null and orderNo !='' ">
+            and woi.order_no=#{orderNo}
+        </if>
+        <if test="startDate !=null and endDate == null">
+            and woi.create_time &lt;#{startDate}
+        </if>
+        <if test="startDate !=null and endDate != null">
+            and (woi.create_time BETWEEN #{startDate} AND #{endDate})
+        </if>
+        <if test="reciptName !=null and reciptName !=''">
+            and woi.recipt_name=#{reciptName}
+        </if>
+        <if test="reciptPhone !=null and reciptPhone !=''">
+            and woi.recipt_phone=#{reciptPhone}
+        </if>
+        order by woi.create_time
+    </select>
+    <select id="selectPickInfoListCounts" resultType="java.lang.Integer"
+            parameterType="com.magic.card.wms.baseset.model.dto.MailDTO">
+        select count(distinct mpi.mail_no)
+        from wms_mail_picking_info mpi
+        left join wms_order_info woi on woi.system_order_no = mpi.order_no and woi.state!=0
+        left join wms_logistics_tracking_info lti on lti.trace_no = mpi.mail_no and lti.state=1
+        left join wms_mail_picking_detail wmpd on mpi.mail_no=wmpd.mail_no and wmpd.state=1
+        left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code and wcs.state=1
+        where mpi.state=1
+        <if test="isFinish !=null">
+            and mpi.is_finish=#{isFinish}
+        </if>
+        <if test="isWeight !=null and isWeight==1">
+            and mpi.real_weight is not null
+        </if>
+        <if test="isWeight !=null and isWeight==0">
+            and mpi.real_weight is null
+        </if>
+        <if test="logisticsState !=null">
+            and mpi.logistics_state=#{logisticsState}
+        </if>
+        <if test="mailNo !=null and mailNo !='' ">
+            and mpi.mail_no=#{mailNo}
+        </if>
+        <if test="orderNo !=null and orderNo !='' ">
+            and woi.order_no=#{orderNo}
+        </if>
+        <if test="startDate !=null and endDate == null">
+            and woi.create_time &lt;#{startDate}
+        </if>
+        <if test="startDate !=null and endDate != null">
+            and (woi.create_time BETWEEN #{startDate} AND #{endDate})
+        </if>
+        <if test="reciptName !=null and reciptName !=''">
+            and woi.recipt_name=#{reciptName}
+        </if>
+        <if test="reciptPhone !=null and reciptPhone !=''">
+            and woi.recipt_phone=#{reciptPhone}
+        </if>
+    </select>
+    <select id="loadOrderPackage" resultType="java.util.Map">
+        select order_no,
+               mail_no,
+               pick_no,
+               basket_num,
+               preset_weight,
+               real_weight,
+               express_fee,
+               weight_unit,
+               is_finish,
+               merge_state,
+               merge_mail_no,
+               send_state,
+               send_nums,
+               state,
+               fail_reason,
+               logistics_state
+        from wms_mail_picking_info
+        where order_no = #{systemOrderNo}
+    </select>
 
 </mapper>

@@ -215,6 +215,45 @@
             #{orderNo}
         </foreach>
     </select>
+    <select id="loadCommodity" resultType="java.util.Map">
+        select woc.order_no,
+               woc.customer_code,
+               woc.numbers,
+               wcs.sku_code,
+               wcs.sku_name,
+               wcs.banner,
+               wcs.spec,
+               wcs.bar_code,
+               wcs.model_no,
+               wcs.commodity_type,
+               wcs.is_consumable,
+               wcs.is_foodstuff,
+               wcs.single_unit,
+               wcs.single_weight,
+               wcs.single_weight_unit,
+               wcs.single_volume,
+               wcs.single_volume_unit
+        from wms_order_commodity woc
+                 left join wms_commodity_sku wcs on wcs.bar_code = woc.bar_code
+         where woc.customer_code = #{customerCode} and woc.order_no in
+         <foreach collection="orderNos" item="orderNo" open="(" separator="," close=")">
+             #{orderNo}
+         </foreach>
+    </select>
+    <select id="loadMailDetails" resultType="java.util.Map">
+        select wmpd.order_no,
+               wmpd.mail_no,
+               wmpd.pick_no,
+               wmpd.package_nums,
+               wmpd.commodity_code,
+               wcs.sku_name,
+               wcs.model_no,
+               wcs.spec
+        from wms_mail_picking_info wmpi
+                 left join wms_mail_picking_detail wmpd on wmpd.mail_no = wmpi.mail_no and wmpd.order_no = wmpi.order_no
+                left join wms_commodity_sku wcs on wcs.bar_code = wmpd.commodity_code
+        where wmpi.order_no = #{systemOrderNo}
+    </select>
 
 	<!-- 订单量统计 总订单量、已分拣数量、已出库数量 -->
 	<select id="selectOrderStatistics" resultType="com.magic.card.wms.baseset.model.vo.OrderStatisticsVO">

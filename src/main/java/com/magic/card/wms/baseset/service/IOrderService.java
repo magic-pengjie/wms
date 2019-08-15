@@ -52,12 +52,6 @@ public interface IOrderService extends IService<Order> {
      */
     void updateOrder(OrderUpdateDTO orderUpdateDTO);
 
-    /**
-     * 获取满足要求的所有订单
-     * @param customerCode
-     * @return
-     */
-    List<Order> obtainOrderList(String customerCode, Integer executeSize);
 
     /**
      * 获取订单所有商品的总重量
@@ -130,9 +124,10 @@ public interface IOrderService extends IService<Order> {
      * 获取订单详情（商品 以及 对应的包裹信息）
      * @param orderNo 系统订单号
      * @param customerCode 商家Code
+     * @param systemOrderNo 系统订单号
      * @return
      */
-    Map loadDetails(String orderNo, String customerCode);
+    Map loadDetails(String orderNo, String customerCode, String systemOrderNo);
     
     /**
      * 主页订单量统计

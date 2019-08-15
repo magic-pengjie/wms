@@ -44,6 +44,7 @@ public class OrderInfoDTO implements Serializable {
      */
     @ApiModelProperty("商家名称")
     private String customerName;
+
     /**
      * 收件人姓名
      */

@@ -2,12 +2,11 @@ package com.magic.card.wms.baseset.service.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.magic.card.wms.baseset.service.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -106,6 +105,30 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		List<Map> mailPickings = baseMapper.pickBillMails(wrapper);
 
 		if (CollectionUtils.isNotEmpty(mailPickings)) {
+//			// todo 合单数据处理
+//			List<Map> isMergeOrders = mailPickings.stream().filter(mailPicking -> MapUtils.getInteger(mailPicking, "isMerge") == 1).collect(Collectors.toList());
+//
+//			if (CollectionUtils.isNotEmpty(isMergeOrders)) {
+//				mailPickings.removeAll(isMergeOrders);
+//				HashMap<String, Map> distinctMergeOrderMap = Maps.newHashMap();
+//				isMergeOrders.forEach( isMergeOrder -> {
+//					final String mailNo = MapUtils.getString(isMergeOrder, "mailNo");
+//					final String systemOrderNo = MapUtils.getString(isMergeOrder, "systemOrderNo");
+//					final String orderNo = MapUtils.getString(isMergeOrder, "orderNo");
+//					final String key = mailNo + systemOrderNo;
+//
+//					if (distinctMergeOrderMap.containsKey(key)) {
+//						((HashSet<String>)distinctMergeOrderMap.get(key).get("orderNo")).add(orderNo);
+//					} else {
+//						isMergeOrder.put("orderNo", Sets.newHashSet(orderNo));
+//						distinctMergeOrderMap.put(key, isMergeOrder);
+//					}
+//
+//				});
+//				mailPickings.addAll(distinctMergeOrderMap.values());
+//
+//			}
+
 			List<String> mails = mailPickings.stream().map(mailPicking ->
 																	mailPicking.get("mailNo").toString()
 															).collect(Collectors.toList());
@@ -445,7 +468,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	
 	/**
 	 * 订单签名及url编码
-	 * @param order
+	 * @param json
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
@@ -500,4 +523,14 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 
 	}
 
+	/**
+	 * 加载系统订单包裹数据
+	 *
+	 * @param systemOrderNo
+	 * @return
+	 */
+	@Override
+	public List<Map> loadOrderPackage(String systemOrderNo) {
+		return baseMapper.loadOrderPackage(systemOrderNo);
+	}
 }

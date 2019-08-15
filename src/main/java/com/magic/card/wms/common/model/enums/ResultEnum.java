@@ -104,6 +104,8 @@ public enum ResultEnum {
 	order_package_no_exist(50011, "订单包裹不存在，请核实包裹快递单号！"),
 	order_excel_import_err(500012, "Excel订单导入失败"),
 	order_excel_export_err( 500013, "订单Excel数据导出失败"),
+	order_excel_import_distinct( 500014, "订单Excel数据导入订单号有重复，请核实后在导入！"),
+	order_excel_import_exist(500015, "订单Excel数据导入订单号已存在，请勿重复导入！"),
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),
 
