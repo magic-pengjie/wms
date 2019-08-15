@@ -83,7 +83,7 @@ public class CheckRecordController {
 	/**
 	 * 保存盘点信息
 	 */
-	@ApiOperation(value="取消盘点,解除冻结")
+	@ApiOperation(value="保存盘点信息")
 	@RequestMapping(value = "/saveCheckRecord", method = RequestMethod.POST)
 	public ResponseData saveCheckRecord(@RequestBody @Valid CheckRecordUpdateDto checkRecordSaveDto, BindingResult bindingResult) throws BusinessException {
 		return ResponseData.ok(checkRecordService.saveCheckRecord(checkRecordSaveDto.getCheckRecordList()));
