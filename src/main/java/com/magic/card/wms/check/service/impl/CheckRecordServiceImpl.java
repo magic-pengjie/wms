@@ -368,7 +368,7 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 			log.info("===>> update CheckRecord isSuccess:{}",updateBatchFlag);
 		}
 		if(updateBatchFlag && BillState.checker_approved.getCode().equals(auditDto.getBillState())) {//审核通过
-			//取盘点数量不为空的库位code
+			//取 盘点数量不为空的库位code
 			List<String> storeCodeList = checkRecordList.stream()
 					.filter(cr-> (!StringUtils.isEmpty(cr.getFirstCheckNums())||!StringUtils.isEmpty(cr.getSecondCheckNums())||!StringUtils.isEmpty(cr.getThirdCheckNums())))
 					.map(CheckRecordDto::getStorehouseCode).collect(Collectors.toList());
