@@ -13,20 +13,15 @@ import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.po.*;
 import com.magic.card.wms.baseset.model.vo.ExcelCommodity;
-import com.magic.card.wms.baseset.model.vo.ExcelOrderCommodity;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.model.vo.OrderStatisticsVO;
 import com.magic.card.wms.baseset.service.*;
 import com.magic.card.wms.baseset.service.order.OrderExceptionService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.LoadGrid;
-import com.magic.card.wms.common.model.enums.BillState;
-import com.magic.card.wms.common.model.enums.Constants;
-import com.magic.card.wms.common.model.enums.ResultEnum;
-import com.magic.card.wms.common.model.enums.StateEnum;
+import com.magic.card.wms.common.model.enums.*;
 import com.magic.card.wms.common.utils.*;
 import com.magic.card.wms.report.service.ExpressFeeConfigService;
-import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -72,6 +66,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private IMailPickingDetailService mailPickingDetailService;
     @Autowired
     private ISplitPackageRuleService splitPackageRuleService;
+    @Autowired
+    private IStorehouseConfigService storehouseConfigService;
     @Autowired
     private WebUtil webUtil;
     @Autowired
@@ -231,6 +227,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     }
 
     /**
+     * 系统订单取消
+     *
+     * @param systemOrderNo 系统订单号
+     */
+    @Override @Transactional
+    public void cancelOrder(String systemOrderNo) {
+        Order order = checkoutOrder(systemOrderNo);
+        final String operator = webUtil.operator();
+
+        if (StringUtils.equalsAnyIgnoreCase(order.getBillState(),
+                BillState.order_go_out.getCode(),
+                BillState.order_finished.getCode())) {
+            throw OperationException.customException(ResultEnum.order_not_allow_cancel);
+        }
+
+        // 订单设置取消状态
+        order.setBillState(BillState.order_cancel.getCode());
+        PoUtil.update(order, webUtil.operator());
+        updateById(order);
+
+        cancelOrderStockProcess(systemOrderNo, operator);
+  }
+
+    /**
      * 修改订单
      *
      * @param orderUpdateDTO 订单基本信息
@@ -261,6 +281,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             wrapper.eq("order_no", orderUpdateDTO.getSystemOrderNo());
             orderCommodityService.delete(wrapper);
             mailPickingDetailService.delete(wrapper);
+            // TODO 释放占用库存
             // 检出商家信息
             CustomerBaseInfo customerBaseInfo = customerService.checkoutCustomer(order.getCustomerCode());
             processOrderCommodities(orderUpdateDTO.getCommodities(), order, customerBaseInfo.getId(), false, operator);
@@ -301,62 +322,61 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * @param operator
      * @return
      */
-    @Override
-    public void orderWeighContrast(String orderNo, BigDecimal realWight, Boolean ignor, String operator) {
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("order_no", orderNo).
-                eq("state", StateEnum.normal.getCode());
-        Order order = selectOne(wrapper);
-
-        if (order == null) {
-            throw OperationException.customException(ResultEnum.order_not_exist);
-        }
-
-        if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
-            throw OperationException.customException(ResultEnum.order_cancel);
-        }
-
-        MailPicking mailPicking = mailPickingService.selectOne(wrapper);
-
-        // 千克单位比较重量
-        BigDecimal differenceValue = realWight.subtract(mailPicking.getPresetWeight()).abs();
-        BigDecimal maxDifferenceValue = mailPicking.getPresetWeight().multiply(new BigDecimal("0.10"));
-        mailPicking.setRealWeight(realWight);
-
-        if (maxDifferenceValue.compareTo(differenceValue) < 0 && !ignor) {
-            throw OperationException.customException(ResultEnum.order_weight_warning);
-        }
-
-        PoUtil.update(mailPicking, operator);
-
-        BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(orderNo, realWight, mailPicking.getWeightUnit());
-
-        if (orderExpressFree != null) {
-            mailPicking.setExpressFee(orderExpressFree);
-        }
-
-        mailPickingService.updateById(mailPicking);
-        // 释放库存
-        releaseStock(order, operator);
-        // TODO 推送订单信息到邮政
-    }
+//    @Override
+//    public void orderWeighContrast(String orderNo, BigDecimal realWight, Boolean ignor, String operator) {
+//        EntityWrapper wrapper = new EntityWrapper();
+//        wrapper.eq("order_no", orderNo).
+//                eq("state", StateEnum.normal.getCode());
+//        Order order = selectOne(wrapper);
+//
+//        if (order == null) {
+//            throw OperationException.customException(ResultEnum.order_not_exist);
+//        }
+//
+//        if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
+//            throw OperationException.customException(ResultEnum.order_cancel);
+//        }
+//
+//        MailPicking mailPicking = mailPickingService.selectOne(wrapper);
+//
+//        // 千克单位比较重量
+//        BigDecimal differenceValue = realWight.subtract(mailPicking.getPresetWeight()).abs();
+//        BigDecimal maxDifferenceValue = mailPicking.getPresetWeight().multiply(new BigDecimal("0.10"));
+//        mailPicking.setRealWeight(realWight);
+//
+//        if (maxDifferenceValue.compareTo(differenceValue) < 0 && !ignor) {
+//            throw OperationException.customException(ResultEnum.order_weight_warning);
+//        }
+//
+//        PoUtil.update(mailPicking, operator);
+//
+//        BigDecimal orderExpressFree = expressFeeConfigService.orderExpressFree(orderNo, realWight, mailPicking.getWeightUnit());
+//
+//        if (orderExpressFree != null) {
+//            mailPicking.setExpressFee(orderExpressFree);
+//        }
+//
+//        mailPickingService.updateById(mailPicking);
+//        // 释放库存
+//        releaseStock(order, operator);
+//    }
 
     /**
      * 订单打包推荐耗材
      *
      * @param orderNO
      */
-    @Override
-    public List<Map> orderPackage(String orderNO) {
-        checkoutOrder(orderNO);
-        List<Map> orderPackage = baseMapper.orderPackage(orderNO);
-
-        if (CollectionUtils.isEmpty(orderPackage)) {
-            throw OperationException.customException(ResultEnum.order_package_no_hc);
-        }
-
-        return orderPackage;
-    }
+//    @Override
+//    public List<Map> orderPackage(String orderNO) {
+//        checkoutOrder(orderNO);
+//        List<Map> orderPackage = baseMapper.orderPackage(orderNO);
+//
+//        if (CollectionUtils.isEmpty(orderPackage)) {
+//            throw OperationException.customException(ResultEnum.order_package_no_hc);
+//        }
+//
+//        return orderPackage;
+//    }
 
     /**
      * 称重订单数据加载
@@ -364,23 +384,21 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * @param loadGrid
      * @return
      */
-    @Override
-    public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("wmpi.state", StateEnum.normal.getCode()).ne("woi.bill_state", BillState.order_cancel.getCode());
-        Page page = loadGrid.generatorPage();
-//        mailPickingService.loadGrid(page, wrapper);
-//        loadGrid.finallyResult(page, mailPickingService.selectMapsPage(page, wrapper).getRecords());
-        loadGrid.finallyResult(page, baseMapper.loadPackageGrid(page, wrapper));
-
-        return loadGrid;
-    }
+//    @Override
+//    public LoadGrid orderWeighLoadGrid(LoadGrid loadGrid) {
+//        EntityWrapper wrapper = new EntityWrapper();
+//        wrapper.eq("wmpi.state", StateEnum.normal.getCode()).ne("woi.bill_state", BillState.order_cancel.getCode());
+//        Page page = loadGrid.generatorPage();
+//        loadGrid.finallyResult(page, baseMapper.loadPackageGrid(page, wrapper));
+//
+//        return loadGrid;
+//    }
 
     /**
      * 取消订单操作
-     * @param customerCode
-     * @param orderNo
-     * @param operator
+     * @param customerCode 商家Code
+     * @param orderNo 原始订单号
+     * @param operator 操作人
      */
     public void cancelOrder(String customerCode, String orderNo, String operator) {
         // 判断系统中是否存在订单
@@ -393,130 +411,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             throw OperationException.addException("订单导入失败");
         }
 
-        // 取消订单是否需要判断当前订单是否已经称重完毕
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("preset_weight", null).
-                eq("order_no", order.getSystemOrderNo()).
-                eq("state", StateEnum.normal.getCode());
-
-        if (mailPickingService.selectCount(wrapper) > 0) {
+        // 取消订单是否需要判断当前订单是否已经称重完毕 (出库)
+//        EntityWrapper wrapper = new EntityWrapper();
+//        wrapper.eq("preset_weight", null).
+//                eq("order_no", order.getSystemOrderNo()).
+//                eq("state", StateEnum.normal.getCode());
+        if (StringUtils.equalsAnyIgnoreCase(order.getBillState(),
+                BillState.order_go_out.getCode(),
+                BillState.order_finished.getCode())) {
             // 记录订单异常
             OrderException orderException = new OrderException();
-            orderException.setOrderNo(orderNo + customerCode);
+            orderException.setOrderNo(order.getSystemOrderNo());
             PoUtil.add(orderException, operator);
             orderExceptionService.insert(orderException);
         } else {
-            processCancelOrder(orderNo + customerCode, operator);
+            cancelOrderStockProcess(order.getSystemOrderNo(), operator);
         }
 
-    }
-
-    /**
-     * 处理取消订单 操作库存
-     * @param orderNo 系统订单号 订单号 + 商家code
-     * @param operator
-     */
-    private void processCancelOrder(String orderNo, String operator) {
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("order_no", orderNo).
-                eq("state", StateEnum.normal.getCode());
-        List<OrderCommodity> list = orderCommodityService.selectList(wrapper);
-
-        if (CollectionUtils.isNotEmpty(list)){
-            list.stream().forEach(orderCommodity ->
-                    commodityStockService.repealOccupyCommodityStock(
-                            orderCommodity.getCustomerCode(),
-                            orderCommodity.getBarCode(),
-                            orderCommodity.getNumbers().longValue(),
-                            operator)
-            );
-        }
-    }
-
-    /**
-     * 订单商品处理
-     * @param orderCommodityDTOS 订单商品信息
-     * @param order              订单信息
-     * @param customerId         商家ID
-     * @param supportMerge 是否支持合单
-     * @param operator 操作人
-     */
-    private void processOrderCommodities(List<OrderCommodityDTO> orderCommodityDTOS, Order order, Long customerId, Boolean supportMerge, final String operator) {
-        // 订单商品保存
-        orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
-            orderCommodityDTO.setOrderNo(order.getOrderNo());
-            orderCommodityDTO.setCustomerCode(order.getCustomerCode());
-            this.orderCommodityService.importOrderCommodity(orderCommodityDTO, "" + customerId, operator);
-        });
-
-        //TODO 目前不会处理/批量订单以及/B2B订单
-        if (order.getIsB2b() == 1 || order.getIsBatch() == 1) return;
-
-        if (supportMerge) return;
-        // 获取拆包规则
-        List<List<OrderCommodityDTO>> orderSplitPackages = splitPackageRuleService.orderSplitPackages(orderCommodityDTOS);
-
-        if (CollectionUtils.isNotEmpty(orderSplitPackages)) {
-            order.setIsMatched(1);
-            // 订单拆包
-            orderSplitPackages.forEach(packageCommodities-> {
-                String mailNo = UUID.randomUUID().toString();
-                packageCommodities.stream().forEach(orderCommodityDTO -> {
-                    MailPickingDetail mailPickingDetail = new MailPickingDetail();
-                    mailPickingDetail.setOrderNo(order.getSystemOrderNo());
-                    mailPickingDetail.setMailNo(mailNo);
-                    mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
-                    mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
-                    mailPickingDetailService.add(mailPickingDetail);
-                });
-            });
-            updateById(order);
-        }
-
-    }
-
-    /**
-     * 导入确认订单检测
-     * @param orderInfoDTO
-     */
-    private CustomerBaseInfo checkOrder(OrderInfoDTO orderInfoDTO) {
-        // 检测客户是否存在系统
-        CustomerBaseInfo customerBaseInfo = this.customerService.checkoutCustomer(orderInfoDTO.getCustomerCode());
-
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.ne("state", StateEnum.delete);
-        wrapper.eq("customer_code", orderInfoDTO.getCustomerCode());
-        wrapper.eq("order_no", orderInfoDTO.getOrderNo());
-
-        if (this.selectCount(wrapper) > 0) {
-            throw OperationException.addException("您的订单号已经导入系统，请勿重复导入");
-        }
-
-        return customerBaseInfo;
-    }
-
-    /**
-     * 导入取消订单时检测
-     * @param customerCode
-     * @param orderNo
-     */
-    private Order checkOrder(String customerCode, String orderNo) {
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.ne("state", StateEnum.delete.getCode()).
-                eq("order_no", orderNo).
-                eq("customer_code", customerCode);
-
-        Order order = this.selectOne(wrapper);
-
-        if (order == null) {
-            throw OperationException.addException("您客户的订单（取消），并不存在请核实后再重新导入");
-        }
-
-        if (StringUtils.equalsAnyIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
-            throw OperationException.addException("您客户的订单已近被取消请勿操作，如有疑问请核实后再重新操作");
-        }
-
-        return order;
     }
 
     /**
@@ -601,7 +512,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         CustomerBaseInfo customer = customerService.checkoutCustomer(orders.get(0).getCustomerCode());
-
         // 判断客户订单是否已经导入系统中
         EntityWrapper checkOrder = new EntityWrapper();
         checkOrder.in("order_no", orderNos).
@@ -650,38 +560,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     }
 
     /**
-     * Excel 订单导入处理
-     * @param orders
-     * @param customer
-     * @param operator
-     */
-    private void excelOrderImportHandler(List<OrderInfoDTO> orders, CustomerBaseInfo customer, String operator) {
-        if (CollectionUtils.isEmpty(orders)) return;
-
-        orders.forEach( orderInfoDTO -> {
-            if (orderInfoDTO.getCommodities().size() > 0) {
-                // 取消订单处理
-                if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
-                    cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
-                    return;
-                }
-
-                orderHandler(StringUtils.join(orderInfoDTO.getOrderNo(), orderInfoDTO.getCustomerCode()),
-                        orderInfoDTO,
-                        customer,
-                        false,
-                        operator);
-            }
-        });
-    }
-
-    /**
      * 检出系统订单是否存在或是已取消
-     * @param orderNo 系统订单 + 商家code
+     * @param systemOrderNo 系统订单号
      */
-    public Order checkoutOrder(String orderNo) {
+    @Override
+    public Order checkoutOrder(String systemOrderNo) {
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.ne("state", StateEnum.delete.getCode()).eq("system_order_no", orderNo);
+        wrapper.ne("state", StateEnum.delete.getCode()).eq("system_order_no", systemOrderNo);
         Order order = selectOne(wrapper);
 
         if (order == null) {
@@ -769,29 +654,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
     }
 
-    /**
-     * 称重完成释放库存
-     * @param order
-     * @param operator
-     */
-    private void releaseStock(Order order, String operator){
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("order_no", order.getSystemOrderNo()).
-                eq("customer_no", order.getCustomerCode()).
-                eq("state", StateEnum.normal.getCode());
-        List<OrderCommodity> list = orderCommodityService.selectList(wrapper);
-
-        if (CollectionUtils.isNotEmpty(list)) {
-            list.stream().forEach(orderCommodity ->
-                commodityStockService.releaseCommodityStock(
-                        orderCommodity.getCustomerCode(),
-                        orderCommodity.getBarCode(),
-                        orderCommodity.getNumbers().longValue(),
-                        operator)
-            );
-        }
-
-    }
 
     /***
      * 订单超时预警
@@ -812,7 +674,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     public List<? extends BaseRowModel> excelExport(List<String> orderNos) {
         return baseMapper.excelExport(orderNos);
     }
-
 
 	@Override
 	public OrderStatisticsVO orderStatistics(String orderDate) {
@@ -858,4 +719,169 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         updateById(order);
         mailPickingDetailService.insertBatch(mailPickingDetails);
     }
+
+    /**
+     * 取消订单库存处理
+     * @param systemOrderNo 系统订单号
+     * @param operator 操作人
+     */
+    private void cancelOrderStockProcess(String systemOrderNo, String operator) {
+        // 获取系统订单商品数据
+        List<Map> commodities = baseMapper.commodityGrid(systemOrderNo, StoreTypeEnum.JHQ.getCode());
+
+        if (CollectionUtils.isNotEmpty(commodities)) {
+            commodities.forEach(commodity -> {
+                final String customerCode = MapUtils.getString(commodity, "customerCode");
+                final String commodityCode = MapUtils.getString(commodity, "commodityCode");
+                final String storeConfigId = MapUtils.getString(commodity, "id");
+                final Long bayNums = MapUtils.getLong(commodity, "bayNums");
+                // 拣货区库存变动
+                storehouseConfigService.plusAvailableQuantity(storeConfigId, bayNums, operator);
+                // 释放占用库存
+                commodityStockService.repealOccupyCommodityStock(customerCode, commodityCode, bayNums, operator);
+            });
+        }
+
+    }
+
+    /**
+     * 订单商品处理
+     * @param orderCommodityDTOS 订单商品信息
+     * @param order              订单信息
+     * @param customerId         商家ID
+     * @param supportMerge 是否支持合单
+     * @param operator 操作人
+     */
+    private void processOrderCommodities(List<OrderCommodityDTO> orderCommodityDTOS, Order order, Long customerId, Boolean supportMerge, final String operator) {
+        // 订单商品保存
+        orderCommodityDTOS.stream().forEach(orderCommodityDTO -> {
+            orderCommodityDTO.setOrderNo(order.getOrderNo());
+            orderCommodityDTO.setCustomerCode(order.getCustomerCode());
+            this.orderCommodityService.importOrderCommodity(orderCommodityDTO, "" + customerId, operator);
+        });
+
+        //TODO 目前不会处理/批量订单以及/B2B订单
+        if (order.getIsB2b() == 1 || order.getIsBatch() == 1) return;
+
+        if (supportMerge) return;
+        // 获取拆包规则
+        List<List<OrderCommodityDTO>> orderSplitPackages = splitPackageRuleService.orderSplitPackages(orderCommodityDTOS);
+
+        if (CollectionUtils.isNotEmpty(orderSplitPackages)) {
+            order.setIsMatched(1);
+            // 订单拆包
+            orderSplitPackages.forEach(packageCommodities-> {
+                String mailNo = UUID.randomUUID().toString();
+                packageCommodities.stream().forEach(orderCommodityDTO -> {
+                    MailPickingDetail mailPickingDetail = new MailPickingDetail();
+                    mailPickingDetail.setOrderNo(order.getSystemOrderNo());
+                    mailPickingDetail.setMailNo(mailNo);
+                    mailPickingDetail.setCommodityCode(orderCommodityDTO.getBarCode());
+                    mailPickingDetail.setPackageNums(orderCommodityDTO.getNumbers());
+                    mailPickingDetailService.add(mailPickingDetail);
+                });
+            });
+            updateById(order);
+        }
+
+    }
+
+    /**
+     * Excel 订单导入处理
+     * @param orders
+     * @param customer
+     * @param operator
+     */
+    private void excelOrderImportHandler(List<OrderInfoDTO> orders, CustomerBaseInfo customer, String operator) {
+        if (CollectionUtils.isEmpty(orders)) return;
+
+        orders.forEach( orderInfoDTO -> {
+            if (orderInfoDTO.getCommodities().size() > 0) {
+                // 取消订单处理
+                if (StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), orderInfoDTO.getBillState())) {
+                    cancelOrder(orderInfoDTO.getCustomerCode(), orderInfoDTO.getOrderNo(), operator);
+                    return;
+                }
+
+                orderHandler(StringUtils.join(orderInfoDTO.getOrderNo(), orderInfoDTO.getCustomerCode()),
+                        orderInfoDTO,
+                        customer,
+                        false,
+                        operator);
+            }
+        });
+    }
+
+    /**
+     * 导入确认订单检测
+     * @param orderInfoDTO
+     */
+    private CustomerBaseInfo checkOrder(OrderInfoDTO orderInfoDTO) {
+        // 检测客户是否存在系统
+        CustomerBaseInfo customerBaseInfo = this.customerService.checkoutCustomer(orderInfoDTO.getCustomerCode());
+
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.ne("state", StateEnum.delete.getCode());
+        wrapper.eq("customer_code", orderInfoDTO.getCustomerCode());
+        wrapper.eq("order_no", orderInfoDTO.getOrderNo());
+
+        if (this.selectCount(wrapper) > 0) {
+            throw OperationException.addException("您的订单号已经导入系统，请勿重复导入");
+        }
+
+        return customerBaseInfo;
+    }
+
+    /**
+     * 导入取消订单时检测
+     * @param customerCode
+     * @param orderNo
+     */
+    private Order checkOrder(String customerCode, String orderNo) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.ne("state", StateEnum.delete.getCode()).
+                eq("customer_code", customerCode).
+                eq("order_no", orderNo).
+                eq("is_merge", 0).
+                orNew().
+                ne("state", StateEnum.delete.getCode()).
+                eq("customer_code", customerCode).
+                like("order_no", orderNo).
+                eq("is_merge", 1);
+
+        Order order = this.selectOne(wrapper);
+
+        if (order == null) {
+            throw OperationException.addException("您客户的订单（取消），并不存在请核实后再重新导入");
+        }
+
+        if (StringUtils.equalsAnyIgnoreCase(BillState.order_cancel.getCode(), order.getBillState())) {
+            throw OperationException.addException("您客户的订单已近被取消请勿操作，如有疑问请核实后再重新操作");
+        }
+
+        return order;
+    }
+    /**
+     * 称重完成释放库存
+     * @param order
+     * @param operator
+     */
+//    private void releaseStock(Order order, String operator){
+//        EntityWrapper wrapper = new EntityWrapper();
+//        wrapper.eq("order_no", order.getSystemOrderNo()).
+//                eq("customer_no", order.getCustomerCode()).
+//                eq("state", StateEnum.normal.getCode());
+//        List<OrderCommodity> list = orderCommodityService.selectList(wrapper);
+//
+//        if (CollectionUtils.isNotEmpty(list)) {
+//            list.stream().forEach(orderCommodity ->
+//                    commodityStockService.releaseCommodityStock(
+//                            orderCommodity.getCustomerCode(),
+//                            orderCommodity.getBarCode(),
+//                            orderCommodity.getNumbers().longValue(),
+//                            operator)
+//            );
+//        }
+//
+//    }
 }

@@ -234,7 +234,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
         baseWrapper.eq("woi.customer_code", customerCode).
                 eq("is_lock", 1).
                 eq("woi.state", StateEnum.normal.getCode()).
-                ne("woi.bill_state", BillState.order_cancel).
+                eq("woi.bill_state", BillState.order_save.getCode()).
                 groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
                 orderBy("woi.create_time");
         return baseWrapper;

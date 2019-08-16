@@ -332,6 +332,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         // 获取系统中所有满足要求的订单(订单客户)
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("state", StateEnum.normal.getCode()).
+                eq("bill_state", BillState.order_save.getCode()).
                 eq("is_b2b", 0).
                 eq("is_batch", 0).
                 eq("is_lock", 1).
@@ -398,7 +399,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
                 if (CollectionUtils.isEmpty(virtualMails)) return;
 
                 //生成拣货单 时间戳 年月日时分秒 + 随机四位数
-                String pickNo = GeneratorCodeUtil.dataTime(4);
+                String pickNo = "JH" + GeneratorCodeUtil.dataTime(4);
                 PickingBill pickingBill = new PickingBill();
                 pickingBill.setPickNo(pickNo);
                 pickingBill.setAreaLevel(area);

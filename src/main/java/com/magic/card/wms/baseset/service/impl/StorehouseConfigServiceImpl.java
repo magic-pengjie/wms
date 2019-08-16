@@ -222,6 +222,30 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     }
 
     /**
+     * 增加库位商品可用量
+     *
+     * @param storeConfigId 配置库位ID
+     * @param plusNum 增加用量
+     * @param operator 操作人
+     */
+    @Override @Transactional
+    public void plusAvailableQuantity(String storeConfigId, Long plusNum, String operator) {
+        baseMapper.plusAvailableQuantity(storeConfigId, plusNum, operator);
+    }
+
+    /**
+     * 减少库位商品可用量
+     *
+     * @param storeConfigId 配置库位ID
+     * @param reduceNum 增加用量
+     * @param operator 操作人
+     */
+    @Override @Transactional
+    public void reduceAvailableQuantity(String storeConfigId, Long reduceNum, String operator) {
+        baseMapper.reduceAvailableQuantity(storeConfigId, reduceNum, operator);
+    }
+
+    /**
      * 库位配置添加修改数据检查
      * @param storehouseConfigDTO
      * @param updateOperation

@@ -111,6 +111,7 @@ public enum ResultEnum {
 	order_had_split_package( 500017,  "订单已经拆包, 请勿重复操作！"),
 	package_had_weigh( 500018, "订单已经称重完毕，请勿重复操作"),
 	monitoring_type_no_exist( 500019, "包裹监控状态不存在！"),
+    order_not_allow_cancel( 500020, "当前订单不允许取消！"),
 
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),

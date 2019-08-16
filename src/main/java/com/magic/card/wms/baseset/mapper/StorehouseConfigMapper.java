@@ -61,4 +61,20 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
 	 * @return list
 	 */
 	List<CheckRecordInfoDto> queryStoreInfoList(@Param("qsi")QueryStoreInfoBO storeInfoBO);
+
+	/**
+	 * 增加商品库位的可用量
+	 * @param storeConfigId 库位配置ID
+	 * @param plusNum 增量
+	 * @param operator 操作人
+	 */
+    Integer plusAvailableQuantity(@Param("storeConfigId") String storeConfigId, @Param("plusNum") Long plusNum, @Param("operator") String operator);
+
+    /**
+	 * 减少商品库位的可用量
+	 * @param storeConfigId 库位配置ID
+	 * @param reduceNum 减少量
+	 * @param operator 操作人
+	 */
+    Integer reduceAvailableQuantity(@Param("storeConfigId") String storeConfigId, @Param("reduceNum") Long reduceNum, @Param("operator") String operator);
 }

@@ -54,7 +54,7 @@ public class OrderCommodityServiceImpl extends ServiceImpl<OrderCommodityMapper,
             throw OperationException.addException("订单商品导入失败");
         }
 
-        // TODO 生成拣货单再占用库存 执行库存占用 customerCode commodityCode occupyNum
+        // TODO 执行库存占用 customerCode commodityCode occupyNum
         commodityStockService.occupyCommodityStock(commodity.getCustomerCode(), commodity.getBarCode(), commodity.getNumbers().longValue(), operator);
     }
 
