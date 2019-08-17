@@ -103,7 +103,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("is_lock", 0).
                 ne("state", StateEnum.delete.getCode()).
-                lt("create_time", DateTime.now().toDate());
+                lt("create_time", DateTime.now().minusMinutes(15).toDate());
         updateForSet("is_lock = 1", wrapper);
     }
 

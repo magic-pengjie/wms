@@ -21,11 +21,10 @@ public interface MailPickingDetailMapper extends BaseMapper<MailPickingDetail> {
 
     /**
      * 获取虚拟快递单号
-     * @param page 分页信息
      * @param entityWrapper 查询信息
      * @return
      */
-    List<Map> virtualMails(Page page, @Param("ew") EntityWrapper entityWrapper);
+    List<Map> virtualMails(@Param("ew") EntityWrapper entityWrapper);
 
     /**
      * 获取包裹商品对应的耗材清单

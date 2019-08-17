@@ -99,7 +99,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      */
     @Override
     public void executorGenerator() {
-        timingGenerator(webUtil.operator());
+        timingGenerator(webUtil.operator(), 1);
     }
 
     /**
@@ -328,7 +328,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      * 定时任务生成(每个整点半执行一次)
      */
     @Override @Transactional @Synchronized
-    public void timingGenerator(String operator) {
+    public void timingGenerator(String operator, Integer executeSize) {
         // 获取系统中所有满足要求的订单(订单客户)
         EntityWrapper wrapper = new EntityWrapper();
         wrapper.eq("state", StateEnum.normal.getCode()).
@@ -341,7 +341,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         List<String> customerCodes = baseMapper.customerCodes(wrapper);
 
         if (customerCodes != null && customerCodes.size() > 0) {
-            customerCodes.stream().forEach(customerCode -> generatorAreaPickingBill(customerCode, MAX_BASKET_NUM, operator));
+            customerCodes.stream().forEach(customerCode -> generatorAreaPickingBill(customerCode, executeSize, operator));
         }
 
     }
