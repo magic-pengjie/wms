@@ -48,5 +48,5 @@ public interface StorehouseInfoMapper extends BaseMapper<StorehouseInfo> {
      * 加载所有库区
      * @return
      */
-    List<String> queryAreaCodeList();
+    List<String> queryAreaCodeList(String customerId);
 }

@@ -230,8 +230,8 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 
 	//加载所有库区列表
 	@Override
-	public List<String> queryAreaCodeList() {
-		return storehouseInfoMapper.queryAreaCodeList();
+	public List<String> queryAreaCodeList(String customerId) {
+		return storehouseInfoMapper.queryAreaCodeList(customerId);
 	}
 
 

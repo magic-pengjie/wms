@@ -54,11 +54,15 @@
         <where>${ew.sqlSegment}</where>
     </select>
 
-    <select id="queryAreaCodeList" resultType="java.lang.String">
-        SELECT
-            area_code as areaCode
-        FROM `wms_storehouse_info`
-        group by area_code
+    <select id="queryAreaCodeList" parameterType="java.lang.String" resultType="java.lang.String">
+        select
+            area_code
+        from wms_storehouse_config sc
+        left join wms_storehouse_info si on sc.storehouse_id = si.id and si.state='1'
+            where sc.customer_id = #{customerId}
+        and sc.state='1'
+        GROUP BY si.area_code
+
     </select>
 
 </mapper>
