@@ -106,4 +106,20 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      * @return
      */
     Map<String, String> invoiceOmitStoke(OmitStokeDTO omitStokeDTO);
+
+    /**
+     * 增加库位商品可用量
+     * @param storeConfigId 配置库位ID
+     * @param plusNum 增加用量
+     * @param operator 操作人
+     */
+    void plusAvailableQuantity(String storeConfigId, Long plusNum, String operator);
+
+    /**
+     * 减少库位商品可用量
+     * @param storeConfigId 配置库位ID
+     * @param reduceNum 增加用量
+     * @param operator 操作人
+     */
+    void reduceAvailableQuantity(String storeConfigId, Long reduceNum, String operator);
 }

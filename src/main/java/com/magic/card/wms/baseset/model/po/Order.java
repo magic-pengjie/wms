@@ -92,6 +92,10 @@ public class Order extends BasePo implements Serializable {
      * 是否B2B
      */
     private int isB2b;
+    /**
+     * 是否锁单
+     */
+    private int isLock;
 
     /**
      * 是否匹配规则

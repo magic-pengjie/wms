@@ -66,5 +66,11 @@
         </foreach>
 	    ORDER BY wcs.sku_name
     </select>
+    <select id="orderCommodities" resultType="java.util.Map">
+        select order_no, bar_code, numbers
+        from wms_order_commodity woc
+        where customer_code = #{customerCode}
+        and order_no in <foreach collection="orderNos" item="orderNo" open="(" separator="," close=")">#{orderNo}</foreach>
+    </select>
 
 </mapper>

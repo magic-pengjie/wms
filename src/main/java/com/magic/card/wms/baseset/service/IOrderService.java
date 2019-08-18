@@ -47,6 +47,12 @@ public interface IOrderService extends IService<Order> {
     void importOrder(OrderInfoDTO orderInfoDTO);
 
     /**
+     * 系统订单取消
+     * @param systemOrderNo 系统订单号
+     */
+    void cancelOrder(String systemOrderNo);
+
+    /**
      * 修改订单
      * @param orderUpdateDTO 订单基本信息
      */
@@ -68,26 +74,26 @@ public interface IOrderService extends IService<Order> {
      * @param ignore 是否忽略重量差异比较
      * @param operator 操作人
      */
-    void orderWeighContrast(String orderNo, BigDecimal realWight, Boolean ignore, String operator);
+//    void orderWeighContrast(String orderNo, BigDecimal realWight, Boolean ignore, String operator);
 
     /**
      * 订单打包推荐耗材
      * @param orderNO
      */
-    List<Map> orderPackage(String orderNO);
+//    List<Map> orderPackage(String orderNO);
 
     /**
      * 称重订单数据加载
      * @param loadGrid
      * @return
      */
-    LoadGrid orderWeighLoadGrid(LoadGrid loadGrid);
+//    LoadGrid orderWeighLoadGrid(LoadGrid loadGrid);
 
     /**
      * 检出系统订单是否存在或是已取消
-     * @param orderNo 系统订单 订单号 + 商家号
+     * @param systemOrderNo 系统订单号
      */
-    Order checkoutOrder(String orderNo);
+    Order checkoutOrder(String systemOrderNo);
 
     /**
      * 获取订单 key -> value Map
@@ -135,5 +141,12 @@ public interface IOrderService extends IService<Order> {
      * @return OrderStatisticsVO
      */
     OrderStatisticsVO orderStatistics(String orderDate);
-    
+
+    /**
+     * 订单拆包
+     * @param orderNo 订单号
+     * @param customerCode 商家CODE
+     * @param systemOrderNo 系统订单号
+     */
+    void splitPackage(String orderNo, String customerCode, String systemOrderNo);
 }

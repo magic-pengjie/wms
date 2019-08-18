@@ -120,4 +120,29 @@ public interface MailPickingMapper extends BaseMapper<MailPicking> {
      * @return
      */
     List<Map> loadOrderPackage(@Param("systemOrderNo") String systemOrderNo);
+
+    /**
+     * 获取包裹详情
+     * @param mailNo
+     * @return
+     */
+    Map loadMailDetails(@Param("mailNo") String mailNo);
+
+    /**
+     *
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<Map> monitoringFlow(@Param("startTime") String startTime, @Param("endTime") String endTime, @Param("processStates") String... processStates);
+
+    /**
+     * 获取包裹状态数据详情
+     * @param page
+     * @param startTime
+     * @param endTime
+     * @param processStates
+     * @return
+     */
+    List<Map> monitoringFlowDetails(Page page, @Param("startTime") String startTime, @Param("endTime") String endTime, @Param("processStates") String... processStates);
 }

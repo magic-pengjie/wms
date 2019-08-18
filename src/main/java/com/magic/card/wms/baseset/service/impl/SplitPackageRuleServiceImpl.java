@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.magic.card.wms.baseset.mapper.SplitPackageRuleMapper;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,6 +73,30 @@ public class SplitPackageRuleServiceImpl extends ServiceImpl<SplitPackageRuleMap
         }
 
         return null;
+    }
+
+    /**
+     * 获取订单包裹
+     *
+     * @param ruleToken
+     * @return
+     */
+    @Override
+    public List<List<SplitCommodityDTO>> orderSplitPackages(String ruleToken) {
+        SplitPackageRule splitPackageRule = checkoutRule(ruleToken);
+        ArrayList<List<SplitCommodityDTO>> orderSplitPackages = Lists.newArrayList();
+
+        if (splitPackageRule.getIsSplit() == 0) {
+            orderSplitPackages.add(splitCommodityConvert(ruleToken));
+        } else {
+            Wrapper<SplitPackageRuleDetail> wrapper = new EntityWrapper<>();
+            wrapper.eq("rule_token", ruleToken).eq("state", StateEnum.normal.getCode());
+
+            splitPackageRuleDetailService.selectList(wrapper).forEach(splitPackageRuleDetail ->
+                orderSplitPackages.add(splitCommodityConvert(splitPackageRuleDetail.getPackageToken()))
+            );
+        }
+        return orderSplitPackages;
     }
 
     @Override
@@ -133,5 +159,39 @@ public class SplitPackageRuleServiceImpl extends ServiceImpl<SplitPackageRuleMap
         );
         tokens = tokens.stream().sorted().collect(Collectors.toList());
         return StringUtils.join(tokens, ",");
+    }
+
+    /**
+     * 检出规则基本数据
+     * @param ruleToken
+     * @return
+     */
+    private SplitPackageRule checkoutRule(String ruleToken) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("rule_token", ruleToken).eq("state", StateEnum.normal.getCode());
+        SplitPackageRule splitPackageRule = selectOne(wrapper);
+
+        if (splitPackageRule == null) {
+            throw OperationException.customException(ResultEnum.split_rule_not_exist);
+        }
+
+        return splitPackageRule;
+    }
+
+    /**
+     * 拆包商品Token解析
+     * @param ruleToken 拆分规则TOKEN
+     * @return
+     */
+    private ArrayList<SplitCommodityDTO> splitCommodityConvert(String ruleToken) {
+        ArrayList<SplitCommodityDTO> splitPackages = Lists.newArrayList();
+        Arrays.stream(StringUtils.split(ruleToken, ",")).forEach( token -> {
+            String[] commodityIfo = StringUtils.split(token, "+");
+            SplitCommodityDTO splitCommodityDTO = new SplitCommodityDTO();
+            splitCommodityDTO.setCommodityCode(commodityIfo[0]);
+            splitCommodityDTO.setNums(Integer.valueOf(commodityIfo[1]));
+            splitPackages.add(splitCommodityDTO);
+        });
+        return splitPackages;
     }
 }

@@ -72,6 +72,13 @@ public class OrderController {
         return ResponseData.ok(orderService.loadDetails(orderNo, customerCode, systemOrderNo));
     }
 
+    @ApiOperation("订单拆包")
+    @GetMapping("splitPackage")
+    public ResponseData orderSplitPackage(@RequestParam String orderNo, @RequestParam String customerCode, @RequestParam String systemOrderNo) {
+        orderService.splitPackage(orderNo, customerCode, systemOrderNo);
+        return ResponseData.ok();
+    }
+
     @PostMapping("excelExport")
     public void excelExport(@RequestBody List<String> orderNos, HttpServletResponse response, HttpServletRequest request) {
         EasyExcelParams easyExcelParams = new EasyExcelParams();
@@ -160,7 +167,7 @@ public class OrderController {
 
     @ApiOperation("测试触发生成拣货单")
     @GetMapping("generationPicking")
-    public void generationPicking(@RequestParam String customerCode, @RequestParam(required = false, defaultValue = "20")Integer executeSize) {
+    public void generationPicking(@RequestParam String customerCode, @RequestParam(required = false, defaultValue = "15")Integer executeSize) {
         pickingBillService.triggerGenerator(customerCode, executeSize);
     }
 
@@ -172,33 +179,33 @@ public class OrderController {
 
 //    @ApiOperation("订单物品称重")
 //    @GetMapping("weigh")
-    public ResponseData orderWeigh(
-            @ApiParam("订单号")@RequestParam String orderNo,
-            @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
-        orderService.orderWeighContrast(orderNo, realWeight, false,Constants.DEFAULT_USER);
-        return ResponseData.ok();
-    }
+//    public ResponseData orderWeigh(
+//            @ApiParam("订单号")@RequestParam String orderNo,
+//            @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
+////        orderService.orderWeighContrast(orderNo, realWeight, false,Constants.DEFAULT_USER);
+//        return ResponseData.ok();
+//    }
 
 //    @ApiOperation("订单物品称重忽略重量差异")
 //    @GetMapping("weighIgnore")
-    public ResponseData orderWeighIgnore(
-            @ApiParam("订单号")@RequestParam String orderNo,
-            @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
-        orderService.orderWeighContrast(orderNo, realWeight, true,Constants.DEFAULT_USER);
-        return ResponseData.ok();
-    }
+//    public ResponseData orderWeighIgnore(
+//            @ApiParam("订单号")@RequestParam String orderNo,
+//            @ApiParam("称重重量")@RequestParam BigDecimal realWeight) {
+////        orderService.orderWeighContrast(orderNo, realWeight, true,Constants.DEFAULT_USER);
+//        return ResponseData.ok();
+//    }
 
 //    @ApiOperation("订单打包材料提醒")
 //    @GetMapping("package")
-    public ResponseData orderPackage(@ApiParam("订单号") @RequestParam String orderNo) {
-        return ResponseData.ok(orderService.orderPackage(orderNo));
-    }
+//    public ResponseData orderPackage(@ApiParam("订单号") @RequestParam String orderNo) {
+//        return ResponseData.ok(orderService.orderPackage(orderNo));
+//    }
 
-    @ApiOperation("订单称重数据加载")
-    @PostMapping("/weigh/loadGrid")
-    public ResponseData orderWeighLoadGrid(
-            @RequestBody LoadGrid loadGrid
-    ) {
-        return ResponseData.ok(orderService.orderWeighLoadGrid(loadGrid));
-    }
+//    @ApiOperation("订单称重数据加载")
+//    @PostMapping("/weigh/loadGrid")
+//    public ResponseData orderWeighLoadGrid(
+//            @RequestBody LoadGrid loadGrid
+//    ) {
+//        return ResponseData.ok(orderService.orderWeighLoadGrid(loadGrid));
+//    }
 }

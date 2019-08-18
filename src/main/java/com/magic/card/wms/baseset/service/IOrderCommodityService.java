@@ -6,6 +6,7 @@ import com.magic.card.wms.baseset.model.po.OrderCommodity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * com.magic.card.wms.baseset.service
@@ -37,4 +38,12 @@ public interface IOrderCommodityService extends IService<OrderCommodity> {
      * @return
      */
     Map<String, List> loadBatchOrderCommodityGrid(List<String> orderNos);
+
+    /**
+     * 获取订单商品token
+     * @param orderNo 订单号
+     * @param customerCode 商家CODE
+     * @return
+     */
+    String ruleToken(String orderNo, String customerCode);
 }

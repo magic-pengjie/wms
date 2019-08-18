@@ -27,8 +27,14 @@
     <sql id="Base_Column_List">
         id, storehouse_id, customer_id, commodity_id, store_nums, availabe_nums, lock_nums, priority_value, opr_type, state, create_time, create_user, update_time, update_user, remark
     </sql>
-    
-    <select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.check.model.dto.QueryCheckRecordDto">
+    <update id="plusAvailableQuantity">
+		update wms_storehouse_config set update_time = now(), update_user = #{operator}, available_nums = available_nums + #{plusNum} where id = #{storeConfigId}
+	</update>
+	<update id="reduceAvailableQuantity">
+		update wms_storehouse_config set update_time = now(), update_user = #{operator}, available_nums = available_nums - #{reduceNum} where id = #{storeConfigId}
+	</update>
+
+	<select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.check.model.dto.QueryCheckRecordDto">
     	SELECT cbi.customer_name as customerName,
     			cbi.customer_code as customerCode,
     			sc.storehouse_id as storehouseId,

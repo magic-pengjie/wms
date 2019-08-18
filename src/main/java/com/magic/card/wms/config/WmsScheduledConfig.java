@@ -42,7 +42,7 @@ public class WmsScheduledConfig {
     public void generatorPickingBill() {
         autoLockOrder();
         try {
-            pickingBillService.timingGenerator(Constants.TIMING_GENERATOR_PICK_USER);
+            pickingBillService.timingGenerator(Constants.TIMING_GENERATOR_PICK_USER, 15);
         } catch (Exception e) {
             log.error("自动生成拣货单定时任务产生异常： {}, 异常抛出时间：{}", e.getCause(), DateTime.now().toString("yyyy-MM-dd hh:mm:ss"));
         }

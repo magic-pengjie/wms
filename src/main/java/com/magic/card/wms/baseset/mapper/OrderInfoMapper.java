@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * com.magic.card.wms.baseset.mapper
@@ -67,4 +68,19 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      * @return OrderStatisticsVO
      */
     OrderStatisticsVO selectOrderStatistics(String orderDate);
+
+    /**
+     * 获取订单商品
+     * @param systemOrderNo
+     * @return
+     */
+    TreeMap<String, Integer> commodityNumMap(String systemOrderNo);
+
+    /**
+     * 获取订单商品数据： 库位、购买量。。。
+     * @param systemOrderNo 系统订单号
+     * @param houseCode 仓库功能编号
+     * @return
+     */
+    List<Map> commodityGrid(@Param("systemOrderNo") String systemOrderNo, @Param("houseCode") String houseCode);
 }

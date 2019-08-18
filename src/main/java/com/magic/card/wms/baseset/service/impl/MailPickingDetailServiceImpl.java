@@ -80,7 +80,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
     @Override @Transactional
     public void add(MailPickingDetail mailPickingDetail) {
 //        webUtil.operator()
-        PoUtil.add(mailPickingDetail, Constants.DEFAULT_USER);
+        PoUtil.add(mailPickingDetail, webUtil.operator());
         insert(mailPickingDetail);
     }
 
@@ -103,23 +103,23 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
      * @param customerCode 客户Code
      * @return
      */
-    @Override
-    public List<Map> virtualMails(String customerCode, Integer executeSize) {
-        EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("woi.customer_code", customerCode).
-                // 加载 已锁定（导入系统15分钟默认锁定）的订单生成
-                eq("is_lock", 1).
-                eq("woi.state", StateEnum.normal.getCode()).
-                ne("woi.bill_state", BillState.order_cancel).
-                groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
-                // TODO 后期添加 快递公司、区域优先生成拣货单
-                orderBy("woi.create_time");
-        List<Map> virtualMails = baseMapper.virtualMails(new Page(1, MAX_BASKET_NUM), wrapper);
-
-        if (CollectionUtils.isEmpty(virtualMails) || virtualMails.size() < executeSize) return null;
-
-        return virtualMails;
-    }
+//    @Override
+//    public List<Map> virtualMails(String customerCode, Integer executeSize) {
+//        EntityWrapper wrapper = new EntityWrapper();
+//        wrapper.eq("woi.customer_code", customerCode).
+//                // 加载 已锁定（导入系统15分钟默认锁定）的订单生成
+//                eq("is_lock", 1).
+//                eq("woi.state", StateEnum.normal.getCode()).
+//                ne("woi.bill_state", BillState.order_cancel).
+//                groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
+//                // TODO 后期添加 快递公司、区域优先生成拣货单
+//                orderBy("woi.create_time");
+//        List<Map> virtualMails = baseMapper.virtualMails(new Page(1, MAX_BASKET_NUM), wrapper);
+//
+//        if (CollectionUtils.isEmpty(virtualMails) || virtualMails.size() < executeSize) return null;
+//
+//        return virtualMails;
+//    }
 
     /**
      * 获取商户订单不同区域的快递单数据
@@ -206,7 +206,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
      */
     private List<List<Map>> areaVirtualPageMails(EntityWrapper wrapper, Integer executeSize) {
         List<List<Map>> areaPage = Lists.newArrayList();
-        List<Map> virtualMails = baseMapper.virtualMails(new Page(), wrapper);
+        List<Map> virtualMails = baseMapper.virtualMails(wrapper);
 
         if (CollectionUtils.isNotEmpty(virtualMails)) {
             final int inall = virtualMails.size();
@@ -234,7 +234,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
         baseWrapper.eq("woi.customer_code", customerCode).
                 eq("is_lock", 1).
                 eq("woi.state", StateEnum.normal.getCode()).
-                ne("woi.bill_state", BillState.order_cancel).
+                eq("woi.bill_state", BillState.order_save.getCode()).
                 groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
                 orderBy("woi.create_time");
         return baseWrapper;

@@ -11,18 +11,18 @@ import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.magic.card.wms.baseset.service.ICommodityStockService;
 import com.magic.card.wms.baseset.service.IOrderCommodityService;
 import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -54,7 +54,7 @@ public class OrderCommodityServiceImpl extends ServiceImpl<OrderCommodityMapper,
             throw OperationException.addException("订单商品导入失败");
         }
 
-        // TODO 生成拣货单再占用库存 执行库存占用 customerCode commodityCode occupyNum
+        // TODO 执行库存占用 customerCode commodityCode occupyNum
         commodityStockService.occupyCommodityStock(commodity.getCustomerCode(), commodity.getBarCode(), commodity.getNumbers().longValue(), operator);
     }
 
@@ -99,6 +99,44 @@ public class OrderCommodityServiceImpl extends ServiceImpl<OrderCommodityMapper,
 
         return batchOrderCommodity;
     }
+
+    /**
+     * 获取订单商品token
+     *
+     * @param orderNo      订单号
+     * @param customerCode 商家CODE
+     * @return
+     */
+    @Override
+    public String ruleToken(String orderNo, String customerCode) {
+        List<Map> orderCommodities = baseMapper.orderCommodities(StringUtils.split(orderNo, ","), customerCode);
+
+        if (CollectionUtils.isEmpty(orderCommodities)) throw  OperationException.customException(ResultEnum.order_commodity_no_exist);
+        TreeMap<String, Integer> commodityNumsMap = Maps.newTreeMap();
+        orderCommodities.forEach(orderCommodity -> {
+            final String commodityCode = MapUtils.getString(orderCommodity, "barCode");
+            Integer bayNums = MapUtils.getInteger(orderCommodity, "numbers");
+
+            if (commodityNumsMap.containsKey(commodityCode)) {
+                bayNums += commodityNumsMap.get(commodityCode);
+            }
+
+            commodityNumsMap.put(commodityCode, bayNums);
+        });
+        final StringBuffer ruleToken = new StringBuffer();
+        commodityNumsMap.forEach((key, value) -> {
+
+            if (StringUtils.isNotBlank(ruleToken.toString())) {
+                ruleToken.append(",");
+            }
+
+            ruleToken.append(StringUtils.joinWith("+", key, value));
+        });
+
+
+        return ruleToken.toString();
+    }
+
 
     /**
      * 检测导入商品

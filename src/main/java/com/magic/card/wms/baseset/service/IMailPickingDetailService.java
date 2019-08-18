@@ -36,7 +36,7 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
      * @param customerCode 客户Code
      * @return
      */
-    List<Map> virtualMails(String customerCode, Integer executeSize);
+//    List<Map> virtualMails(String customerCode, Integer executeSize);
 
     /**
      * 获取商户订单不同区域的快递单数据
