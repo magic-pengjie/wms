@@ -35,4 +35,6 @@ public interface ICheckRecordService extends IService<CheckRecord> {
 	boolean auditCheckRecord(AuditCheckRecordDto auditDto)throws BusinessException;
 
 	boolean saveCheckRecord(List<CheckRecord> checkRecordList)throws BusinessException;
+
+	public List<String> queryAreaCodeList();
 }

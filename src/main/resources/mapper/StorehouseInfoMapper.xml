@@ -54,4 +54,11 @@
         <where>${ew.sqlSegment}</where>
     </select>
 
+    <select id="queryAreaCodeList" resultType="java.lang.String">
+        SELECT
+            area_code as areaCode
+        FROM `wms_storehouse_info`
+        group by area_code
+    </select>
+
 </mapper>

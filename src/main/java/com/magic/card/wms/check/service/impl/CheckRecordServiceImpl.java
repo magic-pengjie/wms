@@ -228,6 +228,11 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		return checkUpdate;
 	}
 
+	//加载所有库区列表
+	@Override
+	public List<String> queryAreaCodeList() {
+		return storehouseInfoMapper.queryAreaCodeList();
+	}
 
 
 	//取消盘点

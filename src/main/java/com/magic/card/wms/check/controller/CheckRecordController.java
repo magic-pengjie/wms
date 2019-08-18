@@ -175,7 +175,17 @@ public class CheckRecordController {
 		}
 		return ResponseData.error("审批失败");
 	}
-	
+
+	/**
+	 * 	查询所有库区列表
+	 * @throws BusinessException
+	 */
+	@ApiOperation(value="查询所有库区列表")
+	@RequestMapping(value = "/queryAreaCodeList", method = RequestMethod.GET)
+	public ResponseData queryAreaCodeList(){
+		return ResponseData.ok(checkRecordService.queryAreaCodeList());
+	}
+
 	
 }
 

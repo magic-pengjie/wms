@@ -43,4 +43,10 @@ public interface StorehouseInfoMapper extends BaseMapper<StorehouseInfo> {
      * @return
      */
     List<Map> comboGridBind(Page page, @Param("ew") EntityWrapper entityWrapper);
+
+    /**
+     * 加载所有库区
+     * @return
+     */
+    List<String> queryAreaCodeList();
 }
