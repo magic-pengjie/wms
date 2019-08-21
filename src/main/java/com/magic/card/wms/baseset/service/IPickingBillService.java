@@ -92,4 +92,16 @@ public interface IPickingBillService extends IService<PickingBill> {
      * @param lock 是否锁定
      */
     void pickLockProcess(String pickNo, Boolean lock);
+
+    /**
+     * 批量作废
+     * @param pickNos 拣货单号
+     */
+    void batchCancel(List<String> pickNos);
+
+    /**
+     * 拣货单作废处理
+     * @param pickNo 拣货单号
+     */
+    void cancel(String pickNo);
 }

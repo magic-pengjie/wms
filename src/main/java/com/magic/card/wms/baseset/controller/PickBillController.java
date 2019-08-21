@@ -5,6 +5,7 @@ import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
 import com.magic.card.wms.baseset.service.IMailPickingService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.Constants;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -66,6 +68,20 @@ public class PickBillController {
     @GetMapping("unlockPick")
     public ResponseData unlockPick(@RequestParam String pickNo) {
         pickingBillService.pickLockProcess(pickNo, false);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("拣货单批量取消（作废）处理")
+    @PostMapping("batchCancel")
+    public ResponseData batchCancel(@RequestJsonParam List<String> pickNos) {
+        pickingBillService.batchCancel(pickNos);
+        return ResponseData.ok();
+    }
+
+    @ApiOperation("拣货单取消（作废）处理")
+    @GetMapping("cancel")
+    public ResponseData cancel(@RequestParam String pickNo) {
+        pickingBillService.cancel(pickNo);
         return ResponseData.ok();
     }
 

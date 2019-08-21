@@ -41,4 +41,11 @@ public interface PickingBillMapper extends BaseMapper<PickingBill> {
      * @param cancelOrderCode   取消 订单状态码
      */
     void updateOrderBillState(@Param("pickNo") String pickNo, @Param("packingOrderCode") String packingOrderCode, @Param("cancelOrderCode") String cancelOrderCode);
+
+    /**
+     * 批量取消拣货单
+     * @param cancelCode 取消码
+     * @param wrapper
+     */
+    void batchCancel(@Param("cancelCode") String cancelCode, @Param("ew") EntityWrapper wrapper);
 }

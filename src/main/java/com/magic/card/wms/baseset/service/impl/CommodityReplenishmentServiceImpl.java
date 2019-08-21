@@ -195,7 +195,7 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
         EntityWrapper<CommodityReplenishment> wrapper = new EntityWrapper<>();
         wrapper.eq("replenishment_no", replenishmentFinished.getReplenishmentNo()).eq("is_finally", 0);
         CommodityReplenishment commodityReplenishment = selectOne(wrapper);
-
+        // 获取补货单信息
         if (commodityReplenishment == null) {
             throw OperationException.customException(ResultEnum.replenishment_no_exist);
         }
@@ -204,37 +204,42 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
         PoUtil.update(commodityReplenishment, webUtil.operator());
 
         if (CollectionUtils.isNotEmpty(replenishmentFinished.getReplenishmentInfos())) {
-            replenishmentFinished.getReplenishmentInfos().forEach((CommodityReplenishmentDTO.ReplenishmentInfo replenishmentInfo) -> {
+            int replenishmentNums = replenishmentFinished.getReplenishmentInfos().stream().mapToInt((CommodityReplenishmentDTO.ReplenishmentInfo replenishmentInfo) -> {
 
-                    commodityReplenishment.setReplenishmentNums(
-                            replenishmentInfo.getNums() + commodityReplenishment.getReplenishmentNums()
+                commodityReplenishment.setReplenishmentNums(
+                        replenishmentInfo.getNums() + commodityReplenishment.getReplenishmentNums()
+                );
+
+                if (StringUtils.isBlank(commodityReplenishment.getStorageId())) {
+                    commodityReplenishment.setStorageId("" + replenishmentInfo.getId());
+                } else {
+                    commodityReplenishment.setStorageId(
+                            StringUtils.joinWith(",",
+                                    commodityReplenishment.getStorageId(),
+                                    replenishmentInfo.getId()
+                            )
                     );
+                }
 
-                    if (StringUtils.isBlank(commodityReplenishment.getStorageId())) {
-                        commodityReplenishment.setStorageId("" + replenishmentInfo.getId());
-                    } else {
-                        commodityReplenishment.setStorageId(
-                                StringUtils.joinWith(",",
-                                        commodityReplenishment.getStorageId(),
-                                        replenishmentInfo.getId()
-                                )
-                        );
-                    }
+                if (StringUtils.isBlank(commodityReplenishment.getReplenishmentRecord())) {
+                    commodityReplenishment.setReplenishmentRecord("" + replenishmentInfo.getNums());
+                } else {
+                    commodityReplenishment.setReplenishmentRecord(
+                            StringUtils.joinWith(",",
+                                    commodityReplenishment.getReplenishmentRecord(),
+                                    replenishmentInfo.getNums()
+                            )
+                    );
+                }
 
-                    if (StringUtils.isBlank(commodityReplenishment.getReplenishmentRecord())) {
-                        commodityReplenishment.setReplenishmentRecord("" + replenishmentInfo.getNums());
-                    } else {
-                        commodityReplenishment.setReplenishmentRecord(
-                                StringUtils.joinWith(",",
-                                        commodityReplenishment.getReplenishmentRecord(),
-                                        replenishmentInfo.getNums()
-                                )
-                        );
-                    }
-
-                    String setString = String.format("available_nums = available_nums - %s", replenishmentInfo.getNums());
-                    storehouseConfigService.updateForSet(setString, new EntityWrapper().eq("id", replenishmentInfo.getId()));
-            });
+                String setString = String.format("available_nums = available_nums - %s", replenishmentInfo.getNums());
+                storehouseConfigService.updateForSet(setString, new EntityWrapper().eq("id", replenishmentInfo.getId()));
+                return replenishmentInfo.getNums();
+            }).sum();
+            // 增加拣货区库位库存
+            String plusSet = String.format("available_nums = available_nums - %s", replenishmentNums);
+            storehouseConfigService.updateForSet(plusSet, new EntityWrapper().eq("id", commodityReplenishment.getCheckoutId()));
+            // 更新补货信息
             updateById(commodityReplenishment);
         }
     }

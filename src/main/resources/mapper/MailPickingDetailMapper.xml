@@ -13,13 +13,17 @@
     <select id="virtualMails" resultType="java.util.Map">
         SELECT
             wmpd.mail_no mailNo,
-            wmpd.order_no systemOrderNo
+            wmpd.order_no systemOrderNo,
+            wpb.bill_state
         FROM
             wms_mail_picking_detail wmpd
             LEFT JOIN wms_order_info woi ON wmpd.order_no = woi.system_order_no
+            LEFT JOIN wms_mail_picking_info wmpi ON wmpi.mail_no = wmpd.mail_no
+            LEFT JOIN wms_picking_bill wpb ON  wpb.pick_no = wmpi.pick_no
         <where>
             ${ew.sqlSegment}
         </where>
+
     </select>
     <!--    获取包裹商品对应的耗材清单   -->
     <select id="mailPickingCommodityInfo" resultType="java.util.Map">

@@ -21,7 +21,7 @@ public enum BillState {
     pick_ing("picking", "拣货单拣货中"),
     pick_finish("finish", "拣货单拣货完成"),
     pick_exception("exception", "拣货单异常"),
-    pick_cancel("cancel", "拣货单取消"),
+    pick_cancel("cancel", "拣货单作废"),
     pick_process_new("new_pick", "新建拣货单"),
     pick_process_lock("lock", "拣货单已锁定"),
     pick_process_unlock("unlock", "拣货单已解除锁订"),

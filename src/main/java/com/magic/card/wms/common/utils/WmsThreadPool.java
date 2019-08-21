@@ -8,17 +8,17 @@ import java.util.concurrent.Executors;
 
 /**
  * com.magic.card.wms.common.utils
- *
+ * WMS 线程池管理
  * @author : Mr.Zhang
  * @e.mail : mr.zy883@gmail.com
  * @date : 2019/8/3 10:14
  * @since : 1.0.0
  */
-public class ThreadPool {
+public class WmsThreadPool {
     public static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     @Function
-    public static void excutor(Runnable runnable) {
+    public static void executor(Runnable runnable) {
         executorService.execute(runnable);
     }
 }

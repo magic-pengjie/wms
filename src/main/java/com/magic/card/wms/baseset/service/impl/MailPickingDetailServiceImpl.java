@@ -32,6 +32,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -232,10 +233,12 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
     private EntityWrapper basetVirtualMailWrapper(String customerCode) {
         EntityWrapper baseWrapper = new EntityWrapper();
         baseWrapper.eq("woi.customer_code", customerCode).
-                eq("is_lock", 1).
-                eq("woi.state", StateEnum.normal.getCode()).
-                eq("woi.bill_state", BillState.order_save.getCode()).
-                groupBy("wmpd.mail_no, wmpd.order_no, woi.create_time").
+                eq("woi.is_lock", 1).
+                andNew("(woi.state = {0} AND woi.bill_state = {1} ) OR (wpb.bill_state = {2} )",
+                        StateEnum.normal.getCode(),
+                        BillState.order_save.getCode(),
+                        BillState.pick_cancel.getCode()).
+                groupBy("wmpd.mail_no, wmpd.order_no, wpb.bill_state, woi.create_time").
                 orderBy("woi.create_time");
         return baseWrapper;
     }
@@ -304,6 +307,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
      */
     @Override
     public List<Map> packageFinishedList(String mailNo) {
+
         return null;
     }
 
@@ -377,7 +381,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
                         // commodityIds.add(MapUtils.getString(noticeReplenishment, "commodityId"));
                         CommodityReplenishment commodityReplenishment = new CommodityReplenishment();
                         BeanUtils.copyProperties(baseCommodityReplenishment, commodityReplenishment);
-                        commodityReplenishment.setReplenishmentNo(GeneratorCodeUtil.dataTime(5));
+                        commodityReplenishment.setReplenishmentNo("BH" + GeneratorCodeUtil.dataTime(5));
                         commodityReplenishment.setCommodityId(MapUtils.getString(noticeReplenishment, "commodityId"));
                         commodityReplenishment.setCheckoutId(MapUtils.getString(noticeReplenishment, "storehouseId"));
                         commodityReplenishment.setStockoutNums(MapUtils.getInteger(noticeReplenishment, "omitNums"));
