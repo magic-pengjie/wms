@@ -69,6 +69,7 @@
         select
             cbi.customer_code as customerCode,
             cbi.customer_name as customerName,
+            ci.id as commodityId,
             cs.sku_code as skuCode,
             cs.sku_name as commodityName,
             cs.banner,
