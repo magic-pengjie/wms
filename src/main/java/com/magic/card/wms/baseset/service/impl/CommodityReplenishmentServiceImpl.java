@@ -237,7 +237,7 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
                 return replenishmentInfo.getNums();
             }).sum();
             // 增加拣货区库位库存
-            String plusSet = String.format("available_nums = available_nums - %s", replenishmentNums);
+            String plusSet = String.format("available_nums = available_nums + %s", replenishmentNums);
             storehouseConfigService.updateForSet(plusSet, new EntityWrapper().eq("id", commodityReplenishment.getCheckoutId()));
             // 更新补货信息
             updateById(commodityReplenishment);
