@@ -21,6 +21,7 @@
             pick_no pickNo,
             is_B2B isB2b,
             process_stage processStage,
+            area_level,
             bill_state billState,
             state printTimes,
             create_time createTime

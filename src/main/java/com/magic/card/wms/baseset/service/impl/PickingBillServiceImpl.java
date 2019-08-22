@@ -74,6 +74,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         defaultColumns.put("billState", "bill_state");
         defaultColumns.put("printTimes", "state");
         defaultColumns.put("createTime", "create_time");
+        defaultColumns.put("areaLevel", "area_level");
     }
 
     /**

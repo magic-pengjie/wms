@@ -177,6 +177,12 @@ public class OrderController {
         return ResponseData.ok(pickingBillService.generatorInvoice(Constants.DEFAULT_USER, 1, pickNos));
     }
 
+    @GetMapping("cancel")
+    public ResponseData cancel(@RequestParam String systemOrderNo) {
+        orderService.cancelOrder(systemOrderNo);
+        return ResponseData.ok();
+    }
+
 //    @ApiOperation("订单物品称重")
 //    @GetMapping("weigh")
 //    public ResponseData orderWeigh(
