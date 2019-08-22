@@ -61,15 +61,19 @@ public class StorehouseConfig extends BasePo implements Serializable {
     /**
      * 生产日期
      */
-    private Date startTime;
+    private String startTime;
 
     /**
      * 过期时间
      */
-    private Date endTime;
+    private String endTime;
 
     /**
      * 操作类型(1:入库 2:出库)
      */
     private Integer oprType;
+    /***
+     * 保质期
+     */
+    private Double shilfLife;
 }

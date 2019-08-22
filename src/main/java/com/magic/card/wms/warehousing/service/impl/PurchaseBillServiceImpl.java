@@ -329,7 +329,7 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			if( houses[i].indexOf(":")>-1) {
 				String storehouseId = houses[i].split(":")[0];
 				int numbers = Integer.parseInt(houses[i].split(":")[1]);
-				storehouseConfigService.save(String.valueOf(detail.getCommodityId()), storehouseId, numbers);
+				storehouseConfigService.save(String.valueOf(detail.getCommodityId()), storehouseId, numbers,detail.getProductionDate(),detail.getShilfLife());
 			}
 		}
 		//增加总库存
@@ -469,6 +469,9 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 				page.setCurrent(current);
 				list = purchaseBillMapper.getFoodWarningList(page);
 			} catch (Exception e) {
+				current++;
+				page.setCurrent(current);
+				list = purchaseBillMapper.getFoodWarningList(page);
 				log.error("FoodWarningTask error:{}",e);
 			}
 		}

@@ -20,6 +20,7 @@ import com.magic.card.wms.common.model.ResponseData;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,13 +40,14 @@ public class LogisticsTrackingInfoController {
 	@Autowired
 	private ILogisticsTrackingInfoService logisticsTrackingInfoService;
 	
-	@ApiOperation(value = "物流跟踪信息查询(查询邮政数据)", notes = "物流跟踪信息查询(查询邮政数据)")
+	@ApiOperation(value = "物流跟踪信息查询", notes = "物流跟踪信息查询")
 	@GetMapping(value = "/getLogisticsInfo")
-	public ResponseData getTrackingInfo(@RequestParam(required = true) String mailNo) {
+	public ResponseData getTrackingInfo(@RequestParam(required = true) String mailNo,
+										@RequestParam(required = true) int type) {
 		try {
-			return logisticsTrackingInfoService.getTrackingInfo(mailNo);
+			return logisticsTrackingInfoService.getTrackingInfo(mailNo,type);
 		} catch (Exception e) {
-			log.error("预警代办列表查询失败:{}",e);
+			log.error("物流跟踪信息查询失败:{}",e);
 			return ResponseData.error(ResultEnum.query_error);
 		}
 		
@@ -62,6 +64,8 @@ public class LogisticsTrackingInfoController {
 		}
 		
 	}
+	
+	
 	
 	@ApiOperation(value = "人工确认物流", notes = "人工确认物流")
 	@GetMapping(value = "/trackingConfirm")

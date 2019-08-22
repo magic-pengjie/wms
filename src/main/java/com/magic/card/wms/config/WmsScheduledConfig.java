@@ -49,9 +49,9 @@ public class WmsScheduledConfig {
     }
 
     /**
-     * 食品预警任务
+         * 食品预警任务 TODO  需要修改逻辑
      **/
-    //@Scheduled(cron = "* */2 * * * *")
+    //@Scheduled(cron = "0 0/2 * * * ?")
     public void runFoodWarning() {
         log.info("==>runFoodWarning start..");
         try {
@@ -65,7 +65,7 @@ public class WmsScheduledConfig {
     /**
      * 滞销品预警
      **/
-    //@Scheduled(cron = "* * */1 * * *")
+    @Scheduled(cron = "0 0/2 * * * ?")
     public void runUnsalableGoodsWarning() {
     	log.info("==>runUnsalableGoodsWarning start..");
         try {
