@@ -60,6 +60,15 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      */
     void save(String commodityId,String storehouseId,int numbers);
     /**
+         * 修改库位数量
+     * @param commodityId 商品id
+     * @param storehouseId 库位id
+     * @param numbers 增加值
+     * @param startTime 生产日期
+     * @param shilfLife 保质期
+     */
+    void save(String commodityId,String storehouseId,int numbers,String startTime,Double shilfLife );
+    /**
      * 入库时推荐库位
      * @param customerCode 客户编码
      * @param barCode 商品条码

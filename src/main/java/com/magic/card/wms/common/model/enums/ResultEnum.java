@@ -112,6 +112,8 @@ public enum ResultEnum {
 	package_had_weigh( 500018, "订单已经称重完毕，请勿重复操作"),
 	monitoring_type_no_exist( 500019, "包裹监控状态不存在！"),
     order_not_allow_cancel( 500020, "当前订单不允许取消！"),
+	invoice_pick_cancel( 500021, "拣货单已作废！"),
+	invoice_pick_not_allow_cancel( 500022, "当前拣货单不可作废！"),
 
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),

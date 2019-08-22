@@ -35,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -70,7 +69,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private IStorehouseConfigService storehouseConfigService;
     @Autowired
     private WebUtil webUtil;
-    @Autowired
+    @Autowired(required = false)
     private OrderInfoMapper orderInfoMapper;
     /**
      *
@@ -223,7 +222,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         orderHandler(orderInfoDTO.getOrderNo() + orderInfoDTO.getCustomerCode(), orderInfoDTO, customerBaseInfo, false, operator);
 
         // 触发生成拣货单 同检验拣货区商品是否充足
-        ThreadPool.excutor(() -> pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 15));
+        WmsThreadPool.executor(() -> pickingBillService.triggerGenerator(customerBaseInfo.getCustomerCode(), 15));
     }
 
     /**
@@ -556,7 +555,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         });
 
         // 生成拣货单
-        ThreadPool.excutor(() -> pickingBillService.triggerGenerator(customer.getCustomerCode(), 15));
+        WmsThreadPool.executor(() -> pickingBillService.triggerGenerator(customer.getCustomerCode(), 15));
     }
 
     /**

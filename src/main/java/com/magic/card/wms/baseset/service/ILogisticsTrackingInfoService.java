@@ -23,11 +23,12 @@ import com.magic.card.wms.common.model.ResponseData;
 public interface ILogisticsTrackingInfoService extends IService<LogisticsTrackingInfo> {
 
 	/***
-	 * 根据快递单号实时查询邮政物流信息
+	 * 根据快递单号物流信息
 	 * @param  快递单
+	 * @param type 1:实时查询邮政物流信息 2:查询数据库物流信息
 	 * @return
 	 */
-	ResponseData getTrackingInfo(String mailNo) throws Exception;
+	ResponseData getTrackingInfo(String mailNo,int type) throws Exception;
 	/**
 	 * 查询本地物流信息
 	 * @param orderNo 订单
@@ -53,8 +54,9 @@ public interface ILogisticsTrackingInfoService extends IService<LogisticsTrackin
     void runLogisticsInfoWarning();
     
     /**
-     * 物流人工确认
+         * 物流人工确认
      * @param mailNos
+     * 
      */
     void trackingConfirm(String mailNo);
 }

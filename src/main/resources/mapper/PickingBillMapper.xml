@@ -12,6 +12,9 @@
             WHERE pick_no = #{pickNo}
         ) AND bill_state != #{cancelOrderCode}
     </update>
+    <update id="batchCancel">
+        update wms_picking_bill set bill_state = #{cancelCode} <where>${ew.sqlSegment}</where>
+    </update>
     <select id="loadGrid" resultType="java.util.Map">
         SELECT
             id,
@@ -28,6 +31,10 @@
             </where>
     </select>
     <select id="customerCodes" resultType="java.lang.String">
-        SELECT customer_code FROM wms_order_info <where> ${ew.sqlSegment}</where>
+        SELECT customer_code
+        FROM wms_order_info woi
+        LEFT JOIN wms_mail_picking_info wmpi ON wmpi.order_no = woi.system_order_no
+        LEFT JOIN wms_picking_bill wpb ON wpb.pick_no = wmpi.pick_no
+        <where> ${ew.sqlSegment}</where>
     </select>
 </mapper>

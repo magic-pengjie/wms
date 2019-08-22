@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 
 /**
@@ -45,6 +46,7 @@ public class PackageController extends WmsBaseController {
         mailPickingService.monitoringFlowDetails(monitoringType, loadGrid);
         return ResponseData.ok(loadGrid);
     }
+
     /**
      * 包裹称重
      * @param mailNo 快递单号
@@ -67,7 +69,7 @@ public class PackageController extends WmsBaseController {
 
     @ApiOperation("包裹清单(完成)")
     @GetMapping("finishedList")
-    public ResponseData finishedList(@RequestParam String mailNo) {
+    public ResponseData finishedList(@RequestParam String mailNo, HttpServletRequest request) {
         return ResponseData.ok(mailPickingDetailService.packageFinishedList(mailNo));
     }
 

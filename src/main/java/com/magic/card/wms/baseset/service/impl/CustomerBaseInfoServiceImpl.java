@@ -19,7 +19,7 @@ import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.common.utils.PoUtil;
-import com.magic.card.wms.common.utils.ThreadPool;
+import com.magic.card.wms.common.utils.WmsThreadPool;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -250,7 +250,7 @@ public class CustomerBaseInfoServiceImpl extends ServiceImpl<CustomerBaseInfoMap
         commodityInfoService.insertBatch(commodities);
 
         // 初始化库存
-        ThreadPool.excutor(()-> {
+        WmsThreadPool.executor(()-> {
             commodityStockService.batchInitSetting(batchBindCommodity.getCustomerId(), commodities);
         });
     }

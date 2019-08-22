@@ -300,6 +300,23 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
    		this.update(config, w);
    		
    	}
+    @Override
+   	@Transactional
+   	public void save(String commodityId,String storehouseId,int numbers,String startTime,Double shilfLife ){
+   		Wrapper<StorehouseConfig> w = new EntityWrapper<>();
+   		w.eq("storehouse_id", storehouseId);
+   		w.eq("state",Constants.STATE_1);
+   		StorehouseConfig config = this.selectOne(w);
+   		config.setAvailableNums(numbers+(ObjectUtils.isEmpty(config.getAvailableNums())?0:config.getAvailableNums()));
+   		config.setOprType(1);
+   		config.setCommodityId(commodityId);
+   		config.setStartTime(startTime);
+   		config.setShilfLife(shilfLife);
+   		config.setEntryTime(new Date());
+   		PoUtil.add(config, Constants.DEFAULT_USER);
+   		this.update(config, w);
+   		
+   	}
 
 	@Override
 	public List recommendStore(String type,String customerCode,String barCode) {

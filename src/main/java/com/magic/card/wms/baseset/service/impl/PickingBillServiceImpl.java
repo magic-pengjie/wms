@@ -3,6 +3,7 @@ package com.magic.card.wms.baseset.service.impl;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.PickingBillMapper;
@@ -15,27 +16,24 @@ import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.model.enums.StateEnum;
-import com.magic.card.wms.common.utils.GeneratorCodeUtil;
-import com.magic.card.wms.common.utils.PoUtil;
-import com.magic.card.wms.common.utils.WebUtil;
-import com.magic.card.wms.common.utils.WrapperUtil;
+import com.magic.card.wms.common.utils.*;
 import com.magic.card.wms.config.express.ExpressProviderManager;
 import lombok.Synchronized;
+import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -184,7 +182,6 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         baseMapper.updateOrderBillState(pickNo, BillState.order_packing.getCode(),BillState.order_cancel.getCode());
         // 统计拣货单所有订单商品未分拣完成
         List<Map> omitOrderCommodities = mailPickingService.omitOrderCommodityList(pickNo, StateEnum.normal.getCode());
-
         BillState exceptionFlag = BillState.pick_finish;
 
         if (CollectionUtils.isNotEmpty(omitOrderCommodities)) {
@@ -265,7 +262,8 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      */
     @Override
     public List<Map> pickBillLoadGrid(String pickNo) {
-        checkOutPickBill(pickNo);
+//        checkOutPickBill(pickNo);
+        pickLockProcess(pickNo, true);
         return mailPickingService.loadMailPickings(pickNo);
     }
 
@@ -317,9 +315,9 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         // 更新订单商品数据
         mailPickingDetailService.updateById(mailPickingDetail);
         //执行货篮 拣货状态更新
-        new Thread(() ->
-                mailPickingService.updatePickingFinishState(mailPickingDetail.getMailNo())
-        , "Update-Picking-Finish-State." + System.currentTimeMillis()).start();
+        WmsThreadPool.executor(new Thread(() ->
+                mailPickingService.updatePickingFinishState(mailPickingDetail.getMailNo()),
+                "Update-Picking-Finish-State." + System.currentTimeMillis()));
         // 返回货篮号
         return (Integer) invoice.get("basketNum");
     }
@@ -331,16 +329,19 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
     public void timingGenerator(String operator, Integer executeSize) {
         // 获取系统中所有满足要求的订单(订单客户)
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.eq("state", StateEnum.normal.getCode()).
-                eq("bill_state", BillState.order_save.getCode()).
-                eq("is_b2b", 0).
-                eq("is_batch", 0).
-                eq("is_lock", 1).
-                groupBy("customer_code").
+        wrapper.eq("woi.state", StateEnum.normal.getCode()).
+                eq("woi.is_b2b", 0).
+                eq("woi.is_batch", 0).
+                eq("woi.is_lock", 1).
+                eq("woi.is_matched", 1).
+                andNew().
+                eq("woi.bill_state", BillState.order_save.getCode()).
+                or("wpb.bill_state = {0}", BillState.pick_cancel.getCode()).
+                groupBy("woi.customer_code").
                 having("COUNT(*) > 0");
         List<String> customerCodes = baseMapper.customerCodes(wrapper);
 
-        if (customerCodes != null && customerCodes.size() > 0) {
+        if (CollectionUtils.isNotEmpty(customerCodes)) {
             customerCodes.stream().forEach(customerCode -> generatorAreaPickingBill(customerCode, executeSize, operator));
         }
 
@@ -362,9 +363,10 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         }
 
         EntityWrapper wrapper = new EntityWrapper();
-        wrapper.ge("state", StateEnum.normal.getCode());
-        wrapper.le("state", allowSize);
-        wrapper.in("pick_no", pickNos);
+        wrapper.ge("state", StateEnum.normal.getCode()).
+                le("state", allowSize).
+                ne("bill_state", BillState.pick_cancel.getCode()).
+                in("pick_no", pickNos);
         // 获取多个拣货单
         List<PickingBill> pickBills = selectList(wrapper);
 
@@ -413,14 +415,24 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
                 Map<String, Order> ordersMap = orderService.ordersMap(
                         virtualMails.
                                 stream().
+                                filter(virtualMail -> !StringUtils.equalsIgnoreCase(
+                                        BillState.pick_cancel.getCode(),
+                                        MapUtils.getString(virtualMail, "billState"))).
                                 map(virtualMail ->
-                                        virtualMail.get("systemOrderNo").toString()
-                                ).
+                                        virtualMail.get("systemOrderNo").toString()).
                                 collect(Collectors.toList()));
+                Map<String, Integer> ignoreVirtualMails = Maps.newLinkedHashMap();
                 for (int basketNum = 1; basketNum <= virtualMails.size(); basketNum++) {
                     Map virtualMail = virtualMails.get(basketNum - 1);
+                    final String pickBillState = MapUtils.getString(virtualMail, "billState");
                     final String systemOrderNo = MapUtils.getString(virtualMail, "systemOrderNo");
                     final String virtualMailNo = MapUtils.getString(virtualMail, "mailNo");
+
+                    if (StringUtils.equalsIgnoreCase(BillState.pick_cancel.getCode(), pickBillState)) {
+                        ignoreVirtualMails.put(virtualMailNo, basketNum);
+                        continue;
+                    }
+
                     Order order = ordersMap.get(systemOrderNo);
                     //获取快递单号
                     String realMail = expressProviderManager.useExpressNo(order.getExpressKey());
@@ -447,7 +459,6 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
                     // endregion
                     // region 更新订单状态（已生成拣货单数据）
                     order.setBillState(BillState.order_picking.getCode());
-                    order.setState(StateEnum.order_pick.getCode());
                     order.setUpdateTime(new Date());
                     order.setUpdateUser(operator);
                     orderService.updateById(order);
@@ -456,6 +467,16 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
 
                 // 拣货区库存对应减少，若拣货区库存小于拣货单所需值怎已负值形式展现，同时库存是否充足，若不足则通知补货
                 mailPickingDetailService.needNoticeReplenishment(pickNo);
+
+                // 更新对应的包裹拣货单以及篮号
+                if (MapUtils.isNotEmpty(ignoreVirtualMails)) {
+                    List<String> mailNos = Lists.newArrayList();
+                    ignoreVirtualMails.forEach((ignoreVirtualMail, value) -> {
+                        mailNos.add(ignoreVirtualMail);
+                        mailPickingService.updateForSet(String.format("pick_no = '%s', basket_num = %s", pickNo, value), new EntityWrapper().eq("mail_no", ignoreVirtualMail));
+                    });
+                    mailPickingDetailService.updateForSet(String.format("pick_no = '%s'", pickNo), new EntityWrapper().in("mail_no", mailNos));
+                }
             }));
     }
 
@@ -501,6 +522,10 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         if (StringUtils.equalsIgnoreCase(BillState.pick_process_check_close.getCode(), pickingBill.getProcessStage())) {
             throw OperationException.customException(ResultEnum.invoice_pick_close);
         }
+        // 拣货单是否作废
+        if (StringUtils.equalsIgnoreCase(BillState.pick_cancel.getCode(), pickingBill.getBillState())) {
+            throw OperationException.customException(ResultEnum.invoice_pick_cancel);
+        }
 
         return pickingBill;
     }
@@ -510,6 +535,7 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      * @param pickNo 拣货单号
      * @param lock 是否锁定
      */
+    @Transactional
     public void pickLockProcess(String pickNo, Boolean lock) {
         PickingBill pickingBill = checkOutPickBill(pickNo);
 
@@ -526,4 +552,37 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         wrapper.eq("pick_no", pickNo).ne("state", StateEnum.delete.getCode());
         updateForSet(setPickLock, wrapper);
     }
+
+    /**
+     * 批量作废
+     *
+     * @param pickNos 拣货单号
+     */
+    @Override @Transactional
+    public void batchCancel(List<String> pickNos) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.in("pick_no", pickNos).
+                eq("process_stage", BillState.pick_process_new.getCode()).
+                eq("bill_state", BillState.pick_save.getCode());
+        baseMapper.batchCancel(BillState.pick_cancel.getCode(), wrapper);
+    }
+
+    /**
+     * 拣货单作废处理
+     *
+     * @param pickNo 拣货单号
+     */
+    @Override @Transactional
+    public void cancel(String pickNo) {
+        PickingBill pickingBill = checkOutPickBill(pickNo);
+
+        if (!StringUtils.equalsIgnoreCase(BillState.pick_save.getCode(), pickingBill.getBillState()) ||
+            !StringUtils.equalsIgnoreCase(BillState.pick_process_new.getCode(), pickingBill.getProcessStage())) {
+            throw OperationException.customException(ResultEnum.invoice_pick_not_allow_cancel);
+        }
+
+        pickingBill.setBillState(BillState.pick_cancel.getCode());
+        PoUtil.update(pickingBill, webUtil.operator());
+        updateById(pickingBill);
+     }
 }

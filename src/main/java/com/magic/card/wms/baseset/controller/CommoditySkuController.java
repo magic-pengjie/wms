@@ -72,8 +72,6 @@ public class CommoditySkuController {
         return ResponseData.ok();
     }
 
-
-
     @GetMapping("consumable")
     public ResponseData comboGridConsumables() {
         return ResponseData.ok(commoditySkuService.comboGridConsumables());
