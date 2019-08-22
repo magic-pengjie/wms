@@ -88,13 +88,13 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		}
 		List<Long> storehouseIdList = new ArrayList<Long>();
 		if(!CollectionUtils.isEmpty(dto.getAreaCode())) {//按库区盘点
-			Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
-			siWrapper.eq("state", StateEnum.normal.getCode());
-			siWrapper.in("area_code", dto.getAreaCode());
-			List<StorehouseInfo> storeInfoList = storehouseInfoMapper.selectList(siWrapper);
-			if(!CollectionUtils.isEmpty(storeInfoList)) {
-				storehouseIdList = storeInfoList.stream().map(StorehouseInfo::getId).collect(Collectors.toList());
-			}
+//			Wrapper<StorehouseInfo> siWrapper = new EntityWrapper<StorehouseInfo>();
+//			siWrapper.eq("state", StateEnum.normal.getCode());
+//			siWrapper.in("area_code", dto.getAreaCode());
+//			siWrapper.in("custormerId",dto.getCustomerId());
+//			List<StorehouseInfo> storeInfoList = storehouseInfoMapper.selectList(siWrapper);
+			storehouseIdList = storehouseConfigMapper.queryStoreIdList(dto.getCustomerId(),dto.getAreaCode());
+
 		}
 		if(!CollectionUtils.isEmpty(storehouseIdList)) {
 			crDto.setStoreIdList(storehouseIdList);

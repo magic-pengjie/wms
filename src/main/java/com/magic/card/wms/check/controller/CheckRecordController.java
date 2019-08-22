@@ -186,7 +186,7 @@ public class CheckRecordController {
 		return ResponseData.ok(checkRecordService.queryAreaCodeList(customerId));
 	}
 
-	/**
+	/**queryCommoidtyStoreLis
 	 * 	查询客户的所有商品列表
 	 * @throws BusinessException
 	 */
