@@ -5,6 +5,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.magic.card.wms.common.model.po.UserSessionUo;
+import com.magic.card.wms.common.utils.WebUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -44,6 +47,9 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 
 	@Resource
 	private MenuInfoMapper menuInfoMapper;
+
+	@Autowired
+	private WebUtil webUtil;
 	
 	//新增角色菜单
 	@Override
@@ -53,10 +59,11 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 		List<RoleMenuMapping> roleMenuMappingList = new ArrayList<RoleMenuMapping>();
 		Wrapper<RoleMenuMapping> wrapper = new EntityWrapper<RoleMenuMapping>();
 		this.selectCount(wrapper );
+		UserSessionUo userSession = webUtil.getUserSession();
 		try {
 			Date date = new Date();
 			for (Long menuKey : dto.getMenuKeyList()) {
-				buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey());
+				buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey(),userSession.getName());
 			}
 			log.info("===新增角色菜单参数:{}",roleMenuMappingList);
 			if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
@@ -78,13 +85,13 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 	 * @param menuKey
 	 * @param roleKey
 	 */
-	private void buildRoleMenuList(List<RoleMenuMapping> roleMenuMappingList, Date date, Long menuKey, Long roleKey) {
+	private void buildRoleMenuList(List<RoleMenuMapping> roleMenuMappingList, Date date, Long menuKey, Long roleKey,String userName) {
 		RoleMenuMapping roleMenu = new RoleMenuMapping();
 		roleMenu.setRoleKey(roleKey);
 		roleMenu.setMenuKey(menuKey);
 		roleMenu.setState(StateEnum.normal.getCode());
 		roleMenu.setCreateTime(date);
-		roleMenu.setCreateUser("SYSTEM");
+		roleMenu.setCreateUser(userName);
 		roleMenuMappingList.add(roleMenu);
 	}
 
@@ -94,11 +101,12 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 	public void updateRoleMenuMapping(RoleMenuUpdateDto dto) throws BusinessException {
 		
 		List<RoleMenuMapping> roleMenuMappingList = new ArrayList<RoleMenuMapping>();
+		UserSessionUo userSession = webUtil.getUserSession();
 		try {
 			Date date = new Date();
 			if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
 				for (Long menuKey : dto.getAddMenuKeyList()) {
-					buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey());
+					buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey(),userSession.getName());
 				}
 				log.info("===update: 新增角色菜单参数:{}",roleMenuMappingList);
 				if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
@@ -115,7 +123,7 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 					RoleMenuMapping entity = new RoleMenuMapping();
 					entity.setState(StateEnum.delete.getCode());//逻辑删除,state=1
 					entity.setUpdateTime(date);
-					entity.setUpdateUser("SYSTEM");
+					entity.setUpdateUser(userSession.getName());
 					this.update(entity , roleMenuWarWrapper);
 				}
 			}

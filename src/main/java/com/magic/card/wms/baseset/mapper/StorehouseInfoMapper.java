@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
+import com.magic.card.wms.check.model.dto.CustomerCommodityDto;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -49,4 +50,11 @@ public interface StorehouseInfoMapper extends BaseMapper<StorehouseInfo> {
      * @return
      */
     List<String> queryAreaCodeList(String customerId);
+
+    /**
+     * 加载商户的所有商品列表
+     * @param customerId
+     * @return
+     */
+    List<CustomerCommodityDto> queryCusCommodityList(String customerId);
 }

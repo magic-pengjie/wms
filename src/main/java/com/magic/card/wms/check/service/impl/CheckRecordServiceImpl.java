@@ -234,6 +234,11 @@ public class CheckRecordServiceImpl extends ServiceImpl<CheckRecordMapper, Check
 		return storehouseInfoMapper.queryAreaCodeList(customerId);
 	}
 
+	@Override
+	public List<CustomerCommodityDto> queryCusCommdityList(String customerId) {
+		return storehouseInfoMapper.queryCusCommodityList(customerId);
+	}
+
 
 	//取消盘点
 	@Override

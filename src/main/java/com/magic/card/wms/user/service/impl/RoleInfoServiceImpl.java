@@ -3,6 +3,9 @@ package com.magic.card.wms.user.service.impl;
 import java.util.Date;
 import java.util.List;
 
+import com.magic.card.wms.common.model.po.UserSessionUo;
+import com.magic.card.wms.common.utils.WebUtil;
+import net.sourceforge.pinyin4j.PinyinHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,8 @@ import com.magic.card.wms.user.service.IRoleMenuMappingService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  *  服务实现类
  * @author zhouhao
@@ -40,6 +45,9 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 
 	@Autowired
 	private IRoleMenuMappingService roleMenuMappingService;
+
+	@Autowired
+	private WebUtil webUtil;
 	
 	/**
 	 * 查询角色列表
@@ -79,10 +87,17 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 		wrapper.eq("state", StateEnum.normal.getCode());
 		RoleInfo roleInfo = this.selectOne(wrapper);
 		if(StringUtils.isEmpty(roleInfo)) {
+			UserSessionUo userSession = webUtil.getUserSession();
+			String userName = userSession.getName();
 			roleInfo = new RoleInfo();
 			BeanUtils.copyProperties(dto, roleInfo);
+
+			//取角色名称首字母作为code
+			String roleCode = getPinYinHeadChar(dto.getRoleName());
+			log.info("===>> 角色Code：{}",roleCode);
+			roleInfo.setRoleCode(roleCode);
 			roleInfo.setCreateTime(new Date());
-			roleInfo.setCreateUser("SYSTEM");
+			roleInfo.setCreateUser(userName);
 			roleInfo.setState(StateEnum.normal.getCode());
 			roleInfo.setDisplayFlag(1);
 			log.info("===inserRoleInfo.params:{}",roleInfo);
@@ -135,6 +150,27 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 				roleMenuMappingService.updateRoleMenuMapping(roleMenu);
 			}
 		}
+	}
+
+	/**
+	 * 得到中文首字母
+	 *
+	 * @param str
+	 * @return
+	 */
+	public static String getPinYinHeadChar(String str) {
+
+		String convert = "";
+		for (int j = 0; j < str.length(); j++) {
+			char word = str.charAt(j);
+			String[] pinyinArray = PinyinHelper.toHanyuPinyinStringArray(word);
+			if (pinyinArray != null) {
+				convert += pinyinArray[0].charAt(0);
+			} else {
+				convert += word;
+			}
+		}
+		return convert;
 	}
 
 }

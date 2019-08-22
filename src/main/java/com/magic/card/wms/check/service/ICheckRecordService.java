@@ -37,4 +37,6 @@ public interface ICheckRecordService extends IService<CheckRecord> {
 	boolean saveCheckRecord(List<CheckRecord> checkRecordList)throws BusinessException;
 
 	public List<String> queryAreaCodeList(String customerId);
+
+    List<CustomerCommodityDto> queryCusCommdityList(String customerId);
 }
