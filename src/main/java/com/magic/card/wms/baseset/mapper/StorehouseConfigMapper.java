@@ -77,4 +77,6 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
 	 * @param operator 操作人
 	 */
     Integer reduceAvailableQuantity(@Param("storeConfigId") String storeConfigId, @Param("reduceNum") Long reduceNum, @Param("operator") String operator);
+
+	List<Long> queryStoreIdList(@Param("customerId")String customerId, @Param("areaCodeList")List<String> areaCodeList);
 }

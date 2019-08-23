@@ -22,7 +22,7 @@ public enum AgentTypeEnum {
 	
 	public static String getNameByCode(String code) {
 		for (AgentTypeEnum e : AgentTypeEnum.values()) {
-			if(e.getCode() == code) {
+			if(e.getCode().equals(code)) {
 				return e.getName();
 			}
 		}

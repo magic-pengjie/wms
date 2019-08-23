@@ -20,7 +20,7 @@
         <result column="operator_no" property="operatorNo" />
         <result column="operator_name" property="operatorName" />
         <result column="response_state" property="responseState" />
-        <result column="errorDesc" property="errorDesc" />
+        <result column="error_desc" property="errorDesc" />
         <result column="state" property="state" />
         <result column="create_time" property="createTime" />
         <result column="create_user" property="createUser" />
@@ -31,7 +31,9 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, serial_no, batch_no, trace_no, op_time, op_code, op_name, op_desc, op_org_prov_name, op_org_city, op_org_code, op_org_name, operator_no, operator_name, response_state, errorDesc, state, create_time, create_user, update_time, update_user, remark
+        lti.id, lti.serial_no, lti.batch_no, lti.trace_no, lti.op_time, lti.op_code, lti.op_name, lti.op_desc, lti.op_org_prov_name, 
+        lti.op_org_city, lti.op_org_code, lti.op_org_name, lti.operator_no, lti.operator_name, lti.response_state, lti.error_desc, 
+        lti.state, lti.create_time, lti.create_user, lti.update_time, lti.update_user, lti.remark
     </sql>
     
     <select id="getTrackingInfoByMailOrOrderNo" resultMap="BaseResultMap">
@@ -46,6 +48,7 @@
     			and lti.trace_no = #{mailNo}
     	   </if>
     	</where> 
+    	order by lti.op_time
     	  
     </select>
 

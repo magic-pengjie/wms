@@ -105,9 +105,4 @@ public class MailDetailVO {
 	 */
 	List<MailCommodityDetail> detailList;
 	
-	/**
-	 * 物流信息
-	 */
-	private LogisticsTrackingInfo logisticsInfo;
-	
 }

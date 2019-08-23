@@ -78,7 +78,24 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	
 	@Override
 	@Transactional
-	public ResponseData getTrackingInfo(String mailNo) throws Exception {
+	public ResponseData getTrackingInfo(String mailNo,int type) throws Exception {
+		if(Constants.ONE==type) {
+			//实时查询邮政物流信息
+			return getTrackingInfoByPost(mailNo);
+		}else{
+			//查询本地库物流信息
+			return getTrackingInfoLocal(mailNo);
+		}
+		
+	}
+	
+	/**
+	 * 实时查询邮政物流信息
+	 * @param mailNo
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseData getTrackingInfoByPost(String mailNo) throws Exception {
 		LogisticsReqHeader header = new LogisticsReqHeader();
 		header.setSerialNo(header.getSendID()+header.getSendDate());
 		Map map = new HashMap(1);
@@ -99,15 +116,25 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		String resultStr = HttpUtil.httpPost(postUrl,sb.toString());
 		log.info("response result:{}",resultStr);
 		LogisticsRepHeader rspHeader = JSONObject.parseObject(resultStr,LogisticsRepHeader.class);
-		if(rspHeader.getResponseState()) {
+		if(rspHeader.getResponseState() && !ObjectUtils.isEmpty(rspHeader.getResponseItems())) {
 			successResult(header,rspHeader);
 			return ResponseData.ok(rspHeader.getResponseItems());
 		}else {
 			failedResult(header,rspHeader,mailNo);
 			return ResponseData.error("查询物流信息失败:"+rspHeader.getErrorDesc());
 		}
-		
 	}
+	
+	/**
+	 *  查询本地库物流信息
+	 * @param mailNo
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseData getTrackingInfoLocal(String mailNo) throws Exception {
+		return ResponseData.ok(getTrackingInfoByMailOrOrderNo(null,mailNo));
+	}
+	
 	
 	@Override
 	public List<LogisticsTrackingInfo> getTrackingInfoByMailOrOrderNo(String orderNo, String mailNo) {
@@ -162,7 +189,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 				//发送邮政
 				for (MailPicking mailPicking : list) {
 					try {
-						getTrackingInfo(mailPicking.getMailNo());
+						getTrackingInfoByPost(mailPicking.getMailNo());
 					} catch (Exception e) {
 						log.error("runLogisticsInfo query post trackingInfo  mailNo={},error={}",mailPicking.getMailNo(),e);
 					}
@@ -243,9 +270,6 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 	 */
 	public void successResult(LogisticsReqHeader header,LogisticsRepHeader rspHeader) {
 		List<LogisticsTrackingInfo> logisticsList = rspHeader.getResponseItems();
-		if(ObjectUtils.isEmpty(logisticsList)) {
-			return;
-		}
 		int state = LogisticsEnum.exist.getCode();
 		String mailNo = logisticsList.get(0).getTraceNo();
 		for (LogisticsTrackingInfo e : logisticsList) {
@@ -263,7 +287,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		mailPickingMapper.updateBatchByMailNo(mailNo,state);
 		
 		Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
-		w.in("trace_no", mailNo);
+		w.eq("trace_no", mailNo);
 		this.delete(w);
 		this.insertBatch(logisticsList);
 			
@@ -282,7 +306,7 @@ public class LogisticsTrackingInfoServiceImpl extends ServiceImpl<LogisticsTrack
 		info.setTraceNo(mailNo);
 		
 		Wrapper<LogisticsTrackingInfo> w = new EntityWrapper<>();
-		w.in("trace_no", mailNo);
+		w.eq("trace_no", mailNo);
 		this.delete(w);
 		this.insert(info);
 			

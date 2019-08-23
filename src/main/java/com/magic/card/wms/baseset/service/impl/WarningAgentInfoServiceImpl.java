@@ -16,6 +16,7 @@ import com.magic.card.wms.baseset.model.dto.WarningAgentQueryDTO;
 import com.magic.card.wms.baseset.model.po.WarningAgentInfo;
 import com.magic.card.wms.baseset.service.IWarningAgentInfoService;
 import com.magic.card.wms.common.model.PageInfo;
+import com.magic.card.wms.common.model.enums.AgentTypeEnum;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.utils.PoUtil;
 
@@ -80,6 +81,7 @@ public class WarningAgentInfoServiceImpl extends ServiceImpl<WarningAgentInfoMap
 
 	@Override
 	public void add(WarningAgentInfo agentInfo) {
+		agentInfo.setTypeName(AgentTypeEnum.getNameByCode(agentInfo.getTypeCode()));
 		PoUtil.add(agentInfo, Constants.DEFAULT_USER);
 		this.insert(agentInfo);
 	}

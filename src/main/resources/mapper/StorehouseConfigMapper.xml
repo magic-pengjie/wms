@@ -182,32 +182,46 @@
 			${ew.sqlSegment}
 		</where>
 	</select>
+    <select id="queryStoreIdList" resultType="java.lang.Long">
+		select
+			si.id
+		from wms_storehouse_info si
+		inner join wms_storehouse_config sc  on si.id = sc.storehouse_id and sc.state='1'
+		where si.state='1'
+		and sc.customer_id = #{customerId}
+		<if test="areaCodeList != null and areaCodeList.size()>0">
+			and si.area_code in
+			<foreach collection="areaCodeList" item="areaCodeList" index="index" open="(" close=")" separator=",">
+				#{areaCodeList}
+			</foreach>
+		</if>
+	</select>
 
-	<!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
-		select  sc.storehouse_id,
-				si.area_code,
-				si.house_code,
-				si.store_code,
-				si.is_frozen,
-				sc.available_nums
-		from wms_storehouse_config sc
-				inner join wms_storehouse_info si on sc.storehouse_id=si.id and si.state=1
-				inner join wms_customer_base_info cbi on sc.customer_id=cbi.id and cbi.state=1
-				inner join wms_commodity_info ci on ci.id=sc.commodity_id and ci.state=1
-				where
-				   sc.state=1
-				   <if test="type='1' or type='' or type=null">
-				   	and sc.available_nums=0
-				   	and si.house_code='CK-GN-CCQ'
-				   </if>
-				   <if test="type='2' ">
-				   	and si.house_code='CK-GN-JHQ'
-				   </if>
-				   <if test="barCode !=null and barCode != '' ">
-				   		and ci.commodity_code=#{barCode}
-				   </if>
-				   and si.is_frozen!=1
-				   and customer_code=#{customerCode}
-				   order by priority_value 
-	</select> -->
+    <!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
+        select  sc.storehouse_id,
+                si.area_code,
+                si.house_code,
+                si.store_code,
+                si.is_frozen,
+                sc.available_nums
+        from wms_storehouse_config sc
+                inner join wms_storehouse_info si on sc.storehouse_id=si.id and si.state=1
+                inner join wms_customer_base_info cbi on sc.customer_id=cbi.id and cbi.state=1
+                inner join wms_commodity_info ci on ci.id=sc.commodity_id and ci.state=1
+                where
+                   sc.state=1
+                   <if test="type='1' or type='' or type=null">
+                       and sc.available_nums=0
+                       and si.house_code='CK-GN-CCQ'
+                   </if>
+                   <if test="type='2' ">
+                       and si.house_code='CK-GN-JHQ'
+                   </if>
+                   <if test="barCode !=null and barCode != '' ">
+                           and ci.commodity_code=#{barCode}
+                   </if>
+                   and si.is_frozen!=1
+                   and customer_code=#{customerCode}
+                   order by priority_value
+    </select> -->
 </mapper>

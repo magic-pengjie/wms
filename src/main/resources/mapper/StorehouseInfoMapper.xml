@@ -58,11 +58,21 @@
         select
             area_code
         from wms_storehouse_config sc
-        left join wms_storehouse_info si on sc.storehouse_id = si.id and si.state='1'
+        inner join wms_storehouse_info si on sc.storehouse_id = si.id and si.state='1'
             where sc.customer_id = #{customerId}
         and sc.state='1'
         GROUP BY si.area_code
 
+    </select>
+    <select id="queryCusCommodityList" resultType="com.magic.card.wms.check.model.dto.CustomerCommodityDto">
+        select distinct
+                ci.id as commodityId,
+                cs.sku_name as commodityName
+        from wms_storehouse_config sc
+        inner join wms_commodity_info ci on sc.commodity_id = ci.id and ci.state='1'
+        inner join wms_commodity_sku cs on (ci.commodity_code = cs.bar_code or ci.commodity_code = cs.sku_code) and cs.state='1'
+        where sc.customer_id = #{customerId}
+        and sc.state='1'
     </select>
 
 </mapper>
