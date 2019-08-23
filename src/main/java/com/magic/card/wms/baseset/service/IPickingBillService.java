@@ -36,12 +36,10 @@ public interface IPickingBillService extends IService<PickingBill> {
     /**
      * 拣货单 -> 生成配货单
      *
-     * @param operator 操作人
-     * @param allowSize 允许操作次数
      * @param pickNos
      * @return
      */
-    List generatorInvoice(String operator, Integer allowSize, String... pickNos);
+    List generatorInvoice(List<String> pickNos);
 
     /**
      * 配货单检测
@@ -104,4 +102,10 @@ public interface IPickingBillService extends IService<PickingBill> {
      * @param pickNo 拣货单号
      */
     void cancel(String pickNo);
+
+    /**
+     * 打印配货单
+     * @param pickNos
+     */
+    void printInvoices(List<String> pickNos);
 }

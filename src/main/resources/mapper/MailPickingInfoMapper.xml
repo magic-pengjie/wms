@@ -86,6 +86,7 @@
         SELECT
             pick_no pickNo,
             customer_code customerCode,
+            customer_name,
             bar_code barCode,
             SUM( numbers ) bayNums,
             store_code storeCode,
@@ -103,6 +104,7 @@
         GROUP BY
             pick_no,
             customer_code,
+            customer_name,
             bar_code,
             store_code,
             store_nums,
@@ -110,8 +112,10 @@
             single_unit,
             sku_name,
             spec,
-            model_no
-
+            model_no,
+            priority_value
+        ORDER BY
+            priority_value
     </select>
 
     <!--  配货单  -->
@@ -194,6 +198,11 @@
         woi.express_key expressKey,
         woi.bill_state,
         woi.is_merge,
+        woi.city,
+        woi.recipt_addr,
+        woi.recipt_name,
+        woi.recipt_phone,
+        woi.remark,
         wmpi.preset_weight presetWeight,
         wmpi.real_weight realWeight,
         wmpi.is_finish isFinish

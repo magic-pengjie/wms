@@ -117,6 +117,18 @@ public class PickBillController {
         return ResponseData.ok(storehouseConfigService.invoiceOmitStoke(omitStokeDTO));
     }
 
+    @ApiOperation("测试触发生配货单")
+    @PostMapping("generationInvoices")
+    public ResponseData generationInvoices(@RequestJsonParam List<String> pickNos) {
+        return ResponseData.ok(pickingBillService.generatorInvoice(pickNos));
+    }
+
+    @PostMapping("print")
+    public ResponseData printInvoices(@RequestJsonParam List<String> pickNos) {
+        pickingBillService.printInvoices(pickNos);
+        return ResponseData.ok();
+    }
+
     @GetMapping("sendOrder")
     public ResponseData sendOrderToPost(@RequestParam String pickNo, @RequestParam String orderNo) throws UnsupportedEncodingException {
         mailPickingService.sendOrder(pickNo, orderNo);

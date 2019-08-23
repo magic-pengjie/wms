@@ -352,18 +352,19 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
      * 拣货单 -> 生成配货单
      *
      * @param operator  操作人
-     * @param allowSize 允许操作次数
-     * @param pickNos
      * @return
      */
     @Override @Transactional @Synchronized
-    public List generatorInvoice(String operator, Integer allowSize, String... pickNos) {
+    public List generatorInvoice(List<String> pickNos) {
         // 拣货单初步判断
-        if (pickNos ==null && pickNos.length < 1) {
+        if (CollectionUtils.isEmpty(pickNos)) {
             throw OperationException.customException(ResultEnum.invoice_pick_no);
         }
 
-        EntityWrapper wrapper = new EntityWrapper();
+        String operator = webUtil.operator();
+        Integer allowSize = 1;
+
+                EntityWrapper wrapper = new EntityWrapper();
         wrapper.ge("state", StateEnum.normal.getCode()).
                 le("state", allowSize).
                 ne("bill_state", BillState.pick_cancel.getCode()).
@@ -379,10 +380,10 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         List invoices = Lists.newLinkedList();
         pickBills.forEach(pickBill-> {
             invoices.add(mailPickingService.generatorInvoiceList(pickBill.getPickNo()));
-            //更新拣货单打印次数
-            pickBill.setState(pickBill.getState() + 1);
-            PoUtil.update(pickBill, operator);
-            updateById(pickBill);
+//            //更新拣货单打印次数
+//            pickBill.setState(pickBill.getState() + 1);
+//            PoUtil.update(pickBill, operator);
+//            updateById(pickBill);
         });
 
         return invoices;
@@ -586,4 +587,30 @@ public class PickingBillServiceImpl extends ServiceImpl<PickingBillMapper, Picki
         PoUtil.update(pickingBill, webUtil.operator());
         updateById(pickingBill);
      }
+
+    /**
+     * 打印配货单
+     *
+     * @param pickNos
+     */
+    @Override @Transactional
+    public void printInvoices(List<String> pickNos) {
+        if (CollectionUtils.isEmpty(pickNos)) return;
+
+        EntityWrapper<PickingBill> wrapper = new EntityWrapper();
+        wrapper.in("pick_no", pickNos);
+        List<PickingBill> pickingBills = selectList(wrapper);
+
+        if (CollectionUtils.isEmpty(pickingBills)) return;
+
+        pickingBills.forEach(pickingBill -> {
+            if (pickingBill.getState() == 1) {
+                pickingBill.setBillState(BillState.pick_ing.getCode());
+            }
+
+            pickingBill.setState(pickingBill.getState() + 1);
+            PoUtil.update(pickingBill, webUtil.operator());
+            updateById(pickingBill);
+        });
+    }
 }

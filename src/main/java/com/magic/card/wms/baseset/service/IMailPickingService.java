@@ -33,7 +33,7 @@ public interface IMailPickingService extends IService<MailPicking> {
      * 自动生成配货单清单
      * @return
      */
-    List<Map> generatorInvoiceList(String pickNo);
+    Map generatorInvoiceList(String pickNo);
 
     /**
      * 配货单清单检查数据

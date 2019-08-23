@@ -171,11 +171,7 @@ public class OrderController {
         pickingBillService.triggerGenerator(customerCode, executeSize);
     }
 
-    @ApiOperation("测试触发生配货单")
-    @GetMapping("generationInvoices")
-    public ResponseData generationInvoices(@RequestParam String[] pickNos) {
-        return ResponseData.ok(pickingBillService.generatorInvoice(Constants.DEFAULT_USER, 1, pickNos));
-    }
+
 
     @GetMapping("cancel")
     public ResponseData cancel(@RequestParam String systemOrderNo) {
