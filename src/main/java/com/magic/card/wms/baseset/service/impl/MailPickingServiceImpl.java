@@ -394,7 +394,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		orderWrapper.eq("system_order_no", mailPicking.getOrderNo()).
 				ne("state", StateEnum.delete.getCode()).
 				ne("bill_state", BillState.order_cancel.getCode());
-		Order order = orderInfoMapper.selectOne(orderWrapper.getEntity());
+		Order order = orderService.selectOne(orderWrapper);
 
 		if (order == null) {
 			throw OperationException.customException(ResultEnum.order_cancel);
@@ -568,7 +568,13 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	 */
 	@Override
 	public Object details(String mailNo) {
-		return baseMapper.loadMailDetails(mailNo);
+		Map map = baseMapper.loadMailDetails(mailNo);
+
+		if (MapUtils.isEmpty(map)) {
+			throw OperationException.customException(ResultEnum.order_package_no_exist);
+		}
+
+		return map;
 	}
 
 	/**

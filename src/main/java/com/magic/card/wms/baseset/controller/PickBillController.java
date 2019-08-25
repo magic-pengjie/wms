@@ -113,7 +113,7 @@ public class PickBillController {
 
     @ApiOperation("获取缺货商品库位信息")
     @PostMapping("omitStoke")
-    public ResponseData invoiceOmitStoke(@RequestBody @Valid OmitStokeDTO omitStokeDTO) {
+    public ResponseData invoiceOmitStoke(@RequestBody @Valid OmitStokeDTO omitStokeDTO, BindingResult bindingResult) {
         return ResponseData.ok(storehouseConfigService.invoiceOmitStoke(omitStokeDTO));
     }
 

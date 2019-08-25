@@ -346,8 +346,15 @@
     </select>
     <select id="loadMailDetails" resultType="java.util.Map">
         select
-            wmpi.mail_no, wmpi.basket_num, wmpi.preset_weight, wmpi.real_weight,
-            woi.prov, woi.express_key
+            wmpi.mail_no,
+            wmpi.basket_num,
+            wmpi.preset_weight,
+            wmpi.real_weight,
+            wmpi.process_state,
+            woi.prov,
+            woi.order_no,
+            woi.system_order_no,
+            woi.express_key
         from wms_mail_picking_info wmpi
         left join wms_order_info woi on woi.system_order_no = wmpi.order_no
         where wmpi.mail_no = #{mailNo}

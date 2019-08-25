@@ -70,7 +70,7 @@ public class WebMvcConfiguartion extends WebMvcConfigurationSupport{
 		registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
 		registry.addResourceHandler("webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
 	}
-	
+
 	/**
 	 * 文件上传配置
 	 * @return
