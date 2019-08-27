@@ -83,7 +83,7 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public void addRoleInfo(RoleAddDto dto) throws BusinessException {
 		Wrapper<RoleInfo> wrapper = new EntityWrapper<RoleInfo>();
-		wrapper.eq("role_code", dto.getRoleCode());
+		wrapper.eq("role_name", dto.getRoleName());
 		wrapper.eq("state", StateEnum.normal.getCode());
 		RoleInfo roleInfo = this.selectOne(wrapper);
 		if(StringUtils.isEmpty(roleInfo)) {
@@ -110,7 +110,7 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 			}
 		}else {
 			log.info("===角色信息已存在！req:{}", dto);
-			throw new BusinessException(00, "角色信息已存在,请更换角色编码或名称！");
+			throw new BusinessException(00, "角色信息已存在,请更换角色名称！");
 		}
 	}
 	
@@ -121,34 +121,40 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class, isolation = Isolation.DEFAULT)
 	public void updateRoleInfo(RoleUpdateDto dto) throws BusinessException {
+		UserSessionUo userSession = webUtil.getUserSession();
 		Wrapper<RoleInfo> wrapper = new EntityWrapper<RoleInfo>();
 		wrapper.eq("role_code", dto.getRoleCode());
 		wrapper.eq("state", StateEnum.normal.getCode());
-		wrapper.ne("id", dto.getRoleKey());
+		wrapper.eq("id", dto.getRoleKey());
 		RoleInfo roleInfo = this.selectOne(wrapper);
 		//判断roleCode是否重复
-		if(!StringUtils.isEmpty(roleInfo)) {
-			throw new BusinessException(00, "角色Code已存在，请确认后，重新输入角色信息！");
+		if(StringUtils.isEmpty(roleInfo)) {
+			throw new BusinessException(00, "角色信息不存在！");
 		}
-		roleInfo = new RoleInfo();
 		BeanUtils.copyProperties(dto, roleInfo);
 		roleInfo.setUpdateTime(new Date());
-		roleInfo.setUpdateUser("SYSTEM");
+		roleInfo.setUpdateUser(userSession.getName());
 		roleInfo.setId(dto.getRoleKey());
 		boolean updateFlag = this.updateById(roleInfo);
 		if(updateFlag) {
-			if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList()) || !CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
-				RoleMenuUpdateDto roleMenu = new RoleMenuUpdateDto();
-				roleMenu.setRoleKey(dto.getRoleKey());
-				if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
-					roleMenu.setAddMenuKeyList(dto.getAddMenuKeyList());
-				}
-				if(!CollectionUtils.isEmpty(dto.getDelMenuKeyList())) {
-					roleMenu.setDelMenuKeyList(dto.getDelMenuKeyList());
-				}
-				log.info("===>> 修改角色菜单，请求参数：{}", roleMenu);
-				roleMenuMappingService.updateRoleMenuMapping(roleMenu);
-			}
+			RoleMenuUpdateDto roleMenu = new RoleMenuUpdateDto();
+			roleMenu.setRoleKey(dto.getRoleKey());
+			roleMenu.setMenuKeyList(dto.getMenuKeyList());
+			roleMenu.setState(dto.getState());
+			log.info("===>> 修改角色菜单，请求参数：{}", roleMenu);
+			roleMenuMappingService.updateRoleMenuMapping(roleMenu);
+//			if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList()) || !CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
+//				RoleMenuUpdateDto roleMenu = new RoleMenuUpdateDto();
+//				roleMenu.setRoleKey(dto.getRoleKey());
+//				if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
+//					roleMenu.setAddMenuKeyList(dto.getAddMenuKeyList());
+//				}
+//				if(!CollectionUtils.isEmpty(dto.getDelMenuKeyList())) {
+//					roleMenu.setDelMenuKeyList(dto.getDelMenuKeyList());
+//				}
+//				log.info("===>> 修改角色菜单，请求参数：{}", roleMenu);
+//				roleMenuMappingService.updateRoleMenuMapping(roleMenu);
+//			}
 		}
 	}
 

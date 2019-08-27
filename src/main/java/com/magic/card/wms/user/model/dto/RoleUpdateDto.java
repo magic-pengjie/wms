@@ -51,13 +51,19 @@ public class RoleUpdateDto implements Serializable {
 	 */
 	@ApiModelProperty(value="数据状态(1:正常，0:删除)")
 	private Integer state;
-	
+
+    /**
+     * 全量菜單主鍵IDList
+     */
+	@ApiModelProperty(value="全量菜單主鍵IDList")
+	private List<Long> menuKeyList;
+
     /**
      * 	新增菜單主鍵ID
      */
 	@ApiModelProperty(value="新增菜單主鍵ID")
 	private List<Long> addMenuKeyList;
-	
+
 	/**
 	 * 	删除菜單主鍵ID
 	 */
@@ -80,6 +86,8 @@ public class RoleUpdateDto implements Serializable {
 			builder.append("roleDesc=").append(roleDesc).append(", ");
 		if (state != null)
 			builder.append("state=").append(state).append(", ");
+		if (menuKeyList != null)
+			builder.append("menuKeyList=").append(menuKeyList).append(", ");
 		if (addMenuKeyList != null)
 			builder.append("addMenuKeyList=").append(addMenuKeyList).append(", ");
 		if (delMenuKeyList != null)

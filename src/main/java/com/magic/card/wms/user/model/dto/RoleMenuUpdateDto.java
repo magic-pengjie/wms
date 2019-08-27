@@ -27,7 +27,19 @@ public class RoleMenuUpdateDto implements Serializable{
 	@ApiModelProperty(value="权限ID")
 	@NotNull(message="权限不能为空")
 	private Long roleKey;
+
+
+	/**
+	 * 	是否删除标志
+	 */
+	@ApiModelProperty(value="是否删除标志(1,未删除，0，已删除)")
+	private Integer state;
 	
+    /**
+     * 	全量菜單主鍵ID
+     */
+	@ApiModelProperty(value="全量菜單主鍵IDList")
+	private List<Long> menuKeyList;
     /**
      * 	新增菜單主鍵ID
      */
@@ -46,6 +58,8 @@ public class RoleMenuUpdateDto implements Serializable{
 		builder.append("RoleMenuUpdateDto [");
 		if (roleKey != null)
 			builder.append("roleKey=").append(roleKey).append(", ");
+		if (menuKeyList != null)
+			builder.append("menuKeyList=").append(menuKeyList).append(", ");
 		if (addMenuKeyList != null)
 			builder.append("addMenuKeyList=").append(addMenuKeyList).append(", ");
 		if (delMenuKeyList != null)

@@ -29,7 +29,7 @@ public class RoleAddDto implements Serializable {
      * 	限编码
      */
 	@ApiModelProperty(value="权限编码")
-	@NotBlank(message="权限编码不能为空")
+//	@NotBlank(message="权限编码不能为空")
     private String roleCode;
     /**
      * 	权限名称

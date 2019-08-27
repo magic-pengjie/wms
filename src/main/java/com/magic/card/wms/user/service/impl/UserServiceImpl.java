@@ -140,7 +140,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 		//获取用户session
 		UserSessionUo userSession = webUtil.getUserSession();
 		User user = this.selectById(dto.getUserKey());
-		if(!StringUtils.isEmpty(user)) {
+		if(!StringUtils.isEmpty(user) && StateEnum.delete.getCode() != user.getState()) {
 			user = new User(); 
 			BeanUtils.copyProperties(dto, user);
 			user.setId(dto.getUserKey());
@@ -155,6 +155,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				entity.setUpdateUser(userSession.getName());
 				Wrapper<UserRoleMapping> userRoleWrapper = new EntityWrapper<UserRoleMapping>();
 				userRoleWrapper.eq("user_key", dto.getUserKey());
+				//删除原来的用户角色
 				Integer update = userRoleMappingMapper.update(entity,userRoleWrapper);
 				log.info("===>>deleted  UserRole {} rows ",update);
 				List<Long> roleKeyList = dto.getRoleKeyList();
@@ -162,17 +163,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 					for (Long roleId : roleKeyList) {
 						UserRoleMapping userRole = new UserRoleMapping();
 						userRole.setUserKey(user.getId());
-						if(StringUtils.isEmpty(dto.getState())) {
-							userRole.setState(dto.getState());
-						}
+						userRole.setState(StateEnum.normal.getCode());
 						userRole.setRoleKey(roleId);
 						userRole.setUpdateTime(new Date());
 						userRole.setUpdateUser(user.getName());
-						Wrapper<UserRoleMapping> userRoleMapping = new EntityWrapper<UserRoleMapping>();
-						userRoleMapping.eq("user_key", dto.getUserKey());
-						userRoleMapping.eq("role_key", roleId);
+//						Wrapper<UserRoleMapping> userRoleMapping = new EntityWrapper<UserRoleMapping>();
+//						userRoleMapping.eq("user_key", dto.getUserKey());
+//						userRoleMapping.eq("role_key", roleId);
 						//修改用户角色信息
-						Integer updMappingFlag = userRoleMappingMapper.update(userRole, userRoleMapping);
+						Integer updMappingFlag = userRoleMappingMapper.insert(userRole);
 						log.info("===insertUserRoleMapping.params:{},change {} rows", userRole,updMappingFlag);
 					}
 				}

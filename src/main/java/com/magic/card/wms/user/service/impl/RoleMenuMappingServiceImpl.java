@@ -104,32 +104,54 @@ public class RoleMenuMappingServiceImpl extends ServiceImpl<RoleMenuMappingMappe
 		UserSessionUo userSession = webUtil.getUserSession();
 		try {
 			Date date = new Date();
-			if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
-				for (Long menuKey : dto.getAddMenuKeyList()) {
-					buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey(),userSession.getName());
+			Wrapper<RoleMenuMapping> roleMenuWarWrapper = new EntityWrapper<RoleMenuMapping>();
+			roleMenuWarWrapper.eq("role_key", dto.getRoleKey());
+			//删除角色所有菜单
+			boolean delFlag = this.delete(roleMenuWarWrapper);
+
+			if (!CollectionUtils.isEmpty(dto.getMenuKeyList())){
+				if(delFlag ){
+					if(StateEnum.normal.getCode() == dto.getState()){
+						for (Long menuKey : dto.getMenuKeyList()) {
+							buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey(),userSession.getName());
+						}
+						log.info("===update: 新增角色菜单参数:{}",roleMenuMappingList);
+						if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
+							boolean insertBatchFlag = this.insertBatch(roleMenuMappingList);
+							log.info("===update: insert RoleMenuMapping isSuccess:{}",insertBatchFlag);
+						}
+					}
+				}else{
+					throw new BusinessException(40018,"删除角色目录失败！");
 				}
-				log.info("===update: 新增角色菜单参数:{}",roleMenuMappingList);
-				if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
-					boolean insertBatchFlag = this.insertBatch(roleMenuMappingList);
-					log.info("===update: insert RoleMenuMapping isSuccess:{}",insertBatchFlag);
-				}
+
 			}
-			if(!CollectionUtils.isEmpty(dto.getDelMenuKeyList())) {
-				for (Long delMenuKey : dto.getDelMenuKeyList()) {
-					Wrapper<RoleMenuMapping> roleMenuWarWrapper = new EntityWrapper<RoleMenuMapping>();
-					roleMenuWarWrapper.eq("role_key", dto.getRoleKey());
-					roleMenuWarWrapper.eq("menu_key", delMenuKey);
-					roleMenuWarWrapper.eq("state", StateEnum.normal.getCode());
-					RoleMenuMapping entity = new RoleMenuMapping();
-					entity.setState(StateEnum.delete.getCode());//逻辑删除,state=1
-					entity.setUpdateTime(date);
-					entity.setUpdateUser(userSession.getName());
-					this.update(entity , roleMenuWarWrapper);
-				}
-			}
+//			if(!CollectionUtils.isEmpty(dto.getAddMenuKeyList())) {
+//				for (Long menuKey : dto.getAddMenuKeyList()) {
+//					buildRoleMenuList(roleMenuMappingList, date, menuKey, dto.getRoleKey(),userSession.getName());
+//				}
+//				log.info("===update: 新增角色菜单参数:{}",roleMenuMappingList);
+//				if(!CollectionUtils.isEmpty(roleMenuMappingList)) {
+//					boolean insertBatchFlag = this.insertBatch(roleMenuMappingList);
+//					log.info("===update: insert RoleMenuMapping isSuccess:{}",insertBatchFlag);
+//				}
+//			}
+//			if(!CollectionUtils.isEmpty(dto.getDelMenuKeyList())) {
+//				for (Long delMenuKey : dto.getDelMenuKeyList()) {
+//					Wrapper<RoleMenuMapping> roleMenuWarWrapper = new EntityWrapper<RoleMenuMapping>();
+//					roleMenuWarWrapper.eq("role_key", dto.getRoleKey());
+//					roleMenuWarWrapper.eq("menu_key", delMenuKey);
+//					roleMenuWarWrapper.eq("state", StateEnum.normal.getCode());
+//					RoleMenuMapping entity = new RoleMenuMapping();
+//					entity.setState(StateEnum.delete.getCode());//逻辑删除,state=1
+//					entity.setUpdateTime(date);
+//					entity.setUpdateUser(userSession.getName());
+//					this.update(entity , roleMenuWarWrapper);
+//				}
+//			}
 		} catch (Exception e) {
-			log.info("=== 新增角色菜单异常:{}", e);
-			throw new BusinessException(000, "新增角色菜单信息异常，请稍后再试！");
+			log.info("=== 修改角色菜单异常:{}", e);
+			throw new BusinessException(000, "修改角色菜单信息异常，请稍后再试！");
 		}
 	}
 
