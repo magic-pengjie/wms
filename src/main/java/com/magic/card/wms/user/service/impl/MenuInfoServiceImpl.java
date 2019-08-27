@@ -1,5 +1,6 @@
 package com.magic.card.wms.user.service.impl;
 
+import com.magic.card.wms.common.model.enums.StateEnum;
 import com.magic.card.wms.user.model.dto.MenuQueryDto;
 import com.magic.card.wms.user.model.dto.MenuQueryResponseDto;
 import com.magic.card.wms.user.model.dto.RoleMenuAddDto;
@@ -39,6 +40,7 @@ public class MenuInfoServiceImpl extends ServiceImpl<MenuInfoMapper, MenuInfo> i
 	public List<MenuQueryResponseDto> queryMenuList(MenuQueryDto dto) throws BusinessException {
 		
 		Wrapper<MenuInfo> menuWrapper = new EntityWrapper<MenuInfo>();
+		menuWrapper.eq("state", StateEnum.normal.getCode());
 		if(!StringUtils.isEmpty(dto)) {
 			if(!StringUtils.isEmpty(dto.getParentKey())) {
 				menuWrapper.eq("parent_key", dto.getParentKey());
