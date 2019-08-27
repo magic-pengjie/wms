@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.magic.card.wms.baseset.model.po.StorehouseInfo;
 import com.magic.card.wms.statistic.model.dto.QueryStoreInfoBO;
 import org.apache.ibatis.annotations.Param;
 
@@ -79,4 +80,30 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
     Integer reduceAvailableQuantity(@Param("storeConfigId") String storeConfigId, @Param("reduceNum") Long reduceNum, @Param("operator") String operator);
 
 	List<Long> queryStoreIdList(@Param("customerId")String customerId, @Param("areaCodeList")List<String> areaCodeList);
+
+	/**
+	 * 搜索当前库位中有多少个拣货区库位
+	 * @param storehouseIds 库位配置IDS
+	 * @param code 拣货区Code
+	 * @return
+	 */
+    Integer JHQCount(@Param("storehouseIds") Long[] storehouseIds, @Param("code") String code);
+
+	/**
+	 * 获取当前商家商品在货区配置个数
+	 * @param customerId 商家ID
+	 * @param commodityId 商家商品ID
+	 * @param code 库区类型
+	 * @return
+	 */
+	Integer customerCommodityConfigCount(@Param("customerId") String customerId, @Param("commodityId") String commodityId, @Param("code") String code);
+
+	/**
+	 *	获取配置库位信息
+	 * @param customerId 客户ID
+	 * @param commodityId 客户商品ID
+	 * @param code 库位类型Code
+	 * @return
+	 */
+	List<StorehouseInfo> customerCommodityConfig(@Param("customerId") String customerId, @Param("commodityId") String commodityId, @Param("code") String code);
 }

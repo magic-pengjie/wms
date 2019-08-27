@@ -181,64 +181,64 @@
     </select>
     <select id="excelExport" resultType="com.magic.card.wms.baseset.model.vo.ExcelOrderImport">
         select woi.id,
-               woi.order_no,
-               woi.system_order_no,
-               woi.customer_code,
-               woi.customer_name,
-               woi.recipt_name,
-               woi.post_code,
-               woi.prov,
-               woi.city,
-               woi.recipt_addr,
-               woi.recipt_phone,
-               woi.express_key,
-               woi.is_batch,
-               woi.is_b2b,
-               woi.goods_value,
-               woi.is_lock,
-               woi.is_matched,
-               woi.bill_state,
-               woi.state,
-               woi.create_time,
-               woi.create_user,
-               woi.update_time,
-               woi.update_user,
-               woi.remark,
-               woc.bar_code,
-               woc.model_no,
-               woc.spec,
-               woc.numbers
+        woi.order_no,
+        woi.system_order_no,
+        woi.customer_code,
+        woi.customer_name,
+        woi.recipt_name,
+        woi.post_code,
+        woi.prov,
+        woi.city,
+        woi.recipt_addr,
+        woi.recipt_phone,
+        woi.express_key,
+        woi.is_batch,
+        woi.is_b2b,
+        woi.goods_value,
+        woi.is_lock,
+        woi.is_matched,
+        woi.bill_state,
+        woi.state,
+        woi.create_time,
+        woi.create_user,
+        woi.update_time,
+        woi.update_user,
+        woi.remark,
+        woc.bar_code,
+        woc.model_no,
+        woc.spec,
+        woc.numbers
         from wms_order_info woi
-                 left join wms_order_commodity woc on woc.order_no = woi.system_order_no
+        left join wms_order_commodity woc on woc.order_no = woi.system_order_no
         where woi.system_order_no in
-        <foreach collection="orderNos" item="orderNo" separator=","  close=")" open="(">
+        <foreach collection="orderNos" item="orderNo" separator="," close=")" open="(">
             #{orderNo}
         </foreach>
     </select>
     <select id="loadCommodity" resultType="java.util.Map">
         select woc.order_no,
-               woc.customer_code,
-               woc.numbers,
-               wcs.sku_code,
-               wcs.sku_name,
-               wcs.banner,
-               wcs.spec,
-               wcs.bar_code,
-               wcs.model_no,
-               wcs.commodity_type,
-               wcs.is_consumable,
-               wcs.is_foodstuff,
-               wcs.single_unit,
-               wcs.single_weight,
-               wcs.single_weight_unit,
-               wcs.single_volume,
-               wcs.single_volume_unit
+        woc.customer_code,
+        woc.numbers,
+        wcs.sku_code,
+        wcs.sku_name,
+        wcs.banner,
+        wcs.spec,
+        wcs.bar_code,
+        wcs.model_no,
+        wcs.commodity_type,
+        wcs.is_consumable,
+        wcs.is_foodstuff,
+        wcs.single_unit,
+        wcs.single_weight,
+        wcs.single_weight_unit,
+        wcs.single_volume,
+        wcs.single_volume_unit
         from wms_order_commodity woc
-                 left join wms_commodity_sku wcs on wcs.bar_code = woc.bar_code
-         where woc.customer_code = #{customerCode} and woc.order_no in
-         <foreach collection="orderNos" item="orderNo" open="(" separator="," close=")">
-             #{orderNo}
-         </foreach>
+        left join wms_commodity_sku wcs on wcs.bar_code = woc.bar_code
+        where woc.customer_code = #{customerCode} and woc.order_no in
+        <foreach collection="orderNos" item="orderNo" open="(" separator="," close=")">
+            #{orderNo}
+        </foreach>
     </select>
     <select id="loadMailDetails" resultType="java.util.Map">
         select wmpd.order_no,
@@ -255,8 +255,8 @@
         where wmpi.order_no = #{systemOrderNo}
     </select>
 
-	<!-- 订单量统计 总订单量、已分拣数量、已出库数量 -->
-	<select id="selectOrderStatistics" resultType="com.magic.card.wms.baseset.model.vo.OrderStatisticsVO">
+    <!-- 订单量统计 总订单量、已分拣数量、已出库数量 -->
+    <select id="selectOrderStatistics" resultType="com.magic.card.wms.baseset.model.vo.OrderStatisticsVO">
 		select oi.customer_code,oi.customer_name,count(*) as "order_Nums",
 	   		(select count(*) from wms_order_info oi1 where  DATE_FORMAT(oi1.create_time,'%Y-%m-%d') = #{orderDate}
 	   			and oi1.bill_state='packing' and oi1.customer_code=oi.customer_code) as "pick_nums",
@@ -277,6 +277,52 @@
         where woi.system_order_no = #{systemOrderNo}
             and vwsc.house_code = #{houseCode}
         group by woi.system_order_no, woi.customer_code, wmpd.commodity_code, vwsc.id
+    </select>
+    <select id="loadCanMergeGrid" resultType="java.util.Map">
+        SELECT woi.id,
+        woi.order_no orderNo,
+        woi.system_order_no systemOrderNo,
+        woi.customer_code customerCode,
+        wcbi.customer_name customerName,
+        woi.recipt_name reciptName,
+        woi.recipt_phone reciptPhone,
+        woi.recipt_addr reciptAddr,
+        woi.express_key expressKey,
+        woi.prov prov,
+        woi.is_lock,
+        woi.is_matched,
+        woi.is_b2b isB2b,
+        woi.is_batch isBatch,
+        woi.bill_state billState,
+        woi.create_time createTime
+        FROM wms_order_info woi,
+             (SELECT customer_code, recipt_name, recipt_phone, prov, city, recipt_addr
+              FROM wms_order_info
+              WHERE is_matched = 0
+                AND is_lock = 1
+                AND is_merge = 0
+                AND state = 1
+              GROUP BY customer_code, recipt_name, recipt_phone, prov, city, recipt_addr
+              HAVING COUNT(*) > 1) merge
+        LEFT JOIN wms_customer_base_info wcbi ON merge.customer_code = wcbi.customer_code
+        WHERE woi.is_matched = 0
+          AND woi.is_lock = 1
+          AND woi.is_merge = 0
+          AND woi.state = 1
+          AND merge.customer_code = woi.customer_code
+          AND merge.recipt_addr = woi.recipt_addr
+          AND merge.city = woi.city
+          AND merge.prov = woi.prov
+          AND merge.recipt_phone = woi.recipt_phone
+          AND merge.recipt_name = woi.recipt_name
+    </select>
+    <select id="batchLoadOrderCommodities" resultType="java.util.Map">
+        SELECT woc.customer_code, woc.bar_code, SUM(woc.numbers) mergeNums
+        FROM wms_order_info woi
+        LEFT JOIN wms_order_commodity woc on woi.order_no = woc.order_no
+        WHERE woi.system_order_no in <foreach collection="systemOrderNos" item="systemOrderNo" open="(" separator="," close=")">#{systemOrderNo}</foreach>
+        GROUP BY woc.customer_code, woc.bar_code
+        ORDER BY woc.bar_code
     </select>
 
 </mapper>

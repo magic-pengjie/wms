@@ -42,4 +42,10 @@ public interface ISplitPackageRuleService extends IService<SplitPackageRule> {
      * @return
      */
     List<List<SplitCommodityDTO>> orderSplitPackages(String ruleToken);
+
+    /**
+     * 合单规则保存
+     * @param mergeToken
+     */
+    void mergeRule(String mergeToken);
 }

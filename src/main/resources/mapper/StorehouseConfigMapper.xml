@@ -196,8 +196,30 @@
 			</foreach>
 		</if>
 	</select>
+    <select id="JHQCount" resultType="java.lang.Integer">
+		select count(*)
+		from wms_storehouse_config wsc
+		left join wms_storehouse_info wsi on wsi.id = wsc.storehouse_id
+		where
+			wsc.id in <foreach collection="storehouseIds" item="id" open="(" separator="," close=")">
+									#{id}
+						</foreach>
+	 	and wsi.house_code = #{code}
+	</select>
+	<select id="customerCommodityConfigCount" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM wms_storehouse_config wsc
+		LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+		WHERE wsc.customer_id = #{customerId} AND wsc.commodity_id = #{commodityId} AND wsi.house_code = #{code}
+	</select>
+	<select id="customerCommodityConfig" resultType="com.magic.card.wms.baseset.model.po.StorehouseInfo">
+		SELECT wsi.*
+		FROM wms_storehouse_config wsc
+		LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+		WHERE wsc.customer_id = #{customerId} AND wsc.commodity_id = #{commodityId} AND wsi.house_code = #{code}
+	</select>
 
-    <!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
+	<!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
         select  sc.storehouse_id,
                 si.area_code,
                 si.house_code,
