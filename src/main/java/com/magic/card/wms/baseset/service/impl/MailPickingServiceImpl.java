@@ -171,7 +171,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
      * @return
      */
     @Override
-    public List<Map> generatorInvoiceList(String pickNo) {
+    public Map generatorInvoiceList(String pickNo) {
         //拣货区拿去货物
         List<Map> invoiceList = this.baseMapper.invoiceList(
                 pickNo,
@@ -179,9 +179,23 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 				StoreTypeEnum.JHQ.getCode()
         );
 
-        if (invoiceList == null && invoiceList.isEmpty()) {
+
+
+		if (invoiceList == null && invoiceList.isEmpty()) {
             throw OperationException.addException("配货单生成异常，数据为空请核实数据！");
         }
+
+		HashMap<String, Object> pickInfo = Maps.newHashMap();
+		pickInfo.put("pickNo", pickNo);
+		pickInfo.put("expressCompany", "中国邮政");
+		pickInfo.put("packageNums", baseMapper.selectCount(new EntityWrapper().eq("pick_no", pickNo)));
+		pickInfo.put("pickUser", webUtil.operator());
+		pickInfo.put("commodities", invoiceList);
+		pickInfo.put("commodityNums", invoiceList.stream().mapToInt(invoice -> {
+			pickInfo.put("customerName", MapUtils.getString(invoice, "customerName"));
+			return MapUtils.getInteger(invoice, "bayNums");
+		}).sum());
+
 
 //        //补货预警提示
 //        List<Map> replenishmentNotices = Lists.newLinkedList();
@@ -204,7 +218,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 //
 //        }, "JHQ-Notice-Thread-NO." + System.currentTimeMillis()).start();
 
-        return invoiceList;
+        return pickInfo;
     }
 
     /**
@@ -380,7 +394,7 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		orderWrapper.eq("system_order_no", mailPicking.getOrderNo()).
 				ne("state", StateEnum.delete.getCode()).
 				ne("bill_state", BillState.order_cancel.getCode());
-		Order order = orderInfoMapper.selectOne(orderWrapper.getEntity());
+		Order order = orderService.selectOne(orderWrapper);
 
 		if (order == null) {
 			throw OperationException.customException(ResultEnum.order_cancel);
@@ -554,7 +568,13 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 	 */
 	@Override
 	public Object details(String mailNo) {
-		return baseMapper.loadMailDetails(mailNo);
+		Map map = baseMapper.loadMailDetails(mailNo);
+
+		if (MapUtils.isEmpty(map)) {
+			throw OperationException.customException(ResultEnum.order_package_no_exist);
+		}
+
+		return map;
 	}
 
 	/**

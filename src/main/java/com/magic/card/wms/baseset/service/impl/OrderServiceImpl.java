@@ -689,7 +689,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
      * @param customerCode 商家CODE
      * @param systemOrderNo 系统订单号
      */
-    @Override
+    @Override @Transactional
     public void splitPackage(String orderNo, String customerCode, String systemOrderNo) {
         Order order = checkOrder(customerCode, orderNo);
 

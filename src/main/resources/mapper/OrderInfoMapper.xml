@@ -271,7 +271,7 @@
         select woi.system_order_no, woi.customer_code, wmpd.commodity_code, vwsc.id, sum(package_nums) bayNums
         from wms_order_info woi
             left join wms_mail_picking_info wmpi on wmpi.order_no = woi.system_order_no
-            left join wms_mail_picking_detail wmpd on wmpd.mail_no = wmpi.order_no
+            left join wms_mail_picking_detail wmpd on wmpd.mail_no = wmpi.mail_no
             left join v_wms_storehouse_config vwsc
             on vwsc.customer_code = woi.customer_code and vwsc.commodity_code = wmpd.commodity_code
         where woi.system_order_no = #{systemOrderNo}

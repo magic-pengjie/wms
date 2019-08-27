@@ -120,18 +120,22 @@ public class SplitPackageRuleServiceImpl extends ServiceImpl<SplitPackageRuleMap
         if (packageRule != null) {
             throw OperationException.customException(ResultEnum.split_rule_exist);
         }
+
         packageRule = new SplitPackageRule();
         packageRule.setRuleToken(ruleToke);
         packageRule.setIsSplit(1);
         packageRule.setSingleCommodity(orderCommodities.size() == 1 ? 1 : 0);
         PoUtil.add(packageRule, webUtil.operator());
 
-        insert(packageRule);
-
         List<List<SplitCommodityDTO>> packageCommodities = splitPackageRule.getPackageCommodities();
 
-        if (CollectionUtils.isEmpty(packageCommodities)) return;
+        if (CollectionUtils.isEmpty(packageCommodities) || packageCommodities.size() == 1) {
+            packageRule.setIsSplit(0);
+            insert(packageRule);
+            return;
+        }
 
+        insert(packageRule);
         SplitPackageRuleDetail baseSplitPackageRuleDetail = new SplitPackageRuleDetail();
         PoUtil.add(baseSplitPackageRuleDetail, webUtil.operator());
         ArrayList<SplitPackageRuleDetail> splitPackageRuleDetails = Lists.newArrayList();

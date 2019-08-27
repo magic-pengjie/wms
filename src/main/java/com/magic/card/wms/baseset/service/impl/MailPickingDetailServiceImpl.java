@@ -192,6 +192,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
      */
     private List<List<Map>> otherAreaVirtualMails(String customerCode, Integer executeSize) {
         EntityWrapper otherAreaWrapper = basetVirtualMailWrapper(customerCode);
+        otherAreaWrapper.andNew();
         Lists.newArrayList(FIRST_AREA, SECOND_AREA).forEach(areas ->
                 areas.forEach(area -> otherAreaWrapper.notLike("woi.prov", area, SqlLike.RIGHT))
         );
@@ -430,7 +431,7 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
                 notIn("commodity_code", excludeCommodities).
                 ne("state", StateEnum.delete.getCode());
         updateForSet(
-                String.format("pick_nums = package_nums, update_user = '%s', update_time = '%t'", webUtil.operator(), DateTime.now().toDate()),
+                String.format("pick_nums = package_nums, update_user = '%s', update_time = '%s'", webUtil.operator(), DateTime.now().toDate()),
                 detailsWrapper
         );
     }
