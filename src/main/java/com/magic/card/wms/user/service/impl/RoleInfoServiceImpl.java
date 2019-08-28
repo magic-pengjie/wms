@@ -123,7 +123,7 @@ public class RoleInfoServiceImpl extends ServiceImpl<RoleInfoMapper, RoleInfo> i
 	public void updateRoleInfo(RoleUpdateDto dto) throws BusinessException {
 		UserSessionUo userSession = webUtil.getUserSession();
 		Wrapper<RoleInfo> wrapper = new EntityWrapper<RoleInfo>();
-		wrapper.eq("role_code", dto.getRoleCode());
+//		wrapper.eq("role_code", dto.getRoleCode());
 		wrapper.eq("state", StateEnum.normal.getCode());
 		wrapper.eq("id", dto.getRoleKey());
 		RoleInfo roleInfo = this.selectOne(wrapper);
