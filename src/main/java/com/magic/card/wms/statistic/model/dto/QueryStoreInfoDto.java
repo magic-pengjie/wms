@@ -29,6 +29,9 @@ public class QueryStoreInfoDto extends PageInfo implements Serializable {
     @ApiModelProperty(value = "商品ID")
     private String commodityId;
 
+    @ApiModelProperty(value = "库位类型")
+    private String houseCode;
+
     @ApiModelProperty(value = "查询类型（1:已用库存,2:未用库存,3:占用库存）")
 //    @NotBlank(message = "查询类型不能为空")
     private String queryType;
@@ -38,6 +41,7 @@ public class QueryStoreInfoDto extends PageInfo implements Serializable {
         final StringBuffer sb = new StringBuffer("QueryStoreInfoDto{");
         sb.append("customerCode='").append(customerCode).append('\'');
         sb.append(", commodityId='").append(commodityId).append('\'');
+        sb.append(", houseCode='").append(houseCode).append('\'');
         sb.append(", queryType='").append(queryType).append('\'');
         sb.append('}');
         return sb.toString();

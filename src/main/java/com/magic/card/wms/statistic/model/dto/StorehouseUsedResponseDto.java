@@ -16,8 +16,11 @@ public class StorehouseUsedResponseDto implements Serializable {
     @ApiModelProperty(value = "商家名称")
     private String customerName;
 
-    @ApiModelProperty(value = "库位类型")
+    @ApiModelProperty(value = "库位类型Code")
     private String houseCode;
+
+    @ApiModelProperty(value = "库位类型名称")
+    private String storeTypeName;
 
     @ApiModelProperty(value = "总库位数量")
     private String totalStoreNum;

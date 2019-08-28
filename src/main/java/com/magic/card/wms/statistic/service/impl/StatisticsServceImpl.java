@@ -225,6 +225,9 @@ public class StatisticsServceImpl implements StatisticsService {
                 storeInfoBO.setUsedStores(true);
             }
         }
+        if(!StringUtils.isEmpty(dto.getHouseCode())){
+            storeInfoBO.setHouseCode(dto.getHouseCode());
+        }
         BasePageResponse<CheckRecordInfoDto> pageResponse = new BasePageResponse<>();
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<CheckRecordInfoDto> recordInfoDtos = storehouseConfigMapper.queryStoreInfoList(storeInfoBO);

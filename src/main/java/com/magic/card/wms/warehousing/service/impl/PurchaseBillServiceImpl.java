@@ -333,9 +333,10 @@ public class PurchaseBillServiceImpl extends ServiceImpl<PurchaseBillMapper, Pur
 			}
 		}
 		//增加总库存
-		
 		commodityStockService.addCommodityStock(dto.getCustomerCode(),detail.getBarCode(), Long.valueOf(detail.getReceivNums()),Constants.DEFAULT_USER);
 		log.info("增加总库存 success!");
+		detail.setWarehousingNums(detail.getReceivNums());
+		detail.setWarehousingRemark(detail.getReceivRemark());
 		Date now = new Date();
 		detail.setUpdateTime(now);
 		detail.setUpdateUser(Constants.DEFAULT_USER);
