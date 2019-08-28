@@ -70,7 +70,7 @@
             cbi.customer_code as customerCode,
             cbi.customer_name as customerName,
             ci.id as commodityId,
-            cs.sku_code as skuCode,
+            cs.bar_code as skuCode,
             cs.sku_name as commodityName,
             cs.banner,
             cs.spec,
@@ -80,14 +80,14 @@
             sum(wsc.available_nums) as 'usedAvailableNums',
             sum(wsc.store_nums) as 'totalStoreNums'
         from wms_customer_base_info cbi
-        left join wms_storehouse_config wsc on wsc.customer_id = cbi.id and wsc.state='1'
+        left join wms_storehouse_config wsc on wsc.customer_id = cbi.id and wsc.state='1' and wsc.commodity_id is not null
         left join wms_commodity_info ci on wsc.commodity_id = ci.id and ci.state='1'
         left join wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state ='1'
         where  cbi.state='1'
         <if test="null !=customerCode and ''!=customerCode">
             and cbi.customer_code= #{customerCode}
         </if>
-        GROUP BY cbi.customer_code, wsc.commodity_id,cbi.customer_name,cs.sku_name,cs.sku_code,cs.spec,cs.banner,cs.model_no
+        GROUP BY cbi.customer_code, wsc.commodity_id,cbi.customer_name,cs.sku_name,cs.bar_code,cs.spec,cs.banner,cs.model_no
     </select>
 
     <select id="queryStorehouseUsedList" resultType="com.magic.card.wms.statistic.model.dto.StorehouseUsedResponseDto">
