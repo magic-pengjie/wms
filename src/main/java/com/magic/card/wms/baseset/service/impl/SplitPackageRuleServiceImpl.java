@@ -198,4 +198,27 @@ public class SplitPackageRuleServiceImpl extends ServiceImpl<SplitPackageRuleMap
         });
         return splitPackages;
     }
+
+    /**
+     * 合单规则保存
+     *
+     * @param mergeToken
+     */
+    @Override @Transactional
+    public void mergeRule(String mergeToken) {
+        if (StringUtils.isBlank(mergeToken)) return;
+
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("rule_token", mergeToken).eq("state", StateEnum.normal.getCode());
+        SplitPackageRule packageRule = selectOne(wrapper);
+
+        if (packageRule != null) return;
+
+        packageRule = new SplitPackageRule();
+        packageRule.setRuleToken(mergeToken);
+        packageRule.setIsSplit(0);
+        packageRule.setSingleCommodity(3);
+        PoUtil.add(packageRule, webUtil.operator());
+        insert(packageRule);
+    }
 }

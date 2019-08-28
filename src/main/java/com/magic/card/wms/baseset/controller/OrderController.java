@@ -6,6 +6,7 @@ import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.baseset.service.IPickingBillService;
+import com.magic.card.wms.common.annotation.RequestJsonParam;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.EasyExcelParams;
 import com.magic.card.wms.common.model.LoadGrid;
@@ -64,6 +65,18 @@ public class OrderController {
     @PostMapping("loadGrid")
     public ResponseData loadGrid(@RequestBody LoadGrid loadGrid) {
        return ResponseData.ok(orderService.loadGrid(loadGrid));
+    }
+
+    @PostMapping("loadCanMergeGrid")
+    public ResponseData loadCanMergeGrid(@RequestBody LoadGrid loadGrid) {
+        orderService.loadCanMergeGrid(loadGrid);
+        return ResponseData.ok(loadGrid);
+    }
+
+    @PostMapping("mergeOrders")
+    public ResponseData mergeOrders(@RequestJsonParam List<String> systemOrderNos) {
+        orderService.mergeOrders(systemOrderNos);
+        return ResponseData.ok();
     }
 
     @ApiOperation("获取订单商品信息以及包裹信息")

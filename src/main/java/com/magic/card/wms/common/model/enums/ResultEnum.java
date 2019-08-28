@@ -63,6 +63,8 @@ public enum ResultEnum {
 	add_role_failed(200011,"新增角色失败"),
 	split_rule_exist( 200012, "拆包规则已存在！"),
 	split_rule_not_exist( 200013, "拆包规则不存在！"),
+    store_house_config_jhq_max_one(200014, "商家商品配置拣货区库位只能存在一个"),
+    store_house_config_jhq_exist(200015, "商家商品已配置拣货区库位"),
 
 
 	excel_import_storehouse(300000,"Excel导入仓库库位信息失败！"),
@@ -114,6 +116,9 @@ public enum ResultEnum {
     order_not_allow_cancel( 500020, "当前订单不允许取消！"),
 	invoice_pick_cancel( 500021, "拣货单已作废！"),
 	invoice_pick_not_allow_cancel( 500022, "当前拣货单不可作废！"),
+    order_merge_arguments_err( 500023, "合并订单数据不符合要求，至少提供两个系统订单号！"),
+    order_merge_arguments_not_exist( 500024, "提供的订单号，可能有误！"),
+    order_merge_commodity_err(500025, "合并订单商品数据不存在，请核实后再重新操作！"),
 
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),

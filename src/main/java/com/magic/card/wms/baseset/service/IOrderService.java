@@ -35,6 +35,13 @@ public interface IOrderService extends IService<Order> {
     LoadGrid loadGrid(LoadGrid loadGrid);
 
     /**
+     * 加载可合并订单数据信息
+     * @param loadGrid
+     * @return
+     */
+    void loadCanMergeGrid(LoadGrid loadGrid);
+
+    /**
      * 获取订单商品
      * @param orderNo
      */
@@ -149,4 +156,10 @@ public interface IOrderService extends IService<Order> {
      * @param systemOrderNo 系统订单号
      */
     void splitPackage(String orderNo, String customerCode, String systemOrderNo);
+
+    /**
+     * 合并订单
+     * @param systemOrderNos 系统订单号
+     */
+    void mergeOrders(List<String> systemOrderNos);
 }

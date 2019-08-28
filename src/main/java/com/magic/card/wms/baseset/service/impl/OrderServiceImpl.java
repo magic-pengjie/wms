@@ -22,6 +22,7 @@ import com.magic.card.wms.common.model.LoadGrid;
 import com.magic.card.wms.common.model.enums.*;
 import com.magic.card.wms.common.utils.*;
 import com.magic.card.wms.report.service.ExpressFeeConfigService;
+import lombok.Synchronized;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -148,6 +149,18 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         return loadGrid;
     }
 
+    /**
+     * 加载可合并订单数据信息
+     *
+     * @param loadGrid
+     * @return
+     */
+    @Override
+    public void loadCanMergeGrid(LoadGrid loadGrid) {
+        Page page = loadGrid.generatorPage();
+        EntityWrapper wrapper = new EntityWrapper();
+        loadGrid.finallyResult(page, baseMapper.loadCanMergeGrid(page, wrapper));
+    }
 
     /**
      * 获取订单详情（商品 以及 对应的包裹信息）
@@ -517,7 +530,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
                 eq("customer_code", customer.getCustomerCode()).
                 ne("state", StateEnum.delete.getCode());
 
-        if (selectCount(checkOrder) > 0) {
+        if (orderCommodityService.selectCount(checkOrder) > 0) {
             throw OperationException.customException(ResultEnum.order_excel_import_exist);
         }
 
@@ -628,16 +641,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         // 验证合单规则
         if (mergeFlag) {
             // 添加原始订单商品数据
-            final String systemOrderNo = GeneratorCodeUtil.dataTime(5);
+            final String systemOrderNo = generatorSystemOrderNo();
             Order order = new Order();
             BeanUtils.copyProperties(importOrders.get(0), order);
             order.setIsMerge(1);
             order.setIsMatched(1);
             PoUtil.add(order, operator);
-            order.setOrderNo(orderNos.toString());
             order.setSystemOrderNo(systemOrderNo);
+            importOrders.forEach( orderInfoDTO ->  {
+                order.setOrderNo(orderInfoDTO.getOrderNo());
+                processOrderCommodities(orderInfoDTO.getCommodities(), order, customer.getId(), true, operator);
+            });
+            order.setOrderNo(orderNos.toString());
             insert(order);
-            importOrders.forEach( orderInfoDTO ->  processOrderCommodities(orderInfoDTO.getCommodities(), order, customer.getId(), true, operator));
 
             String mailNo = UUID.randomUUID().toString();
             commodityNumMap.forEach((key, value) -> {
@@ -684,6 +700,83 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 	}
 
     /**
+     * 合并订单
+     *
+     * @param systemOrderNos 系统订单号
+     */
+    @Override @Transactional
+    public void mergeOrders(List<String> systemOrderNos) {
+
+        if (CollectionUtils.isEmpty(systemOrderNos) || systemOrderNos.stream().distinct().count() < 2) {
+            throw OperationException.customException(ResultEnum.order_merge_arguments_err);
+        }
+
+        //获取订单原始商品数据
+        EntityWrapper<Order> wrapper = new EntityWrapper();
+        wrapper.in("system_order_no", systemOrderNos).eq("state", StateEnum.normal.getCode());
+        List<Order> orders = selectList(wrapper);
+
+        if (CollectionUtils.isEmpty(orders) || orders.size() < systemOrderNos.stream().distinct().count()) {
+            throw OperationException.customException(ResultEnum.order_merge_arguments_not_exist);
+        }
+
+        final String operator = webUtil.operator();
+        final String systemOrderNo = generatorSystemOrderNo();
+        Order mergeOrder = new Order();
+        orders.forEach(order -> {
+
+            if (order.getIsMatched() == 1) {
+                throw OperationException.customException(ResultEnum.order_had_split_package);
+            }
+
+            String mergeOrderNo = mergeOrder.getOrderNo();
+            final String orderNo = order.getOrderNo();
+
+            if (StringUtils.isNotBlank(mergeOrderNo)) {
+                mergeOrderNo += ",";
+            } else {
+                mergeOrderNo = "";
+                BeanUtils.copyProperties(order, mergeOrder);
+            }
+
+            mergeOrder.setOrderNo(mergeOrderNo + orderNo);
+        });
+        mergeOrder.setIsMerge(1);
+        mergeOrder.setIsMatched(1);
+        PoUtil.add(mergeOrder, operator);
+        mergeOrder.setSystemOrderNo(systemOrderNo);
+        insert(mergeOrder);
+
+        List<Map> orderCommodities = baseMapper.batchLoadOrderCommodities(systemOrderNos);
+
+        if (CollectionUtils.isEmpty(orderCommodities)) {
+            throw OperationException.customException(ResultEnum.order_merge_commodity_err);
+        }
+
+        StringBuffer mergeToken = new StringBuffer();
+        String mailNo = UUID.randomUUID().toString();
+        orderCommodities.forEach(orderCommodity -> {
+            final String commodityCode = MapUtils.getString(orderCommodity, "barCode");
+            final Integer commodityMergeNums = MapUtils.getInteger(orderCommodity, "mergeNums");
+            MailPickingDetail mailPickingDetail = new MailPickingDetail();
+            mailPickingDetail.setOrderNo(systemOrderNo);
+            mailPickingDetail.setMailNo(mailNo);
+            mailPickingDetail.setCommodityCode(commodityCode);
+            mailPickingDetail.setPackageNums(commodityMergeNums);
+            mailPickingDetailService.add(mailPickingDetail);
+
+            if (StringUtils.isNotBlank(mergeToken.toString())) {
+                mergeToken.append(",");
+            }
+
+            mergeToken.append(StringUtils.joinWith("+", commodityCode, commodityMergeNums));
+        });
+        delete(wrapper);
+        // 保存合包规则
+        splitPackageRuleService.mergeRule(mergeToken.toString());
+    }
+
+    /**
      * 订单拆包
      * @param orderNo 订单号
      * @param customerCode 商家CODE
@@ -703,7 +796,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         MailPickingDetail baseInfo = new MailPickingDetail();
         PoUtil.add(baseInfo, webUtil.operator());
         splitPackageRuleService.orderSplitPackages(ruleToken).forEach(packageCommodities -> {
-            String mailNo = UUID.randomUUID().toString();
+            final String mailNo = generatorVirtualMaliNo();
             packageCommodities.forEach( splitCommodityDTO -> {
                 MailPickingDetail mailPickingDetail = new MailPickingDetail();
                 BeanUtils.copyProperties(baseInfo, mailPickingDetail);
@@ -770,7 +863,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             order.setIsMatched(1);
             // 订单拆包
             orderSplitPackages.forEach(packageCommodities-> {
-                String mailNo = UUID.randomUUID().toString();
+                String mailNo = generatorVirtualMaliNo();
                 packageCommodities.stream().forEach(orderCommodityDTO -> {
                     MailPickingDetail mailPickingDetail = new MailPickingDetail();
                     mailPickingDetail.setOrderNo(order.getSystemOrderNo());
@@ -883,4 +976,22 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
 //        }
 //
 //    }
+
+    /**
+     * 生成系统订单号
+     * @return
+     */
+    @Synchronized
+    private String generatorSystemOrderNo() {
+        return GeneratorCodeUtil.dataTime(5);
+    }
+
+    /**
+     * 生成虚拟订单号
+     * @return
+     */
+    @Synchronized
+    private String generatorVirtualMaliNo() {
+        return UUID.randomUUID().toString();
+    }
 }

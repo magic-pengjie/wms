@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.annotations.Param;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
-import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
 import com.magic.card.wms.baseset.service.ICustomerBaseInfoService;
 import com.magic.card.wms.baseset.service.IStorehouseConfigService;
 import com.magic.card.wms.baseset.service.IStorehouseInfoService;
@@ -43,9 +41,6 @@ import com.magic.card.wms.common.model.enums.StoreTypeEnum;
 import com.magic.card.wms.common.utils.PoUtil;
 import com.magic.card.wms.common.utils.WebUtil;
 import com.magic.card.wms.common.utils.WrapperUtil;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.validation.constraints.Size;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -74,8 +69,6 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     private ICustomerBaseInfoService customerService;
     @Autowired
     private IStorehouseInfoService storehouseInfoService;
-    @Autowired(required = false)
-    private StorehouseConfigMapper storehouseConfigMapper;
 
     @Autowired
     private WebUtil webUtil;
@@ -86,7 +79,6 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         Page page = loadGrid.generatorPage();
         EntityWrapper wrapper = new EntityWrapper();
 //        wrapper.eq("", customerCode);
-
         WrapperUtil.autoSettingSearch(wrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
         WrapperUtil.autoSettingOrder(wrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder ->
                 defaultSetOrder.orderBy("wsc.create_time", false));
@@ -122,17 +114,34 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.in("id", batchStorehouseConfig.getStorehouseIds()).isNotNull("commodity_id").
                 eq("state", StateEnum.normal.getCode());
-
+        //判断所选的库位是否已经不配置其他商品
         if (selectCount(entityWrapper) > 0) {
             throw OperationException.customException(ResultEnum.data_check_exist, "库位已经被配置商品");
         }
+        //统计当前所选的库位包含拣货区库位数
+        Integer jhqCount = baseMapper.JHQCount(batchStorehouseConfig.getStorehouseIds(), StoreTypeEnum.JHQ.getCode());
+        //拣货区数量
+        if (jhqCount > 0) {
 
-        // todo 拣货区商品库位限制
+            if (jhqCount > 1) {
+                throw OperationException.customException(ResultEnum.store_house_config_jhq_max_one);
+            }
+
+            //当前商家商品已配置拣货区库位
+            if (baseMapper.customerCommodityConfigCount(
+                    batchStorehouseConfig.getCustomerId(),
+                    batchStorehouseConfig.getCommodityId(),
+                    StoreTypeEnum.JHQ.getCode()) > 0) {
+                throw OperationException.customException(ResultEnum.store_house_config_jhq_exist);
+            }
+
+        }
+
         StorehouseConfig baseConfig = new StorehouseConfig();
         BeanUtils.copyProperties(batchStorehouseConfig, baseConfig);
         PoUtil.update(baseConfig, webUtil.operator());
         List<StorehouseConfig> storehouseConfigs = Lists.newArrayList();
-
+        // 批量处理数据
         for (Long storehouseId :
                 batchStorehouseConfig.getStorehouseIds()) {
             StorehouseConfig storehouseConfig = new StorehouseConfig();
@@ -153,6 +162,7 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     @Override @Transactional
     public void update(StorehouseConfigDTO storehouseConfigDTO, String operator) {
         checkStorehouseConfig(storehouseConfigDTO, true);
+        // 修改库位商品信息
         StorehouseConfig config = new StorehouseConfig();
         PoUtil.update(storehouseConfigDTO, config, operator);
 
@@ -182,8 +192,11 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
      */
     @Override
     public void batchClearCommodity(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) return;
+
         String setString = String.format(
-                "commodity_id = null, update_time = '%s', update_user = '%s'",
+                "commodity_id = null, entry_time = null, start_time = null, entry_time = null, store_nums = 0," +
+                        " available_nums = 0, lock_nums = 0, update_time = '%s', update_user = '%s'",
                 DateTime.now().toString(),
                 webUtil.operator()
         );
@@ -271,18 +284,23 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
 
         if (StringUtils.isBlank(storehouseConfigDTO.getCommodityId())) return;
 
-        // TODO 判断当前库位是否为拣货区且已近存放该商品
+        //判断当前库位是否为拣货区且已近存放该商品
         StorehouseInfo storehouseInfo = this.storehouseInfoService.selectById(storehouseConfigDTO.getStorehouseId());
 
-        if (storehouseInfo != null && StringUtils.equalsAnyIgnoreCase(Constants.PICKING_AREA_CODE, storehouseInfo.getHouseCode())) {
-            wrapper.eq("commodity_id", storehouseConfigDTO.getCommodityId());
+        if (storehouseInfo != null
+                && StringUtils.equalsAnyIgnoreCase(StoreTypeEnum.JHQ.getCode(), storehouseInfo.getHouseCode())
+        ) {
+            List<StorehouseInfo> storehouseInfos = baseMapper.customerCommodityConfig(storehouseConfigDTO.getCustomerId(),
+                    storehouseConfigDTO.getCommodityId(),
+                    StoreTypeEnum.JHQ.getCode());
 
-            if (this.selectCount(wrapper) > 0) {
-                throw OperationException.customException(ResultEnum.data_check_exist, "该商品在拣货区已经有库位了！");
+            if (!CollectionUtils.isEmpty(storehouseInfos) && storehouseInfos.size() == 1) {
+                if (!storehouseConfigDTO.getStorehouseId().equals(storehouseInfos.get(0).getId())) {
+                    throw OperationException.customException(ResultEnum.store_house_config_jhq_exist);
+                }
             }
 
         }
-
 
     }
 

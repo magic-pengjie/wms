@@ -83,4 +83,20 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      * @return
      */
     List<Map> commodityGrid(@Param("systemOrderNo") String systemOrderNo, @Param("houseCode") String houseCode);
+
+    /**
+     * 加载可合单的数据信息
+     * @param page 分页信息
+     * @param wrapper 查询排序信息
+     * @return
+     */
+    List<Map> loadCanMergeGrid(Page page, @Param("ew") EntityWrapper wrapper);
+
+    /**
+     * 批量加载订单商品数据
+     * @param systemOrderNos 系统订单号
+     * @return
+     */
+    List<Map> batchLoadOrderCommodities(@Param("systemOrderNos") List<String> systemOrderNos);
+
 }
