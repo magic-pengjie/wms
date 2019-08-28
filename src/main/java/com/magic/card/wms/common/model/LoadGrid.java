@@ -88,4 +88,27 @@ public class LoadGrid {
         return loadGrid;
     }
 
+    /**
+     * 获取总页数
+     * @return
+     */
+    public long getPages() {
+        if (this.rows.size() == 0) {
+            return 0L;
+        }
+        long pages = this.total / this.rows.size();
+        if (this.total % this.rows.size() != 0) {
+            pages++;
+        }
+        return pages;
+    }
+
+    /**
+     * 是否有下一页
+     * @return
+     */
+    public boolean hasNext() {
+        return this.current < this.getPages();
+    }
+
 }

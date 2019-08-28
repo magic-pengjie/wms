@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * com.magic.card.wms.baseset.service.impl
@@ -119,6 +120,21 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         EntityWrapper wrapper = new EntityWrapper();
         WrapperUtil.autoSettingSearch(wrapper, defaultColumns, loadGrid.getSearch());
         WrapperUtil.autoSettingOrder(wrapper, defaultColumns, loadGrid.getOrder(), defaultSettingOrder -> defaultSettingOrder.orderBy("woi.create_time", false));
+        Map<String, Object> search = loadGrid.getSearch();
+        String startTime = MapUtils.getString(search, "startTime");
+        String endTime = MapUtils.getString(search, "endTime");
+
+        if (MapUtils.isNotEmpty(search)) {
+
+            if (StringUtils.isNotBlank(startTime)) {
+                wrapper.ge("woi.create_time", startTime);
+            }
+
+            if (StringUtils.isNotBlank(endTime)) {
+                wrapper.le("woi.create_time", endTime);
+            }
+
+        }
 
         List<Map> grid = baseMapper.loadGrid(page, wrapper);
 //        Map<String, List> orderCommodities = Maps.newLinkedHashMap();
@@ -774,6 +790,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         delete(wrapper);
         // 保存合包规则
         splitPackageRuleService.mergeRule(mergeToken.toString());
+    }
+
+    /**
+     * 订单导出
+     *
+     * @param search 查询条件
+     * @return
+     */
+    @Override
+    public List<? extends BaseRowModel> excelExport(Map<String, Object> search) {
+        LoadGrid loadGrid = new LoadGrid();
+        loadGrid.setCurrent(1);
+        loadGrid.setPageSize(10000);
+        loadGrid.setSearch(search);
+        loadGrid(loadGrid);
+
+        List<Map> rows = loadGrid.getRows();
+
+        if (CollectionUtils.isEmpty(rows)) {
+            throw OperationException.customException(ResultEnum.order_excel_export_no_data);
+        }
+
+        List<String> systemOrderNos = rows.stream().map(map -> MapUtils.getString(map, "systemOrderNo")).collect(Collectors.toList());
+
+
+        return excelExport(systemOrderNos);
     }
 
     /**
