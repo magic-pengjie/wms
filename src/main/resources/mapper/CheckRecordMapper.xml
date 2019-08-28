@@ -102,6 +102,7 @@
         FROM wms_customer_base_info cbi
         left join wms_storehouse_config sc on cbi.id = sc.customer_id and sc.state='1'
         left join wms_storehouse_info si on sc.storehouse_id = si.id and si.state='1'
+        inner join wms_dict_info di on si.house_code = di.dict_code and di.state='1'
         where cbi.state ='1'
         <if test="null !=customerCode and ''!=customerCode">
             and cbi.customer_code= #{customerCode}
