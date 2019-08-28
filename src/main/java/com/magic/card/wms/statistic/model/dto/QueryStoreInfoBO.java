@@ -28,6 +28,9 @@ public class QueryStoreInfoBO extends PageInfo implements Serializable {
     @ApiModelProperty(value = "商品ID")
     private String commodityId;
 
+    @ApiModelProperty(value = "库位类型")
+    private String houseCode;
+
     @ApiModelProperty(value = "该商家已用库存")
     private boolean available;
 
@@ -42,6 +45,7 @@ public class QueryStoreInfoBO extends PageInfo implements Serializable {
         final StringBuffer sb = new StringBuffer("QueryStoreInfoBO{");
         sb.append("customerCode='").append(customerCode).append('\'');
         sb.append(", commodityId='").append(commodityId).append('\'');
+        sb.append(", houseCode='").append(houseCode).append('\'');
         sb.append(", available=").append(available);
         sb.append(", unavailable=").append(unavailable);
         sb.append(", usedStores=").append(usedStores);

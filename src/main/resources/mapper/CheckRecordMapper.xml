@@ -95,6 +95,7 @@
             cbi.customer_code,
             cbi.customer_name as customerName,
             si.house_code as houseCode,
+            di.dict_name as storeTypeName,
             count(1) as totalStoreNum,
             count(case when sc.commodity_id is not null then sc.commodity_id else null end )  as usedStoreNum,
             count(1) -count(case when sc.commodity_id is not null then sc.commodity_id else null end ) as residuleStoreNum
@@ -105,7 +106,7 @@
         <if test="null !=customerCode and ''!=customerCode">
             and cbi.customer_code= #{customerCode}
         </if>
-        group by cbi.customer_code,cbi.customer_name,si.house_code
+        group by cbi.customer_code,cbi.customer_name,di.dict_name,si.house_code
     </select>
 
 

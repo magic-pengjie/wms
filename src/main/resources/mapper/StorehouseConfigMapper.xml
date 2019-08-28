@@ -119,6 +119,9 @@
 		<if test="qsi.usedStores">
 			and sc.available_nums >0
 		</if>
+		<if test="qsi.houseCode !=null">
+			and si.house_code = #{houseCode}
+		</if>
 		order by cs.bar_code desc,di.dict_name desc,sc.available_nums desc
     </select>
 
