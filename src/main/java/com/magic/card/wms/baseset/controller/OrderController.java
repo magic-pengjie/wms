@@ -2,6 +2,7 @@ package com.magic.card.wms.baseset.controller;
 
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
@@ -20,6 +21,8 @@ import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -96,8 +101,16 @@ public class OrderController {
 
 
     @GetMapping("excelExport")
-    public void excelExport(@RequestParam String search , HttpServletResponse response, HttpServletRequest request) {
-        Map<String, Object> searchMap = JSON.parseObject(search, Map.class);
+    public void excelExport(HttpServletResponse response, HttpServletRequest request) {
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        Map<String, Object> searchMap = Maps.newHashMap();
+
+        if (MapUtils.isNotEmpty(parameterMap)) {
+            request.getParameterMap().forEach( (key, values) -> {
+                searchMap.put(key, values[0]);
+            });
+        }
+
         EasyExcelParams easyExcelParams = new EasyExcelParams();
         easyExcelParams.setSheetName("订单信息");
         easyExcelParams.setRequest(request);

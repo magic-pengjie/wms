@@ -84,7 +84,16 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
         EntityWrapper entityWrapper = new EntityWrapper();
         WrapperUtil.autoSettingSearch(entityWrapper, DEFAULT_COLUMNS, loadGrid.getSearch());
         WrapperUtil.autoSettingOrder(entityWrapper, DEFAULT_COLUMNS, loadGrid.getOrder(), defaultSetOrder-> defaultSetOrder.orderBy("wcr.create_time"));
-        loadGrid.finallyResult(page, baseMapper.loadGrid(page, entityWrapper));
+        List<Map> maps = baseMapper.loadGrid(page, entityWrapper);
+
+        if (CollectionUtils.isNotEmpty(maps)) {
+            maps.forEach(map -> {
+                final String replenishmentNo = MapUtils.getString(map, "replenishmentNo");
+                map.put("ccStores", baseMapper.loadGStorehouse(replenishmentNo, StoreTypeEnum.CCQ.getCode()));
+            });
+        }
+
+        loadGrid.finallyResult(page, maps);
     }
 
     /**
