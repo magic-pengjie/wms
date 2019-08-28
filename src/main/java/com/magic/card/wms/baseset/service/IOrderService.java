@@ -162,4 +162,11 @@ public interface IOrderService extends IService<Order> {
      * @param systemOrderNos 系统订单号
      */
     void mergeOrders(List<String> systemOrderNos);
+
+    /**
+     * 订单导出
+     * @param search 查询条件
+     * @return
+     */
+    List<? extends BaseRowModel> excelExport(Map<String, Object> search);
 }

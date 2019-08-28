@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * com.magic.card.wms.baseset.controller
@@ -92,21 +93,38 @@ public class OrderController {
         return ResponseData.ok();
     }
 
+
     @PostMapping("excelExport")
-    public void excelExport(@RequestBody List<String> orderNos, HttpServletResponse response, HttpServletRequest request) {
+    public void excelExport(@RequestBody Map<String, Object> search, HttpServletResponse response, HttpServletRequest request) {
         EasyExcelParams easyExcelParams = new EasyExcelParams();
         easyExcelParams.setSheetName("订单信息");
         easyExcelParams.setRequest(request);
         easyExcelParams.setResponse(response);
         easyExcelParams.setDataModelClazz(ExcelOrderImport.class);
         easyExcelParams.setExcelNameWithoutExt("订单数据导出" + DateTime.now().toString("yyyyMMddHHmmss"));
-        easyExcelParams.setData(orderService.excelExport(orderNos));
+        easyExcelParams.setData(orderService.excelExport(search));
         try {
             EasyExcelUtil.exportExcel2007Format(easyExcelParams);
         } catch (IOException e) {
             throw OperationException.customException(ResultEnum.order_excel_export_err);
         }
     }
+
+//    @PostMapping("excelExport")
+//    public void excelExport(@RequestBody List<String> orderNos, HttpServletResponse response, HttpServletRequest request) {
+//        EasyExcelParams easyExcelParams = new EasyExcelParams();
+//        easyExcelParams.setSheetName("订单信息");
+//        easyExcelParams.setRequest(request);
+//        easyExcelParams.setResponse(response);
+//        easyExcelParams.setDataModelClazz(ExcelOrderImport.class);
+//        easyExcelParams.setExcelNameWithoutExt("订单数据导出" + DateTime.now().toString("yyyyMMddHHmmss"));
+//        easyExcelParams.setData(orderService.excelExport(orderNos));
+//        try {
+//            EasyExcelUtil.exportExcel2007Format(easyExcelParams);
+//        } catch (IOException e) {
+//            throw OperationException.customException(ResultEnum.order_excel_export_err);
+//        }
+//    }
 
 
     @ApiModelProperty("Excel订单导入")
