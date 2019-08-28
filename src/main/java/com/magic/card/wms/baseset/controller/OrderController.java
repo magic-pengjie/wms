@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.controller;
 
 import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.fastjson.JSON;
 import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.dto.OrderUpdateDTO;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
@@ -94,15 +95,16 @@ public class OrderController {
     }
 
 
-    @PostMapping("excelExport")
-    public void excelExport(@RequestBody Map<String, Object> search, HttpServletResponse response, HttpServletRequest request) {
+    @GetMapping("excelExport")
+    public void excelExport(@RequestParam String search , HttpServletResponse response, HttpServletRequest request) {
+        Map<String, Object> searchMap = JSON.parseObject(search, Map.class);
         EasyExcelParams easyExcelParams = new EasyExcelParams();
         easyExcelParams.setSheetName("订单信息");
         easyExcelParams.setRequest(request);
         easyExcelParams.setResponse(response);
         easyExcelParams.setDataModelClazz(ExcelOrderImport.class);
         easyExcelParams.setExcelNameWithoutExt("订单数据导出" + DateTime.now().toString("yyyyMMddHHmmss"));
-        easyExcelParams.setData(orderService.excelExport(search));
+        easyExcelParams.setData(orderService.excelExport(searchMap));
         try {
             EasyExcelUtil.exportExcel2007Format(easyExcelParams);
         } catch (IOException e) {
