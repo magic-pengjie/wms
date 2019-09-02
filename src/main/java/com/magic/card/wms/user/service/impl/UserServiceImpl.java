@@ -205,6 +205,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			//返回前端Dto
 			BeanUtils.copyProperties(user, userRes);
 			userRes.setToken(session.getId());
+			userRes.setId(user.getId());
 			return userRes;
 		}else {
 			log.info("===>> login 用户不存在！userNo:{}", dto.getUserNo());
