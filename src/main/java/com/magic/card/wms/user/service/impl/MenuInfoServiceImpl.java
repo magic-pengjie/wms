@@ -41,6 +41,7 @@ public class MenuInfoServiceImpl extends ServiceImpl<MenuInfoMapper, MenuInfo> i
 		
 		Wrapper<MenuInfo> menuWrapper = new EntityWrapper<MenuInfo>();
 		menuWrapper.eq("state", StateEnum.normal.getCode());
+		menuWrapper.orderBy("id");
 		if(!StringUtils.isEmpty(dto)) {
 			if(!StringUtils.isEmpty(dto.getParentKey())) {
 				menuWrapper.eq("parent_key", dto.getParentKey());

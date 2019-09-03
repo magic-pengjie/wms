@@ -39,6 +39,7 @@
 		<foreach collection="list" item="item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
+		order by mi.id
     	
     </select>
 
