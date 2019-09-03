@@ -51,6 +51,10 @@ public class MenuInfo extends BasePo implements Serializable {
      * 路由URL
      */
     private String routeUrl;
+	/**
+	 * 菜单图标
+	 */
+	private String icon;
     /**
      * 0:页面，1:按钮
      */
@@ -59,7 +63,7 @@ public class MenuInfo extends BasePo implements Serializable {
      * 接口URL
      */
     private String apiUrl;
-    
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -78,6 +82,8 @@ public class MenuInfo extends BasePo implements Serializable {
 			builder.append("menuGrade=").append(menuGrade).append(", ");
 		if (routeUrl != null)
 			builder.append("routeUrl=").append(routeUrl).append(", ");
+		if (icon != null)
+			builder.append("icon=").append(icon).append(", ");
 		if (pageBtnFlag != null)
 			builder.append("pageBtnFlag=").append(pageBtnFlag).append(", ");
 		if (apiUrl != null)
@@ -85,5 +91,5 @@ public class MenuInfo extends BasePo implements Serializable {
 		builder.append("]");
 		return builder.toString();
 	}
-   
+
 }
