@@ -1,5 +1,6 @@
 package com.magic.card.wms.user.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import javax.validation.Valid;
 import com.magic.card.wms.baseset.mapper.CustomerBaseInfoMapper;
 import com.magic.card.wms.baseset.model.po.CustomerBaseInfo;
 import com.magic.card.wms.common.utils.BeanCopyUtil;
+import com.magic.card.wms.user.model.dto.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,11 +37,6 @@ import com.magic.card.wms.user.mapper.MenuInfoMapper;
 import com.magic.card.wms.user.mapper.RoleInfoMapper;
 import com.magic.card.wms.user.mapper.UserMapper;
 import com.magic.card.wms.user.mapper.UserRoleMappingMapper;
-import com.magic.card.wms.user.model.dto.UserDTO;
-import com.magic.card.wms.user.model.dto.UserLoginDTO;
-import com.magic.card.wms.user.model.dto.UserResponseDTO;
-import com.magic.card.wms.user.model.dto.UserRoleMenuQueryDTO;
-import com.magic.card.wms.user.model.dto.UserUpdateDTO;
 import com.magic.card.wms.user.model.po.MenuInfo;
 import com.magic.card.wms.user.model.po.RoleInfo;
 import com.magic.card.wms.user.model.po.User;
@@ -243,7 +240,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 				log.info("===用户角色未配置菜单信息，请联系管理员配置角色菜单！");
 				throw new BusinessException(00, "用户角色未配置菜单信息，请联系管理员配置角色菜单！");
 			}
-			userRoleMenuList.setMenuList(menuList);
+			List<MenuQueryResponseDto> menuTreeSourceList = BeanCopyUtil.copyList(menuList, MenuQueryResponseDto.class);
+			List<MenuQueryResponseDto> menuTreeLis = buildTree(menuTreeSourceList, 0);
+			userRoleMenuList.setMenuList(menuTreeLis);
 			//将用户角色及菜单 放入redis
 			redisService.set(SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
 			log.info("===>> userRoleMenuSession.key:{},UserInfo:{} ",SessionKeyConstants.USER_ROLE_MENU_KEY+userKey, userRoleMenuList);
@@ -252,6 +251,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 		}
 		return userRoleMenuList;
 	}
+
+
+	private List<MenuQueryResponseDto> buildTree(List<MenuQueryResponseDto> menuList, Integer parentId){
+		List<MenuQueryResponseDto> menuTreeList = new ArrayList<MenuQueryResponseDto>();
+		for (MenuQueryResponseDto menu : menuList) {
+			Integer menuId = menu.getId().intValue();
+			Integer pId = menu.getParentKey();
+			if(parentId == pId) {
+				List<MenuQueryResponseDto> subMenuLists = buildTree(menuList, menuId);
+				menu.setChildMenu(subMenuLists);
+				menuTreeList.add(menu);
+			}
+		}
+		return menuTreeList;
+	}
+
 
 	/**
 	 * 设置用户登录Session及redis
