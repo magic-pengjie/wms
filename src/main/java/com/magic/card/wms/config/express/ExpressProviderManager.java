@@ -1,5 +1,7 @@
 package com.magic.card.wms.config.express;
 
+import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +22,25 @@ import java.util.Map;
 @Component
 public class ExpressProviderManager {
     @Autowired(required = false)
-    private Map<String, IExpressProvider> expressProviders;
+    private Map<String, AbstractExpressProvider> expressProviders;
 
     /**
-     *
-     * @param providerKey sf(顺风)、ems(邮政)
+     * 获取快递提供商实例
+     * @param providerKey 快递服务提供商
      * @return
      */
     private IExpressProvider provider(String providerKey) {
+        // 若未提供快递服务提供商，默认使用中国邮政服务
+        if (StringUtils.isBlank(providerKey)) {
+            return expressProviders.get("chinaPostExpressProvider");
+        }
 
-        if (StringUtils.isBlank(providerKey)) return expressProviders.get("defaultExpressProvider");
+        AbstractExpressProvider expressProvider = null;
 
-        IExpressProvider expressProvider = null;
-
-        switch (providerKey.toLowerCase()) {
-            default: expressProvider = expressProviders.get("defaultExpressProvider");
+        if (providerKey.contains("邮政")) {
+            expressProvider = expressProviders.get("chinaPostExpressProvider");
+        } else {
+            throw OperationException.customException(ResultEnum.express_provider_not_support);
         }
 
         return expressProvider;

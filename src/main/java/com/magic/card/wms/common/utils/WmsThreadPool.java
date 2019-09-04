@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * @since : 1.0.0
  */
 public class WmsThreadPool {
-    public static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    public static final ExecutorService executorService = Executors.newFixedThreadPool(50);
 
     @Function
     public static void executor(Runnable runnable) {

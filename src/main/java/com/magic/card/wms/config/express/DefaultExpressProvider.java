@@ -1,8 +1,10 @@
 package com.magic.card.wms.config.express;
 
 import com.google.common.collect.Lists;
+import com.magic.card.wms.common.model.enums.ExpressKeyEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,16 +17,16 @@ import java.util.List;
  * @since : 1.0.0
  */
 @Slf4j
-@Component("defaultExpressProvider")
-public class DefaultExpressProvider implements IExpressProvider {
+@Component("chinaPostExpressProvider")
+public class DefaultExpressProvider extends AbstractExpressProvider {
     /**
      * 使用快递单号
      *
      * @return
      */
-    @Override
+    @Override @Transactional
     public String useExpressNo() {
-        return "" + System.currentTimeMillis();
+        return getExpressNumberService().getExpressNumber(expressKey());
     }
 
     /**
@@ -47,5 +49,10 @@ public class DefaultExpressProvider implements IExpressProvider {
     public List traceExpress(String... expressNos) {
         log.info("默认快递提供商并未提供快递跟踪功能： 单号：{}", expressNos);
         return Lists.newArrayList(expressNos);
+    }
+
+    @Override
+    public String expressKey() {
+        return ExpressKeyEnum.YZPK.getCode();
     }
 }

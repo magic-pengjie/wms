@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.magic.card.wms.baseset.mapper.ExpressNumberMapper">
+    <select id="getExpressNumber" resultType="java.lang.String">
+        SELECT MIN(express_num) FROM wms_express_number WHERE express_key = #{expressKey} AND use_times = #{useTimes} AND  state = 1
+    </select>
+    <select id="loadGrid" resultType="java.util.Map">
+        SELECT id, express_key, express_num, use_times FROM wms_express_number <where>${ew.sqlSegment}</where>
+    </select>
+</mapper>
