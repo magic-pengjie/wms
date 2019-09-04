@@ -19,7 +19,13 @@ import lombok.Data;
 public class UserResponseDTO implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
-	
+
+	/**
+	 * 	用户ID
+	 */
+	@ApiModelProperty(value="用户ID")
+	private Long id;
+
 	/**
      * 	用户名
      */
@@ -43,18 +49,13 @@ public class UserResponseDTO implements Serializable{
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("UserResponseDTO [");
-		if (userNo != null)
-			builder.append("userNo=").append(userNo).append(", ");
-		if (password != null)
-			builder.append("password=").append(password).append(", ");
-		if (name != null)
-			builder.append("name=").append(name).append(", ");
-		if (token != null)
-			builder.append("token=").append(token);
-		builder.append("]");
-		return builder.toString();
+		final StringBuffer sb = new StringBuffer("UserResponseDTO{");
+		sb.append("id='").append(id).append('\'');
+		sb.append(", userNo='").append(userNo).append('\'');
+		sb.append(", password='").append(password).append('\'');
+		sb.append(", name='").append(name).append('\'');
+		sb.append(", token='").append(token).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
-	
 }

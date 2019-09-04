@@ -88,7 +88,7 @@ public class UserRoleMenuQueryDTO implements Serializable{
 	 * 菜单信息List
 	 */
 	@ApiModelProperty(value="菜单信息List")
-	private List<MenuInfo> menuList;
+	private List<MenuQueryResponseDto> menuList;
 
 	@Override
 	public String toString() {
