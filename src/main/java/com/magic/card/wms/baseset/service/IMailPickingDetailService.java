@@ -50,9 +50,10 @@ public interface IMailPickingDetailService extends IService<MailPickingDetail> {
      * 快递包裹预重 （kg）
      * 拣货篮总货物称重
      * @param virtualMail 虚拟快递号（uuid）
+     * @param systemOrderNo 系统订单号
      * @return
      */
-    BigDecimal mailPickingWeight(String virtualMail);
+    BigDecimal mailPickingWeight(String virtualMail, String systemOrderNo);
 
     /**
      * 获取拣货单复核商品数据列表

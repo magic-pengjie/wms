@@ -1,12 +1,10 @@
 package com.magic.card.wms.baseset.service.impl;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
+import com.magic.card.wms.baseset.model.vo.AvailableQuantityVO;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -256,6 +254,23 @@ public class StorehouseConfigServiceImpl extends ServiceImpl<StorehouseConfigMap
     @Override @Transactional
     public void reduceAvailableQuantity(String storeConfigId, Long reduceNum, String operator) {
         baseMapper.reduceAvailableQuantity(storeConfigId, reduceNum, operator);
+    }
+
+    /**
+     * 获取商品库位数据
+     *
+     * @param customerCode   商家Code
+     * @param commodityCodes 多个商品Code
+     * @param houseCode      库位类型（存储区、拣货区...）
+     * @return
+     */
+    @Override
+    public List<AvailableQuantityVO> availableQuantity(String customerCode, Set<String> commodityCodes, String houseCode) {
+        EntityWrapper wrapper = new EntityWrapper();
+        wrapper.eq("customer_code", customerCode).
+                eq("house_code", houseCode).
+                in("commodity_code", commodityCodes);
+        return baseMapper.availableQuantity(wrapper);
     }
 
     /**

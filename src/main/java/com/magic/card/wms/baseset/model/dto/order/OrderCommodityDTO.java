@@ -1,4 +1,4 @@
-package com.magic.card.wms.baseset.model.dto;
+package com.magic.card.wms.baseset.model.dto.order;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

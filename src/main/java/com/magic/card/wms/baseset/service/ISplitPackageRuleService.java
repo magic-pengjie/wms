@@ -1,7 +1,7 @@
 package com.magic.card.wms.baseset.service;
 
 import com.baomidou.mybatisplus.service.IService;
-import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.split.SplitCommodityDTO;
 import com.magic.card.wms.baseset.model.dto.split.SplitPackageRuleDTO;
 import com.magic.card.wms.baseset.model.po.SplitPackageRule;

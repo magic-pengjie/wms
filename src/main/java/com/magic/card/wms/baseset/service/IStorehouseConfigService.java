@@ -2,6 +2,7 @@ package com.magic.card.wms.baseset.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.baomidou.mybatisplus.service.IService;
 import com.magic.card.wms.baseset.model.dto.BatchBindStorehouseDTO;
@@ -9,6 +10,7 @@ import com.magic.card.wms.baseset.model.dto.BatchStorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.StorehouseConfigDTO;
 import com.magic.card.wms.baseset.model.dto.invoice.OmitStokeDTO;
 import com.magic.card.wms.baseset.model.po.StorehouseConfig;
+import com.magic.card.wms.baseset.model.vo.AvailableQuantityVO;
 import com.magic.card.wms.baseset.model.vo.StorehouseConfigVO;
 import com.magic.card.wms.common.exception.BusinessException;
 import com.magic.card.wms.common.model.LoadGrid;
@@ -131,4 +133,13 @@ public interface IStorehouseConfigService extends IService<StorehouseConfig> {
      * @param operator 操作人
      */
     void reduceAvailableQuantity(String storeConfigId, Long reduceNum, String operator);
+
+    /**
+     * 获取商品库位数据
+     * @param customerCode 商家Code
+     * @param commodityCodes 多个商品Code
+     * @param houseCode 库位类型（存储区、拣货区...）
+     * @return
+     */
+    List<AvailableQuantityVO> availableQuantity(String customerCode, Set<String> commodityCodes, String houseCode);
 }

@@ -29,9 +29,10 @@ public interface MailPickingDetailMapper extends BaseMapper<MailPickingDetail> {
     /**
      * 获取包裹商品对应的耗材清单
      * @param virtualMail 虚拟快递单号 UUID
+     * @param systemOrderNo 系统订单号
      * @return
      */
-    List<Map> mailPickingCommodityInfo(@Param("virtualMail") String virtualMail);
+    List<Map> mailPickingCommodityInfo(@Param("virtualMail") String virtualMail, @Param("systemOrderNo") String systemOrderNo);
 
     /**
      * 获取拣货单复检商品清单列表

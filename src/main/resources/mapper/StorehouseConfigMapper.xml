@@ -3,24 +3,24 @@
 <mapper namespace="com.magic.card.wms.baseset.mapper.StorehouseConfigMapper">
 
     <!-- 开启二级缓存 -->
-<!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
+    <!--    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>-->
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.po.StorehouseConfig">
-        <id column="id" property="id" />
-        <result column="storehouse_id" property="storehouseId" />
-        <result column="customer_id" property="customerId" />
-        <result column="commodity_id" property="commodityId" />
-        <result column="store_nums" property="storeNums" />
-        <result column="availabe_nums" property="availableNums" />
-        <result column="lock_nums" property="lockNums" />
-        <result column="opr_type" property="oprType" />
-        <result column="state" property="state" />
-        <result column="create_time" property="createTime" />
-        <result column="create_user" property="createUser" />
-        <result column="update_time" property="updateTime" />
-        <result column="update_user" property="updateUser" />
-        <result column="remark" property="remark" />
+        <id column="id" property="id"/>
+        <result column="storehouse_id" property="storehouseId"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="commodity_id" property="commodityId"/>
+        <result column="store_nums" property="storeNums"/>
+        <result column="availabe_nums" property="availableNums"/>
+        <result column="lock_nums" property="lockNums"/>
+        <result column="opr_type" property="oprType"/>
+        <result column="state" property="state"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="remark" property="remark"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
@@ -30,199 +30,224 @@
     <update id="plusAvailableQuantity">
 		update wms_storehouse_config set update_time = now(), update_user = #{operator}, available_nums = available_nums + #{plusNum} where id = #{storeConfigId}
 	</update>
-	<update id="reduceAvailableQuantity">
+    <update id="reduceAvailableQuantity">
 		update wms_storehouse_config set update_time = now(), update_user = #{operator}, available_nums = available_nums - #{reduceNum} where id = #{storeConfigId}
 	</update>
 
-	<select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.check.model.dto.QueryCheckRecordDto">
-    	SELECT cbi.customer_name as customerName,
-    			cbi.customer_code as customerCode,
-    			sc.storehouse_id as storehouseId,
-    			sc.customer_id as customerId,
-    			sc.commodity_id as commodityId,
-    			sc.store_nums as storeNums,
-    			sc.available_nums as availableNums,
-			 	cs.sku_name as commodityName,
-			 	cs.id as skuId,
-			 	cs.bar_code as skuCode,
-			 	cs.model_no as modelNo,
-			 	di.dict_name as storeType,
-			 	si.house_code as houseCode,
-			 	si.store_code as storeCode,
-			 	si.area_code as areaCode,
-			 	si.is_frozen as isFrozen,  
-    			sc.state,
-			 	cs.spec 
-		FROM wms_storehouse_config sc
-		LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
-		LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
-		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
-		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
-		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
-		where  sc.state = 1
-		and sc.commodity_id is not null
-		<if test="cr.customerCode != null and ''!=cr.customerCode">
-			and cbi.customer_code = #{cr.customerCode}
-		</if>
-		<if test="cr.customerId != null">
-			and sc.customer_id = #{cr.customerId}
-		</if>
-		<if test="cr.storeIdList != null">
-			and sc.storehouse_id in 
-			<foreach collection="cr.storeIdList" item="cr.storeIdList" index="index" open="(" close=")" separator=",">
-			  #{cr.storeIdList}
-			</foreach>
-		</if>
-		<if test="cr.commodityIdList != null">
-			and sc.commodity_id in 
-			<foreach collection="cr.commodityIdList" item="cr.commodityIdList" index="index" open="(" close=")" separator=",">
-			  #{cr.commodityIdList}
-			</foreach>
-		</if>
-		ORDER BY sc.commodity_id
+    <select id="queryCommoidtyStoreList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto"
+            parameterType="com.magic.card.wms.check.model.dto.QueryCheckRecordDto">
+        SELECT cbi.customer_name as customerName,
+        cbi.customer_code as customerCode,
+        sc.storehouse_id as storehouseId,
+        sc.customer_id as customerId,
+        sc.commodity_id as commodityId,
+        sc.store_nums as storeNums,
+        sc.available_nums as availableNums,
+        cs.sku_name as commodityName,
+        cs.id as skuId,
+        cs.bar_code as skuCode,
+        cs.model_no as modelNo,
+        di.dict_name as storeType,
+        si.house_code as houseCode,
+        si.store_code as storeCode,
+        si.area_code as areaCode,
+        si.is_frozen as isFrozen,
+        sc.state,
+        cs.spec
+        FROM wms_storehouse_config sc
+        LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
+        LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
+        LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and
+        cs.state =1
+        LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
+        LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
+        where sc.state = 1
+        and sc.commodity_id is not null
+        <if test="cr.customerCode != null and ''!=cr.customerCode">
+            and cbi.customer_code = #{cr.customerCode}
+        </if>
+        <if test="cr.customerId != null">
+            and sc.customer_id = #{cr.customerId}
+        </if>
+        <if test="cr.storeIdList != null">
+            and sc.storehouse_id in
+            <foreach collection="cr.storeIdList" item="cr.storeIdList" index="index" open="(" close=")" separator=",">
+                #{cr.storeIdList}
+            </foreach>
+        </if>
+        <if test="cr.commodityIdList != null">
+            and sc.commodity_id in
+            <foreach collection="cr.commodityIdList" item="cr.commodityIdList" index="index" open="(" close=")"
+                     separator=",">
+                #{cr.commodityIdList}
+            </foreach>
+        </if>
+        ORDER BY sc.commodity_id
     </select>
 
-	<select id="queryStoreInfoList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto" parameterType="com.magic.card.wms.statistic.model.dto.QueryStoreInfoBO">
-    	select
-			cbi.customer_code as customerCode,
-			cbi.customer_name as customerName,
-			cs.bar_code as skuCode,
-			cs.sku_name as commodityName,
-			cs.banner,
-			cs.spec,
-			cs.model_no as modelNo,
-			di.dict_name as storeType,
-			si.store_code as storeCode,
-			sc.store_nums as storeNums,
-			sc.available_nums as availableNums
-		from wms_storehouse_config sc
-		LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
-		LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
-		LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and cs.state =1
-		LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
-		LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
-		where sc.state='1'
-		and cbi.customer_code = #{qsi.customerCode}
-		<!-- 该商家已用库存 -->
-		<if test="qsi.available">
-			and sc.commodity_id is not null
-		</if>
-		<!-- 该商家 未用库存 -->
-		<if test="qsi.unavailable">
-			and sc.commodity_id is null
-		</if>
-		<!-- 该商家，商品占用库存 -->
-		<if test="qsi.commodityId != null">
-			and sc.commodity_id = #{qsi.commodityId}
-		</if>
-		<!-- 该商家 占用库存 -->
-		<if test="qsi.usedStores">
-			and sc.available_nums >0
-		</if>
-		<if test="qsi.houseCode !=null">
-			and si.house_code = #{qsi.houseCode}
-		</if>
-		order by cs.bar_code desc,di.dict_name desc,sc.available_nums desc
+    <select id="queryStoreInfoList" resultType="com.magic.card.wms.check.model.dto.CheckRecordInfoDto"
+            parameterType="com.magic.card.wms.statistic.model.dto.QueryStoreInfoBO">
+        select
+        cbi.customer_code as customerCode,
+        cbi.customer_name as customerName,
+        cs.bar_code as skuCode,
+        cs.sku_name as commodityName,
+        cs.banner,
+        cs.spec,
+        cs.model_no as modelNo,
+        di.dict_name as storeType,
+        si.store_code as storeCode,
+        sc.store_nums as storeNums,
+        sc.available_nums as availableNums
+        from wms_storehouse_config sc
+        LEFT JOIN wms_customer_base_info cbi on sc.customer_id = cbi.id and cbi.state =1
+        LEFT JOIN wms_commodity_info ci on sc.commodity_id = ci.id and ci.state =1
+        LEFT JOIN wms_commodity_sku cs on (ci.commodity_code = cs.sku_code or ci.commodity_code = cs.bar_code) and
+        cs.state =1
+        LEFT JOIN wms_storehouse_info si on sc.storehouse_id = si.id and si.state =1
+        LEFT JOIN wms_dict_info di on si.house_code = di.dict_code and di.state =1
+        where sc.state='1'
+        and cbi.customer_code = #{qsi.customerCode}
+        <!-- 该商家已用库存 -->
+        <if test="qsi.available">
+            and sc.commodity_id is not null
+        </if>
+        <!-- 该商家 未用库存 -->
+        <if test="qsi.unavailable">
+            and sc.commodity_id is null
+        </if>
+        <!-- 该商家，商品占用库存 -->
+        <if test="qsi.commodityId != null">
+            and sc.commodity_id = #{qsi.commodityId}
+        </if>
+        <!-- 该商家 占用库存 -->
+        <if test="qsi.usedStores">
+            and sc.available_nums >0
+        </if>
+        <if test="qsi.houseCode !=null">
+            and si.house_code = #{qsi.houseCode}
+        </if>
+        order by cs.bar_code desc,di.dict_name desc,sc.available_nums desc
     </select>
 
     <!--	库位配置信息加载 -->
-	<select id="storehouseConfig" resultType="java.util.Map">
-		SELECT
-			wsc.id,
-			wsc.storehouse_id storehuoseId,
-			wsc.customer_id customerId,
-			wsc.commodity_id commodityId,
-			wcbi.customer_name customerName,
-			wcbi.customer_code customerCode,
-			wcs.bar_code barCode,
-			wcs.sku_name skuName,
-			wcs.spec spec,
-			wcs.model_no modelNo,
-			wcs.single_unit singleUnit,
-			wsi.store_code storeCode,
-			wsi.house_code houseCode,
-			wdi.dict_name houseName,
-			wsc.store_nums storeNums,
-			wsc.available_nums availableNums,
-			wsc.lock_nums lockNums
-		FROM
-			wms_storehouse_config wsc
-			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
-			LEFT JOIN wms_dict_info wdi ON wdi.dict_code = wsi.house_code
-			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
-			LEFT JOIN wms_commodity_info wci ON wci.id = wsc.commodity_id
-			LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
-		<where>
-			${ew.sqlSegment}
-		</where>
+    <select id="storehouseConfig" resultType="java.util.Map">
+        SELECT
+        wsc.id,
+        wsc.storehouse_id storehuoseId,
+        wsc.customer_id customerId,
+        wsc.commodity_id commodityId,
+        wcbi.customer_name customerName,
+        wcbi.customer_code customerCode,
+        wcs.bar_code barCode,
+        wcs.sku_name skuName,
+        wcs.spec spec,
+        wcs.model_no modelNo,
+        wcs.single_unit singleUnit,
+        wsi.store_code storeCode,
+        wsi.house_code houseCode,
+        wdi.dict_name houseName,
+        wsc.store_nums storeNums,
+        wsc.available_nums availableNums,
+        wsc.lock_nums lockNums
+        FROM
+        wms_storehouse_config wsc
+        LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
+        LEFT JOIN wms_dict_info wdi ON wdi.dict_code = wsi.house_code
+        LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id
+        LEFT JOIN wms_commodity_info wci ON wci.id = wsc.commodity_id
+        LEFT JOIN wms_commodity_sku wcs ON wci.commodity_code = wcs.bar_code
+        <where>
+            ${ew.sqlSegment}
+        </where>
 
-	</select>
-	<!--	加载库位配置信息	-->
+    </select>
+    <!--	加载库位配置信息	-->
     <select id="loadGrid" resultType="java.util.Map">
-		SELECT
-			wsc.id,
-			wsc.storehouse_id storehouseId,
-			wsc.state,
-			wsc.customer_id customerId,
-			wsc.store_nums storeNums,
-			wsc.available_nums availabelNums,
-			wcs.sku_name skuName,
-			wcs.bar_code commodityCode,
-			wsi.id storehouseId,
-			wsi.house_code houseCode,
-			wsi.store_code storeCode,
-			wcbi.customer_code customerCode,
-			wcbi.customer_name customerName,
-			wci.id commodityId
-		FROM
-			wms_storehouse_config wsc
-			LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id and wsi.state=1
-			LEFT JOIN wms_commodity_info wci ON wsc.commodity_id = wci.id and wci.state=1
-			LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code and wcs.state=1
-			LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id and wcbi.state=1
+        SELECT
+        wsc.id,
+        wsc.storehouse_id storehouseId,
+        wsc.state,
+        wsc.customer_id customerId,
+        wsc.store_nums storeNums,
+        wsc.available_nums availabelNums,
+        wcs.sku_name skuName,
+        wcs.bar_code commodityCode,
+        wsi.id storehouseId,
+        wsi.house_code houseCode,
+        wsi.store_code storeCode,
+        wcbi.customer_code customerCode,
+        wcbi.customer_name customerName,
+        wci.id commodityId
+        FROM
+        wms_storehouse_config wsc
+        LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id and wsi.state=1
+        LEFT JOIN wms_commodity_info wci ON wsc.commodity_id = wci.id and wci.state=1
+        LEFT JOIN wms_commodity_sku wcs ON wcs.bar_code = wci.commodity_code and wcs.state=1
+        LEFT JOIN wms_customer_base_info wcbi ON wcbi.id = wsc.customer_id and wcbi.state=1
 
-		<where>
-			${ew.sqlSegment}
-		</where>
-	</select>
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
     <select id="queryStoreIdList" resultType="java.lang.Long">
-		select
-			si.id
-		from wms_storehouse_info si
-		inner join wms_storehouse_config sc  on si.id = sc.storehouse_id and sc.state='1'
-		where si.state='1'
-		and sc.customer_id = #{customerId}
-		<if test="areaCodeList != null and areaCodeList.size()>0">
-			and si.area_code in
-			<foreach collection="areaCodeList" item="areaCodeList" index="index" open="(" close=")" separator=",">
-				#{areaCodeList}
-			</foreach>
-		</if>
-	</select>
+        select
+        si.id
+        from wms_storehouse_info si
+        inner join wms_storehouse_config sc on si.id = sc.storehouse_id and sc.state='1'
+        where si.state='1'
+        and sc.customer_id = #{customerId}
+        <if test="areaCodeList != null and areaCodeList.size()>0">
+            and si.area_code in
+            <foreach collection="areaCodeList" item="areaCodeList" index="index" open="(" close=")" separator=",">
+                #{areaCodeList}
+            </foreach>
+        </if>
+    </select>
     <select id="JHQCount" resultType="java.lang.Integer">
-		select count(*)
-		from wms_storehouse_config wsc
-		left join wms_storehouse_info wsi on wsi.id = wsc.storehouse_id
-		where
-			wsc.id in <foreach collection="storehouseIds" item="id" open="(" separator="," close=")">
-									#{id}
-						</foreach>
-	 	and wsi.house_code = #{code}
-	</select>
-	<select id="customerCommodityConfigCount" resultType="java.lang.Integer">
+        select count(*)
+        from wms_storehouse_config wsc
+        left join wms_storehouse_info wsi on wsi.id = wsc.storehouse_id
+        where
+        wsc.id in
+        <foreach collection="storehouseIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and wsi.house_code = #{code}
+    </select>
+    <select id="customerCommodityConfigCount" resultType="java.lang.Integer">
 		SELECT COUNT(*)
 		FROM wms_storehouse_config wsc
 		LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
 		WHERE wsc.customer_id = #{customerId} AND wsc.commodity_id = #{commodityId} AND wsi.house_code = #{code}
 	</select>
-	<select id="customerCommodityConfig" resultType="com.magic.card.wms.baseset.model.po.StorehouseInfo">
+    <select id="customerCommodityConfig" resultType="com.magic.card.wms.baseset.model.po.StorehouseInfo">
 		SELECT wsi.*
 		FROM wms_storehouse_config wsc
 		LEFT JOIN wms_storehouse_info wsi ON wsi.id = wsc.storehouse_id
 		WHERE wsc.customer_id = #{customerId} AND wsc.commodity_id = #{commodityId} AND wsi.house_code = #{code}
 	</select>
 
-	<!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
+    <select id="availableQuantity" resultType="com.magic.card.wms.baseset.model.vo.AvailableQuantityVO">
+		SELECT id,
+		       store_id,
+			   customer_code,
+			   commodity_id,
+			   commodity_code,
+			   house_code,
+			   area_code,
+			   store_code,
+			   store_nums,
+			   available_nums,
+			   lock_nums,
+			   priority_value
+		FROM v_wms_storehouse_config
+		<where>
+			${ew.sqlSegment}
+		</where>
+	</select>
+
+    <!-- <select id="recommendStore" resultType="com.magic.card.wms.baseset.model.vo.StorehouseConfigVO">
         select  sc.storehouse_id,
                 si.area_code,
                 si.house_code,

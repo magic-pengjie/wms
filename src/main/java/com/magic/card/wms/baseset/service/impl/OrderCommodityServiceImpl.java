@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.OrderCommodityMapper;
-import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.po.OrderCommodity;
 import com.magic.card.wms.baseset.service.ICommodityInfoService;
 import com.magic.card.wms.baseset.service.ICommodityStockService;

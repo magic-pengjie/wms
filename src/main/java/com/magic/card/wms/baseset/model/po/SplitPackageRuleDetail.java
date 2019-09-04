@@ -2,7 +2,7 @@ package com.magic.card.wms.baseset.model.po;
 
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.google.common.collect.Lists;
-import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO;
 import com.magic.card.wms.common.model.po.BasePo;
 import lombok.Data;
 

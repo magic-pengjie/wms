@@ -113,6 +113,12 @@ public class ExcelOrderImport extends BaseRowModel implements Serializable {
      */
     @ExcelProperty(value = "订单备注", index = 17)
     private String remark;
+
+    /**
+     * 快递单号
+     */
+    @ExcelProperty(value = "快递单号", index = 18)
+    private String mailNo;
     // endregion
 
     // region 订单商品基本信息

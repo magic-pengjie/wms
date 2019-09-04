@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
-import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.model.vo.OrderStatisticsVO;

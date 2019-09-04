@@ -5,6 +5,8 @@ import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.po.BasePo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
+
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -76,13 +78,31 @@ public class PoUtil {
     public static <Po extends  BasePo> void batchAdd(String operator, List<Po> pos) {
         Date now = new Date();
 
-        for (Po po : pos) {
+        if (pos == null || pos.size() < 1) return;
+
+        pos.forEach(po -> {
+            po.setUpdateTime(now);
+            po.setUpdateUser(operator);
+        });
+    }
+
+    /**
+     * 批量更新操作
+     * @param operator 操作人
+     * @param pos     更新数据
+     * @param <Po>
+     */
+    public static <Po extends  BasePo> void batchUpdate(String operator, List<Po> pos) {
+        Date now = new Date();
+
+        if (pos == null || pos.size() < 1) return;
+
+        pos.forEach(po -> {
             po.setCreateTime(now);
             po.setUpdateTime(now);
             po.setCreateUser(operator);
             po.setUpdateUser(operator);
-        }
-
+        });
     }
 
     /**

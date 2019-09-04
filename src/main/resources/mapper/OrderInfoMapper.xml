@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.magic.card.wms.baseset.mapper.OrderInfoMapper">
-    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.OrderInfoDTO">
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.order.OrderInfoDTO">
         <id column="id" property="id"/>
         <result column="mail_no" property="mailNo"/>
         <result column="order_no" property="orderNo"/>
@@ -26,7 +26,7 @@
         <result column="preset_weight" property="presetWeight"/>
         <result column="send_nums" property="sendNums"/>
         <result column="fail_reason" property="failReason"/>
-        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.OrderCommodityDTO"
+        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO"
                     column="order_no">
             <result column="order_no" property="orderNo"/>
             <result column="customer_code" property="customerCode"/>
