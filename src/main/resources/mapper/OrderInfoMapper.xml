@@ -324,5 +324,41 @@
         GROUP BY woc.customer_code, woc.bar_code
         ORDER BY woc.bar_code
     </select>
+    <select id="selectPackageInfo" resultMap="BaseResultMap">
+        SELECT
+        pi.id,
+        pi.mail_no,
+        pi.pick_no,
+        pi.preset_weight,
+        pi.send_nums,
+        pi.fail_reason,
+        oi.order_no,
+        oi.customer_code,
+        oi.customer_name,
+        oi.recipt_name,
+        oi.post_code,
+        oi.prov,
+        oi.city,
+        oi.recipt_addr,
+        oi.recipt_phone,
+        oi.express_key,
+        oi.is_b2b,
+        oi.goods_value,
+        oi.bill_state,
+        oi.remark,
+
+        pd.commodity_code,
+        sku.bar_code,
+        sku.model_no,
+        sku.spec,
+        pd.package_nums numbers,
+        sku.sku_name
+        FROM
+        wms_mail_picking_info pi
+        LEFT JOIN wms_mail_picking_detail pd ON pd.mail_no = pi.mail_no
+        LEFT JOIN wms_order_info oi ON oi.system_order_no = pi.order_no
+        LEFT JOIN wms_commodity_sku sku ON pd.commodity_code = sku.bar_code
+        WHERE 1 = 1 AND pi.mail_no = #{mailNo} AND pi.send_state = #{sendState}
+    </select>
 
 </mapper>

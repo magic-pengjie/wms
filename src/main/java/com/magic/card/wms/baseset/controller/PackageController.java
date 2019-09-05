@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 
 /**
@@ -77,5 +78,11 @@ public class PackageController extends WmsBaseController {
     @GetMapping("unfinishedList")
     public ResponseData unfinishedList(@RequestParam String mailNo) {
         return ResponseData.ok(mailPickingDetailService.packageUnfinishedList(mailNo));
+    }
+
+    @GetMapping("send")
+    public ResponseData sentChinaPost(@RequestParam String pickNo, @RequestParam String orderNo) throws UnsupportedEncodingException {
+        mailPickingService.sendOrder(pickNo, orderNo);
+        return ResponseData.ok();
     }
 }

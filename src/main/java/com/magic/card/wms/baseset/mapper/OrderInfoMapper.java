@@ -99,4 +99,11 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      */
     List<Map> batchLoadOrderCommodities(@Param("systemOrderNos") List<String> systemOrderNos);
 
+    /**
+     * 获取包裹相关信息
+     * @param mailNo 快递单号
+     * @param sendState 包裹发送状态
+     * @return
+     */
+    List<OrderInfoDTO> selectPackageInfo(@Param("mailNo") String mailNo, @Param("sendState") Integer sendState);
 }
