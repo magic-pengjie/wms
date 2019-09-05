@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
-import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.Order;
 import com.magic.card.wms.baseset.model.vo.ExcelOrderImport;
 import com.magic.card.wms.baseset.model.vo.OrderStatisticsVO;
@@ -99,4 +99,11 @@ public interface OrderInfoMapper extends BaseMapper<Order> {
      */
     List<Map> batchLoadOrderCommodities(@Param("systemOrderNos") List<String> systemOrderNos);
 
+    /**
+     * 获取包裹相关信息
+     * @param mailNo 快递单号
+     * @param sendState 包裹发送状态
+     * @return
+     */
+    List<OrderInfoDTO> selectPackageInfo(@Param("mailNo") String mailNo, @Param("sendState") Integer sendState);
 }

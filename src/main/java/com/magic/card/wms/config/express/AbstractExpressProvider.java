@@ -1,5 +1,9 @@
 package com.magic.card.wms.config.express;
 
+import com.magic.card.wms.baseset.service.IExpressNumberService;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * com.magic.card.wms.config.express
  * 提取公用的功能
@@ -9,4 +13,9 @@ package com.magic.card.wms.config.express;
  * @since : 1.0.0
  */
 public abstract class AbstractExpressProvider implements IExpressProvider {
+    @Autowired
+    @Getter
+    private IExpressNumberService expressNumberService;
+
+    public abstract String expressKey();
 }

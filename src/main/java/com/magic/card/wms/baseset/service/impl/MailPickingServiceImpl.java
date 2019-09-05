@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.magic.card.wms.baseset.service.*;
 import com.magic.card.wms.common.model.LoadGrid;
 import org.apache.commons.collections.CollectionUtils;
@@ -20,14 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.google.common.collect.Lists;
 import com.magic.card.wms.baseset.mapper.MailPickingMapper;
 import com.magic.card.wms.baseset.mapper.OrderInfoMapper;
-import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
-import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderInfoDTO;
 import com.magic.card.wms.baseset.model.po.MailPicking;
 import com.magic.card.wms.baseset.model.po.MailPickingDetail;
 import com.magic.card.wms.baseset.model.po.Order;
@@ -37,7 +34,6 @@ import com.magic.card.wms.baseset.model.xml.PersionXml;
 import com.magic.card.wms.baseset.model.xml.RequestOrderXml;
 import com.magic.card.wms.baseset.model.xml.ResponsesXml;
 import com.magic.card.wms.common.exception.OperationException;
-import com.magic.card.wms.common.model.PageInfo;
 import com.magic.card.wms.common.model.enums.BillState;
 import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
@@ -416,6 +412,56 @@ public class MailPickingServiceImpl extends ServiceImpl<MailPickingMapper, MailP
 		// 释放库存
 		releaseStock(mailNo, order.getCustomerCode());
 		// TODO 推送订单信息到邮政
+		try {
+			sendPackageToChinaPost(mailNo);
+		} catch (UnsupportedEncodingException e) {
+			log.error("mailNo: {}, 数据推送邮政失败！", mailNo);
+		}
+	}
+
+	/**
+	 * 发送包裹信息到中国邮政
+	 *
+	 * @param mailNo 快递单号
+	 */
+	public void sendPackageToChinaPost(String mailNo) throws UnsupportedEncodingException {
+		List<OrderInfoDTO>  orderInfo = orderInfoMapper.selectPackageInfo(mailNo, 0);
+
+		if(CollectionUtils.isEmpty(orderInfo)) {
+			throw new OperationException(-1,"订单数据不存在");
+		}
+
+		//组装订单xml格式报文
+		OrderDTO order = new OrderDTO();
+		order.setEcCompanyId(Digest.urlEncode(Constants.ECCOMPANY_ID));
+		order.setMsg_type(Digest.urlEncode(Constants.MSG_TYPE_CREATE)); //创建订单
+		for (OrderInfoDTO orderInfoDTO : orderInfo) {
+			//订单无商品，则无需发送
+			if(ObjectUtils.isEmpty(orderInfoDTO.getCommodities())) {
+				continue;
+			}
+			String xml = getXmlBaseInfo(orderInfoDTO);
+			log.info("订单xml:\n{}",xml);
+			order.setData_digest(signature(xml+Constants.PARTNERED));
+			order.setLogistics_interface(Digest.urlEncode(xml));
+			String reason = "数据推送异常";
+			try {
+				String result = HttpUtil.httpPost(postUrl,getData(order));
+				log.info("restPost finish result:{}",result);
+				ResponsesXml response = new ResponsesXml();
+				response = (ResponsesXml) XmlUtil.parseXml(response, result);
+				boolean success = response.getResponseItems().get(0).getSuccess();
+				if(success) {
+					reason = response.getResponseItems().get(0).getReason();
+				}
+				//修改发送状态
+				updateSendFlag(orderInfoDTO, success,reason);
+			} catch (Exception e) {
+				log.error("parseXml error:{}",e);
+				updateSendFlag(orderInfoDTO, false,reason);
+				continue;
+			}
+		}
 	}
 
 	/**

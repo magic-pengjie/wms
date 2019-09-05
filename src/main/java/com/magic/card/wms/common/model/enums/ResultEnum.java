@@ -74,6 +74,11 @@ public enum ResultEnum {
 	consumable_config_exist( 300004, "商品耗材已配置"),
 	replenishment_no_exist( 30005, "补货单不存在"),
 	replenishment_finnished( 30006, "补货单已补货完成"),
+	express_number_size_err( 30007,  "快递单号格式错误，有且只有十三位数字！"),
+	express_number_exist( 30008,  "快递单号已存在！"),
+	express_number_not_exist( 30009,  "快递单号不存在！"),
+	express_number_exhaust( 30010, "快递单号已耗尽！"),
+    express_provider_not_support( 30011, "暂不支持此提供商！"),
 
 	select_purchase_failed(400000,"查询单据失败"),
 	add_purchase_repeat(400001,"采购单已存在、新增失败"),

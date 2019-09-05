@@ -105,6 +105,12 @@ public class Order extends BasePo implements Serializable {
      * 商品金额
      */
     private BigDecimal goodsValue;
+
+    /**
+     * 订单类型（流程单： workflow , 出库单： outbound）
+     */
+    private String orderType;
+
     /**
      * 单据状态(保存:save确认:confirm 作废及退单:cancel )
      */

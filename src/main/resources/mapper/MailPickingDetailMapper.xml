@@ -49,7 +49,7 @@
             LEFT JOIN wms_commodity_sku wcs ON wmpd.commodity_code = wcs.bar_code
             LEFT JOIN wms_commodity_consumables_config wccc ON wccc.commodity_code = wmpd.commodity_code
             LEFT JOIN wms_commodity_sku wcshc ON wccc.use_commodity_code = wcshc.bar_code
-        WHERE wmpd.mail_no = #{virtualMail}
+        WHERE wmpd.order_no = #{systemOrderNo} AND wmpd.mail_no = #{virtualMail}
     </select>
     <!--    获取拣货单复检商品清单列表   -->
     <select id="invoiceCheckCommodityList" resultType="java.util.Map">

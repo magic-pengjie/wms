@@ -6,6 +6,7 @@ import java.util.Map;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.magic.card.wms.baseset.model.po.StorehouseInfo;
+import com.magic.card.wms.baseset.model.vo.AvailableQuantityVO;
 import com.magic.card.wms.statistic.model.dto.QueryStoreInfoBO;
 import org.apache.ibatis.annotations.Param;
 
@@ -106,4 +107,11 @@ public interface StorehouseConfigMapper extends BaseMapper<StorehouseConfig> {
 	 * @return
 	 */
 	List<StorehouseInfo> customerCommodityConfig(@Param("customerId") String customerId, @Param("commodityId") String commodityId, @Param("code") String code);
+
+	/**
+	 * 库位商品数据
+	 * @param wrapper 先关查询条件
+	 * @return
+	 */
+    List<AvailableQuantityVO> availableQuantity(@Param("ew") EntityWrapper wrapper);
 }

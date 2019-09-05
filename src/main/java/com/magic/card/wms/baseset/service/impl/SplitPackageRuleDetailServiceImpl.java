@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.magic.card.wms.baseset.mapper.SplitPackageRuleDetailMapper;
-import com.magic.card.wms.baseset.model.dto.OrderCommodityDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO;
 import com.magic.card.wms.baseset.model.po.SplitPackageRuleDetail;
 import com.magic.card.wms.baseset.service.ISplitPackageRuleDetailService;
 import com.magic.card.wms.common.model.enums.StateEnum;

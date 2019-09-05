@@ -38,6 +38,10 @@ public enum BillState {
     order_finished("finished", "完成"),
     order_cancel("cancel", "取消"),
     //endregion
+    // region 订单类型
+    order_type_workflow("workflow", "标准出库流程"),
+    order_type_outbound("outbound", "直接出库流程"),
+    // endregion
     //region 包裹处理状态
     package_picking("picking", "拣货中"),
     package_packing("packing", "打包中"),
@@ -71,7 +75,13 @@ public enum BillState {
      * @return
      */
     public static String orderCode(String desc) {
-        ArrayList<BillState> orderStates = Lists.newArrayList(BillState.order_save, BillState.order_picking, BillState.order_packing, BillState.order_go_out, BillState.order_finished, BillState.order_cancel);
+        ArrayList<BillState> orderStates = Lists.newArrayList(
+                BillState.order_save,
+                BillState.order_picking,
+                BillState.order_packing,
+                BillState.order_go_out,
+                BillState.order_finished,
+                BillState.order_cancel);
         AtomicReference<String> orderStateCode = new AtomicReference<>("");
         orderStates.forEach(orderState -> {
             if (StringUtils.containsIgnoreCase(desc, orderState.getDesc())) {

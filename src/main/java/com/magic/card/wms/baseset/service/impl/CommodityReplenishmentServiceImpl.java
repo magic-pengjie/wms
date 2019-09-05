@@ -1,6 +1,7 @@
 package com.magic.card.wms.baseset.service.impl;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
@@ -247,7 +248,10 @@ public class CommodityReplenishmentServiceImpl extends ServiceImpl<CommodityRepl
             }).sum();
             // 增加拣货区库位库存
             String plusSet = String.format("available_nums = available_nums + %s", replenishmentNums);
-            storehouseConfigService.updateForSet(plusSet, new EntityWrapper().eq("id", commodityReplenishment.getCheckoutId()));
+            Wrapper entityWrapper = new EntityWrapper().
+                    eq("storehouse_id", commodityReplenishment.getCheckoutId()).
+                    eq("commodity_id", commodityReplenishment.getCommodityId());
+            storehouseConfigService.updateForSet(plusSet, entityWrapper);
             // 更新补货信息
             updateById(commodityReplenishment);
         }

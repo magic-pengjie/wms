@@ -12,11 +12,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
-import com.magic.card.wms.baseset.model.dto.OrderInfoDTO;
+import com.magic.card.wms.baseset.model.dto.order.OrderInfoDTO;
 import com.magic.card.wms.baseset.service.IOrderService;
 import com.magic.card.wms.common.exception.OperationException;
 import com.magic.card.wms.common.model.ResponseData;
-import com.magic.card.wms.common.model.enums.Constants;
 import com.magic.card.wms.common.model.enums.ResultEnum;
 import com.magic.card.wms.common.utils.Digest;
 import com.magic.card.wms.foreign.model.OutRequestData;

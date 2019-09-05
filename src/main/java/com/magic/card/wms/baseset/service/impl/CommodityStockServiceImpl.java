@@ -158,6 +158,26 @@ public class CommodityStockServiceImpl extends ServiceImpl<CommodityStockMapper,
     }
 
     /**
+     * 减库存操作
+     *
+     * @param customerCode  商家Code
+     * @param commodityCode 商品条码
+     * @param numbers       商品数量
+     * @param operator      操作人
+     */
+    @Override
+    public void reduceCommodityStock(String customerCode, String commodityCode, Integer numbers, String operator) {
+        String token = stockSecurity.accessLazyToken(customerCode, commodityCode);
+        CommodityStock stock = checkOutSetting(customerCode, commodityCode);
+        // 减库存
+        Long stockNum = stock.getStockNum() - numbers;
+        stock.setStockNum(stockNum);
+        PoUtil.update(stock, operator);
+        updateById(stock);
+        stockSecurity.destroyToken(token);
+    }
+
+    /**
      * 检出商品库存设置信息
      * @param customerCode
      * @param commodityCode

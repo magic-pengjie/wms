@@ -247,11 +247,12 @@ public class MailPickingDetailServiceImpl extends ServiceImpl<MailPickingDetailM
      * 快递包裹预重 （kg）
      * 拣货篮总货物称重
      * @param virtualMail 虚拟快递号（uuid）
+     * @param systemOrderNo 系统订单号
      * @return
      */
     @Override
-    public BigDecimal mailPickingWeight(String virtualMail) {
-        List<Map> mailPickingCommodityInfo = baseMapper.mailPickingCommodityInfo(virtualMail);
+    public BigDecimal mailPickingWeight(String virtualMail, String systemOrderNo) {
+        List<Map> mailPickingCommodityInfo = baseMapper.mailPickingCommodityInfo(virtualMail, systemOrderNo);
         //商品对应所有的耗材 (已g计算重量)
         BigDecimal weightTotal = BigDecimal.valueOf(0.00);
 

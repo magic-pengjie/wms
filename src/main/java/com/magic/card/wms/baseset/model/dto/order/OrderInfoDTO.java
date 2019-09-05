@@ -1,4 +1,4 @@
-package com.magic.card.wms.baseset.model.dto;
+package com.magic.card.wms.baseset.model.dto.order;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

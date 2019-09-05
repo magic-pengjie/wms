@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.magic.card.wms.baseset.mapper.OrderInfoMapper">
-    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.OrderInfoDTO">
+    <resultMap id="BaseResultMap" type="com.magic.card.wms.baseset.model.dto.order.OrderInfoDTO">
         <id column="id" property="id"/>
         <result column="mail_no" property="mailNo"/>
         <result column="order_no" property="orderNo"/>
@@ -26,7 +26,7 @@
         <result column="preset_weight" property="presetWeight"/>
         <result column="send_nums" property="sendNums"/>
         <result column="fail_reason" property="failReason"/>
-        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.OrderCommodityDTO"
+        <collection property="commodities" ofType="com.magic.card.wms.baseset.model.dto.order.OrderCommodityDTO"
                     column="order_no">
             <result column="order_no" property="orderNo"/>
             <result column="customer_code" property="customerCode"/>
@@ -323,6 +323,42 @@
         WHERE woi.system_order_no in <foreach collection="systemOrderNos" item="systemOrderNo" open="(" separator="," close=")">#{systemOrderNo}</foreach>
         GROUP BY woc.customer_code, woc.bar_code
         ORDER BY woc.bar_code
+    </select>
+    <select id="selectPackageInfo" resultMap="BaseResultMap">
+        SELECT
+        pi.id,
+        pi.mail_no,
+        pi.pick_no,
+        pi.preset_weight,
+        pi.send_nums,
+        pi.fail_reason,
+        oi.order_no,
+        oi.customer_code,
+        oi.customer_name,
+        oi.recipt_name,
+        oi.post_code,
+        oi.prov,
+        oi.city,
+        oi.recipt_addr,
+        oi.recipt_phone,
+        oi.express_key,
+        oi.is_b2b,
+        oi.goods_value,
+        oi.bill_state,
+        oi.remark,
+
+        pd.commodity_code,
+        sku.bar_code,
+        sku.model_no,
+        sku.spec,
+        pd.package_nums numbers,
+        sku.sku_name
+        FROM
+        wms_mail_picking_info pi
+        LEFT JOIN wms_mail_picking_detail pd ON pd.mail_no = pi.mail_no
+        LEFT JOIN wms_order_info oi ON oi.system_order_no = pi.order_no
+        LEFT JOIN wms_commodity_sku sku ON pd.commodity_code = sku.bar_code
+        WHERE 1 = 1 AND pi.mail_no = #{mailNo} AND pi.send_state = #{sendState}
     </select>
 
 </mapper>
