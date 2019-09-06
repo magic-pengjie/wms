@@ -59,16 +59,12 @@ public class WebUtil {
 	 * @return
 	 */
 	public String operator() {
-		return Constants.DEFAULT_USER;
-//		try {
-//			UserSessionUo userSession = getUserSession();
-//			return userSession.getName();
-//		} catch (BusinessException e) {
-//			OperationException operationException = new OperationException();
-//			operationException.setErrCode(e.getErrCode());
-//			operationException.setErrMsg(e.getErrMsg());
-//			throw operationException;
-//		}
+		try {
+			UserSessionUo userSession = getUserSession();
+			return userSession.getName();
+		} catch (BusinessException e) {
+			return Constants.DEFAULT_USER;
+		}
 	}
 }
 
