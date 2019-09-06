@@ -123,8 +123,8 @@
             sum(oc.numbers) as outStorehouseNum
         from wms_order_info  oi
         left join wms_customer_base_info cbi on oi.customer_code = cbi.customer_code and cbi.state='1'
-        left join wms_order_commodity oc on oi.system_order_no = oc.order_no and oc.state='1'
-        left join wms_commodity_sku cs on oc.bar_code = cs.bar_code and cs.state='1'
+        inner join wms_order_commodity oc on oi.system_order_no = oc.order_no and oc.state='1'
+        inner join wms_commodity_sku cs on oc.bar_code = cs.bar_code and cs.state='1'
         where oi.state ='1'
         and oi.bill_state in ('go_out','finished')
         <if test="null !=customerCode and ''!=customerCode">
