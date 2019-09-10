@@ -50,7 +50,7 @@ public class UserDTO implements Serializable{
 	 */
 	@ApiModelProperty(value="角色主键List")
 	@NotEmpty(message="角色不能为空")
-	private List<Long> roleKey;
+	private List<Long> roleKeyList;
 
 	@Override
 	public String toString() {
@@ -59,7 +59,7 @@ public class UserDTO implements Serializable{
 		sb.append(", password='").append(password).append('\'');
 		sb.append(", name='").append(name).append('\'');
 		sb.append(", customerId='").append(customerId).append('\'');
-		sb.append(", roleKeyList=").append(roleKey);
+		sb.append(", roleKeyList=").append(roleKeyList);
 		sb.append('}');
 		return sb.toString();
 	}

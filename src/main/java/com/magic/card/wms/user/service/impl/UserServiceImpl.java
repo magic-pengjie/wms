@@ -113,7 +113,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			log.info("===inserUser.params:{},isSuccess:{}", user, insertFlag);
 			//新增用户角色信息
 			if(insertFlag) {
-				for (Long roleId : dto.getRoleKey()) {
+				for (Long roleId : dto.getRoleKeyList()) {
 					UserRoleMapping entity = new UserRoleMapping();
 					entity.setUserKey(user.getId());
 					entity.setCreateTime(nowDate);
