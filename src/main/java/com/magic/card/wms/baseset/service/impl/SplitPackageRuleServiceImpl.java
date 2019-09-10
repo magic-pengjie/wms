@@ -111,6 +111,7 @@ public class SplitPackageRuleServiceImpl extends ServiceImpl<SplitPackageRuleMap
      */
     @Override @Transactional
     public void generateRule(SplitPackageRuleDTO splitPackageRule) {
+        splitPackageRule.checkCommodityNumber();
         List<SplitCommodityDTO> orderCommodities = splitPackageRule.getOrderCommodities();
         final String ruleToke = splitPackageRule.splitPackageToken();
         EntityWrapper wrapper = new EntityWrapper();
