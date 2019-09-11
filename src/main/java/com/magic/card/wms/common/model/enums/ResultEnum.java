@@ -126,6 +126,7 @@ public enum ResultEnum {
     order_merge_commodity_err(500025, "合并订单商品数据不存在，请核实后再重新操作！"),
 	order_excel_export_no_data( 500026, "没有满足条件的订单数据"),
 	order_split_package_commodity_number_err(500027, "订单拆包商品数量有误，请确认后在提交！"),
+	order_customer_commodity_not_exist( 500028, "商家订单中部分商品没有再系统中维护，请确认后再导入！"),
 
 
 	express_fee_config_exist(7000, "此快递费配置数据已存在"),
