@@ -1,6 +1,9 @@
 package com.magic.card.wms.baseset.model.dto.split;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.magic.card.wms.common.exception.OperationException;
+import com.magic.card.wms.common.model.enums.ResultEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,6 +15,7 @@ import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,6 +70,34 @@ public class SplitPackageRuleDTO implements Serializable {
             );
         }
         return tokens;
+    }
+
+    /**
+     * 检测商品数据是否存在问题
+     */
+    public void checkCommodityNumber() {
+
+        if (CollectionUtils.isEmpty(packageCommodities)) return;
+
+        HashMap<String, Integer> commodityNumbers = Maps.newHashMap();
+        orderCommodities.forEach(splitCommodityDTO ->
+                commodityNumbers.compute(splitCommodityDTO.getCommodityCode(), (key, value) ->
+                    (value == null ? 0 : value) + splitCommodityDTO.getNums()
+                )
+        );
+        packageCommodities.forEach(splitCommodityDTOS -> splitCommodityDTOS.forEach(splitCommodityDTO -> {
+            commodityNumbers.compute(splitCommodityDTO.getCommodityCode(), (key, value) ->
+                    (value == null ? 0 : value) - splitCommodityDTO.getNums()
+            );
+        }));
+        commodityNumbers.forEach((key, value) -> {
+
+            if (value != 0) {
+                throw OperationException.customException(ResultEnum.order_split_package_commodity_number_err);
+            }
+
+        });
+
     }
 
 }

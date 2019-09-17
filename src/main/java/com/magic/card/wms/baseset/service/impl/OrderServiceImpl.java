@@ -38,7 +38,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,6 +74,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
     private IStorehouseConfigService storehouseConfigService;
     @Autowired
     private ICommodityReplenishmentService commodityReplenishmentService;
+    @Autowired
+    private ICommodityInfoService commodityInfoService;
     @Autowired
     private WebUtil webUtil;
     @Autowired(required = false)
@@ -508,6 +509,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         Map<String, Map<String, ExcelCommodity>> excelOrderCommodityMap = Maps.newHashMap();
         // 收集导入系统的保存操作的订单号
         HashSet<String> orderNos = Sets.newHashSet();
+        // 收集订单商品条码
+        HashSet<String> commodityCodes = Sets.newHashSet();
         String customerCode = null;
 
         for (int i = 0; i < excelOrders.size(); i++) {
@@ -522,6 +525,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
             if (StringUtils.isAnyBlank(orderNo, excelOrder.getCustomerCode(), commodityCode)) continue;
 
             customerCode = excelOrder.getCustomerCode();
+            commodityCodes.add(commodityCode);
 
             // 判断当前订单是否取消操作
             if (!StringUtils.equalsIgnoreCase(BillState.order_cancel.getCode(), excelOrder.getBillState())) {
@@ -571,6 +575,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderInfoMapper, Order> implem
         }
 
         CustomerBaseInfo customer = customerService.checkoutCustomer(customerCode);
+        // 客户订单商品条码检查
+        EntityWrapper customerCommodityWrapper = new EntityWrapper<>();
+        customerCommodityWrapper.eq("customer_id", customer.getId()).
+                eq("state", StateEnum.normal.getCode()).
+                in("commodity_code", commodityCodes);
+
+        if (commodityInfoService.selectCount(customerCommodityWrapper) != commodityCodes.size()) {
+            throw OperationException.customException(ResultEnum.order_customer_commodity_not_exist);
+        }
+
         // 判断客户订单是否已经导入系统中
         EntityWrapper checkOrder = new EntityWrapper();
         checkOrder.in("order_no", orderNos).
