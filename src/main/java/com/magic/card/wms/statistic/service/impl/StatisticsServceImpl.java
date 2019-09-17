@@ -1,7 +1,8 @@
 package com.magic.card.wms.statistic.service.impl;
 
 
-import com.baomidou.mybatisplus.plugins.pagination.PageHelper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.magic.card.wms.baseset.mapper.StorehouseConfigMapper;
 import com.magic.card.wms.check.mapper.CheckRecordMapper;
 import com.magic.card.wms.check.model.dto.CheckRecordInfoDto;
@@ -16,6 +17,7 @@ import com.magic.card.wms.statistic.service.StatisticsService;
 import com.magic.card.wms.warehousing.mapper.PurchaseBillMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -55,7 +57,8 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<ParchaseBillResponseDto> list  = purchaseBillMapper.queryPurchaseBillCountList(dto.getCustomerCode(),dto.getStartDate(),dto.getEndDate());
         if (!CollectionUtils.isEmpty(list)){
-            pageResponse.setTotal(list.size());
+            PageInfo<ParchaseBillResponseDto> pageInfo = new PageInfo<>(list);
+            pageResponse.setTotal((int) pageInfo.getTotal());
             pageResponse.setRecords(list);
 
         }
@@ -97,7 +100,8 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<OutStorehouseResponseDto> outStoresList = checkRecordMapper.queryOutStorehouseList(dto.getCustomerCode(), dto.getStartDate(), dto.getEndDate());
         if(!CollectionUtils.isEmpty(outStoresList)){
-            pageResponse.setTotal(outStoresList.size());
+            PageInfo<OutStorehouseResponseDto> pageInfo = new PageInfo<>(outStoresList);
+            pageResponse.setTotal((int) pageInfo.getTotal());
             pageResponse.setRecords(outStoresList);
         }
         pageResponse.setCurrent(dto.getCurrent());
@@ -137,7 +141,8 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<StorehouseCountResponseDto> storeCountList = checkRecordMapper.queryStorehouseCountList(dto.getCustomerCode());
         if(!CollectionUtils.isEmpty(storeCountList)){
-            pageResponse.setTotal(storeCountList.size());
+            PageInfo<StorehouseCountResponseDto> pageInfo = new PageInfo<>(storeCountList);
+            pageResponse.setTotal((int) pageInfo.getTotal());
             pageResponse.setRecords(storeCountList);
         }
         pageResponse.setCurrent(dto.getCurrent());
@@ -175,7 +180,8 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<StorehouseUsedResponseDto> storeUsedlist = checkRecordMapper.queryStorehouseUsedList(dto.getCustomerCode());
         if(!CollectionUtils.isEmpty(storeUsedlist)){
-            pageResponse.setTotal(storeUsedlist.size());
+            PageInfo<StorehouseUsedResponseDto> pageInfo = new PageInfo<>(storeUsedlist);
+            pageResponse.setTotal((int) pageInfo.getTotal());
             pageResponse.setRecords(storeUsedlist);
         }
         pageResponse.setCurrent(dto.getCurrent());
@@ -232,7 +238,8 @@ public class StatisticsServceImpl implements StatisticsService {
         PageHelper.startPage(dto.getCurrent(),dto.getPageSize());
         List<CheckRecordInfoDto> recordInfoDtos = storehouseConfigMapper.queryStoreInfoList(storeInfoBO);
         if(!CollectionUtils.isEmpty(recordInfoDtos)){
-            pageResponse.setTotal(recordInfoDtos.size());
+            PageInfo<CheckRecordInfoDto> pageInfo = new PageInfo<>(recordInfoDtos);
+            pageResponse.setTotal((int) pageInfo.getTotal());
             pageResponse.setRecords(recordInfoDtos);
         }
         pageResponse.setCurrent(dto.getCurrent());
